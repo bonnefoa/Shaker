@@ -1,6 +1,7 @@
 module Shaker.IoTest
  where
 
+import Shaker.Type
 import Shaker.Io
 import System.Directory
 import Test.HUnit

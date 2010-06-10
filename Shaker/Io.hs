@@ -6,7 +6,7 @@ import System.Directory
 import System.Time
 import Data.List
 import Shaker.Regex
-
+import Shaker.Type
 
 
 listFiles :: FilePath -> [String] -> IO[FilePath]
@@ -19,20 +19,20 @@ convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir lstFp = map (\a-> concat [absDir, "/",a]) lstFp
 
 
-listModifiedFiles :: [(FilePath,ClockTime)] -> IO [(FilePath,ClockTime)]
+listModifiedFiles :: [FileInfo] -> IO [FileInfo]
 listModifiedFiles tupleFpCl = filterM funFilFp tupleFpCl
-  where funFilFp (fp, cl) = getModificationTime fp >>= \newCl -> 
+  where funFilFp (FileInfo fp cl) = getModificationTime fp >>= \newCl -> 
           return $ ( newCl > cl )
                          
-listCreatedFiles :: FilePath -> [String] -> [(FilePath,ClockTime)] -> IO[(FilePath,ClockTime)]
+listCreatedFiles :: FilePath -> [String] -> [FileInfo] -> IO[FileInfo]
 listCreatedFiles dir ignore tupleFpCl = 
     getCurrentFpCl dir ignore >>= \curFpCl ->
-    return $ deleteFirstsBy (\c p -> fst c == fst p) curFpCl tupleFpCl
+    return $ deleteFirstsBy (hasSameFilePath) curFpCl tupleFpCl
      
 
-getCurrentFpCl :: FilePath -> [String] -> IO [(FilePath, ClockTime) ]
+getCurrentFpCl :: FilePath -> [String] -> IO [FileInfo]
 getCurrentFpCl dir ignore = listFiles dir ignore >>= \lstFp ->
       mapM getModificationTime lstFp >>= \lstCl ->
-            zipWithM (\a b-> return (a,b)) lstFp lstCl
+            zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
 
