@@ -4,6 +4,7 @@ module Shaker.Type
 import System.Directory
 import System.Time
 
+-- |Agregate a FilePath with its modification time
 data FileInfo = FileInfo FilePath ClockTime
   deriving (Show)
 
