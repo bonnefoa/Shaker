@@ -26,21 +26,23 @@ testListFilesWithIgnore = listFiles "." ignoreList >>= \res ->
 
 testListFilesWithIgnoreAll = listFiles "." [".*"] >>= \res ->
     assertEqual "ignore all files should result in empty list"
-        (length res) 0 
+      0 (length res)
 
 testListModifiedFiles = 
     getCurrentFpCl "." [] >>= \curList ->
     listModifiedFiles (map modifyFileInfoClock curList) >>= \newList ->
-    assertBool "should have one file modified"
-      (length newList) == 1
+    assertEqual "should have one file modified"
+      (length curList) (length newList) 
 
 testListCreatedFiles = 
     getCurrentFpCl "." [] >>= \curList ->
     listCreatedFiles "." [] (init curList) >>= \newList ->
     assertEqual "should have one file created"
-      (length newList) 1 
+      1 (length newList) 
 
 testList = map TestCase [testListFiles,testListFilesWithIgnore, testListFilesWithIgnoreAll, testListModifiedFiles , testListCreatedFiles ]
 
 tests = TestList testList
+
+
 

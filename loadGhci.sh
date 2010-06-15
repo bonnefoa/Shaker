@@ -1,0 +1,1 @@
+ghci -isrc/ -itestsuite/tests

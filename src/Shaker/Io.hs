@@ -38,3 +38,5 @@ getCurrentFpCl dir ignore = listFiles dir ignore >>= \lstFp ->
             zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
 
+
+
