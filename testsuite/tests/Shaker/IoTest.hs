@@ -14,6 +14,7 @@ aTimeDiff = TimeDiff { tdYear = 0, tdMonth = 0, tdDay = 0, tdHour =0, tdMin=0, t
 modifyFileInfoClock :: FileInfo -> FileInfo
 modifyFileInfoClock (FileInfo fp cl) = FileInfo fp (addToClockTime aTimeDiff cl)
 aSimpleFileListen = FileListenInfo "." []
+
 testListFiles = listFiles aSimpleFileListen >>= \res ->
     assertBool "list files should be greater than 2 "
         $ length res > 2
@@ -30,13 +31,13 @@ testListFilesWithIgnoreAll = listFiles (FileListenInfo "." [".*"]) >>= \res ->
 
 testListModifiedFiles = 
     getCurrentFpCl aSimpleFileListen >>= \curList ->
-    listModifiedFiles (map modifyFileInfoClock curList) >>= \newList ->
+    listModifiedAndCreatedFiles aSimpleFileListen (map modifyFileInfoClock curList) >>= \newList ->
     assertEqual "should have one file modified"
       (length curList) (length newList) 
 
 testListCreatedFiles = 
     getCurrentFpCl aSimpleFileListen >>= \curList ->
-    listCreatedFiles aSimpleFileListen (init curList) >>= \newList ->
+    listModifiedAndCreatedFiles aSimpleFileListen (init curList) >>= \newList ->
     assertEqual "should have one file created"
       1 (length newList) 
 
