@@ -10,8 +10,8 @@ import Shaker.Type
 
 -- |List files in the given directory 
 -- Files matching one regexp in the ignore argument are excluded
-listFiles :: FilePath -> [String] -> IO[FilePath]
-listFiles dir ignore = 
+listFiles :: FileListenInfo -> IO[FilePath]
+listFiles (FileListenInfo dir ignore) = 
     canonicalizePath dir >>= \curDir ->
     getDirectoryContents curDir >>= \res ->
     return $ filterListWithRegexp (convertToFullPath curDir res) ignore
@@ -26,14 +26,21 @@ listModifiedFiles tupleFpCl = filterM funFilFp tupleFpCl
           return $ ( newCl > cl )
 
 -- | List all files in the given directory which does not appear in the file list
-listCreatedFiles :: FilePath -> [String] -> [FileInfo] -> IO[FileInfo]
-listCreatedFiles dir ignore tupleFpCl = 
-    getCurrentFpCl dir ignore >>= \curFpCl ->
+listCreatedFiles :: FileListenInfo -> [FileInfo] -> IO[FileInfo]
+listCreatedFiles fileListen tupleFpCl = 
+    getCurrentFpCl fileListen >>= \curFpCl ->
     return $ deleteFirstsBy (hasSameFilePath) curFpCl tupleFpCl
-     
+
+listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO[FileInfo]
+listModifiedAndCreatedFiles fileListen [] = getCurrentFpCl fileListen
+listModifiedAndCreatedFiles fileListen flInfo = 
+   listModifiedFiles flInfo >>= \modifiedFiles ->
+   listCreatedFiles fileListen flInfo >>= \createdFiles ->
+   return (modifiedFiles ++ createdFiles) 
+
 -- |Get the list of FileInfo of the given directory
-getCurrentFpCl :: FilePath -> [String] -> IO [FileInfo]
-getCurrentFpCl dir ignore = listFiles dir ignore >>= \lstFp ->
+getCurrentFpCl :: FileListenInfo -> IO [FileInfo]
+getCurrentFpCl fileListen = listFiles fileListen >>= \lstFp ->
       mapM getModificationTime lstFp >>= \lstCl ->
             zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
