@@ -44,6 +44,8 @@ getCurrentFpCl fileListen = listFiles fileListen >>= \lstFp ->
       mapM getModificationTime lstFp >>= \lstCl ->
             zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
+getDifferentsFiles :: [FileInfo] -> [FileInfo]
+getDifferentsFiles = undefined 
 
 
 
