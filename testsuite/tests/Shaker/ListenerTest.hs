@@ -6,7 +6,6 @@ import Control.Concurrent.MVar
 import Shaker.Listener
 import Shaker.Type
 import Test.QuickCheck 
---import Test.QuickCheck (arbitrary, Property, quickCheck, (==>))
 import Test.QuickCheck.Monadic 
 
 prop_updateFileStat mC mM curF curM = monadicIO test
@@ -14,10 +13,13 @@ prop_updateFileStat mC mM curF curM = monadicIO test
                run (readMVar mC) >>= \mCurF ->
                assert $  curF == mCurF
 
-{-
+instance Arbitrary ClockTime where
+   arbitrary = elements [1..1000] >>= \sec ->
+               elements [1..1000] >>= \pico ->
+               return $ TOD sec pico
+
 instance Arbitrary FileInfo where
-  arbitrary = elements [".",".."] >>= \dir ->
-              arbitrary 
-              FileInfo dir (TOD arbitrary arbitrary)  
--}
+   arbitrary = arbitrary >>= \cl ->
+               elements [".",".."] >>= \ele ->
+               return $ (FileInfo ele cl)
 
