@@ -9,15 +9,14 @@ import Shaker.Type
 import Test.QuickCheck 
 import Test.QuickCheck.Monadic 
 
-prop_updateFileStat curF curM = 
+prop_updateFileStat curF curM = not (null curM) ==>
   monadicIO (test curF curM)
-
-test curF curM = 
-  run (newMVar []) >>= \mC ->    
-  run (newMVar []) >>= \mM ->    
-  run (updateFileStat mC mM curF curM) >>
-  run (readMVar mC) >>= \mCurF ->
-  assert $  curF == mCurF
+  where test curF curM = 
+          run (newMVar []) >>= \mC ->    
+          run (newMVar []) >>= \mM ->    
+          run (updateFileStat mC mM curF curM) >>
+          run (readMVar mC) >>= \mCurF ->
+          assert $  curF == mCurF
 
 instance Arbitrary ClockTime where
    arbitrary = elements [1..1000] >>= \sec ->
