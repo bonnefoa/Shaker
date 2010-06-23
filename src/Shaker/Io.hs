@@ -33,3 +33,4 @@ listFiles (FileListenInfo dir ignore) =
 
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir lstFp = map (\a-> concat [absDir, "/",a]) lstFp
+
