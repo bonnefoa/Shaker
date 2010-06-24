@@ -22,7 +22,8 @@ instance Arbitrary ClockTime where
 
 instance Arbitrary FileListenInfo where 
    arbitrary = FileListenInfo `liftM` elements [".",".."]
-			      `ap` arbitrary
+			      `ap` listOf (elements ["\\.$","ab"])
+
 
 instance Arbitrary FileInfo where
    arbitrary = arbitrary >>= \cl ->
