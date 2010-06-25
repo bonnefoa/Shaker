@@ -9,13 +9,10 @@ import Shaker.Regex
 import Shaker.Type
 
 
-listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO[FileInfo]
+listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
 listModifiedAndCreatedFiles fileListen oldFileInfo = 
   getCurrentFpCl fileListen >>= \curFileInfo ->
-  return (getDifferentFiles curFileInfo oldFileInfo)
-
-getDifferentFiles :: [FileInfo] -> [FileInfo] -> [FileInfo]
-getDifferentFiles old cur = old \\ cur
+  return $ (curFileInfo, curFileInfo \\ oldFileInfo)
 
 -- |Get the list of FileInfo of the given directory
 getCurrentFpCl :: FileListenInfo -> IO [FileInfo]

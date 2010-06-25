@@ -11,15 +11,18 @@ type CurrentFiles = MVar [FileInfo]
 type ModifiedFiles = MVar [FileInfo]
 type Job = MVar FileListenInfo
 
-delay = 5*10^6
+defaultDelay = 5*10^6
 
+-- | listen to the job box and process the job
 listen :: CurrentFiles -> ModifiedFiles -> Job -> IO ()
 listen mC mM mJ = takeMVar mJ  >>= \job ->
   readMVar mC >>= \curFiles ->
   readMVar mM >>= \curMod ->
-  updateFileStat mC mM curFiles curMod >>
+  listModifiedAndCreatedFiles job curFiles >>= newFiles ->
+  updateFileStat mC mM curFiles newFiles >>
   return ()
 
+-- | Update the files status
 updateFileStat :: CurrentFiles -> ModifiedFiles -> [FileInfo] -> [FileInfo] -> IO ()
 updateFileStat mC mM curFiles [] = return ()
 updateFileStat mC mM curFiles curMod =
@@ -27,21 +30,20 @@ updateFileStat mC mM curFiles curMod =
   swapMVar mM curMod >>
   return()
 
-
+-- | initialize the mvar and launch forks
 initialize :: FileListenInfo -> IO (CurrentFiles, ModifiedFiles)
 initialize fli =
   newMVar [] >>= \mC ->
   newMVar [] >>= \mM ->
   newEmptyMVar >>= \mJ ->
-  (forever $ listen mC mM mJ) >>= \act ->
-  forkIO act >>
-  (forkIO $ schedule fli mJ) >>
+  (forkIO $ forever $ listen mC mM mJ) >>
+  (forkIO $ forever $ schedule defaultDelay fli mJ) >>
   return (mC,mM)
 
-schedule :: FileListenInfo -> Job -> IO()
-schedule fileListenInfo mJ =
+-- | manage the job box. Fill it with a job every delay
+schedule :: Int -> FileListenInfo -> Job -> IO()
+schedule delay fileListenInfo mJ =
   putMVar mJ fileListenInfo >>
   threadDelay delay >>
-  schedule fileListenInfo mJ >>
   return ()
 

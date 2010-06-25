@@ -16,6 +16,6 @@ data FileListenInfo = FileListenInfo{
   dir :: FilePath     -- location of the listened directory
   ,ignore :: [String] -- ignore patterns
   }
-  deriving (Show)
+  deriving (Show,Eq)
 
 

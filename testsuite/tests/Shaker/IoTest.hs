@@ -35,7 +35,7 @@ prop_listFilesWithIgnore fli = testListFiles fli{ignore= ["\\.$"]} (\a b-> lengt
 testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
 testModifiedFiles fli proc pred= monadicIO test
   where test = run (getCurrentFpCl fli) >>= \curList ->    
-               run (listModifiedAndCreatedFiles fli (proc curList)) >>= \newList ->
+               run (listModifiedAndCreatedFiles fli (proc curList)) >>= \(_,newList) ->
                assert $ pred curList newList 
 
 prop_listModifiedFiles fli = 
