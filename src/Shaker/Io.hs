@@ -8,7 +8,7 @@ import Data.List
 import Shaker.Regex
 import Shaker.Type
 
-
+-- |Get the tuples of (newFiles,modifiedFiles) from given directory
 listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
 listModifiedAndCreatedFiles fileListen oldFileInfo = 
   getCurrentFpCl fileListen >>= \curFileInfo ->
