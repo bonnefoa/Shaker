@@ -9,6 +9,7 @@ import Shaker.Properties
 import Test.QuickCheck 
 import Test.QuickCheck.Monadic 
 import Shaker.Type
+import Shaker.Io
 
 prop_updateFileStat curF curM = not (null curM) ==>
   monadicIO (test curF curM)
@@ -28,9 +29,12 @@ prop_schedule fli = monadicIO $ test fli
 
 prop_listen fli = monadicIO $ test fli
  where test fli = 
+        run (getCurrentFpCl fli) >>= \exp ->
 	run (newMVar []) >>= \mC ->
 	run (newMVar []) >>= \mM ->
 	run (newMVar fli) >>= \mJ ->
 	run (listen mC mM mJ) >>
-	run (tryTakeMVar mC) >>= \res ->
-	assert $ True
+	run (tryTakeMVar mC) >>= \(Just res) ->
+	assert $ exp == res
+
+

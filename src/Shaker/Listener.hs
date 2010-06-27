@@ -18,8 +18,8 @@ listen :: CurrentFiles -> ModifiedFiles -> Job -> IO ()
 listen mC mM mJ = takeMVar mJ  >>= \job ->
   readMVar mC >>= \curFiles ->
   readMVar mM >>= \curMod ->
-  listModifiedAndCreatedFiles job curFiles >>= newFiles ->
-  updateFileStat mC mM curFiles newFiles >>
+  listModifiedAndCreatedFiles job curFiles >>= \(newFiles,modFiles) ->
+  updateFileStat mC mM newFiles modFiles >>
   return ()
 
 -- | Update the files status
