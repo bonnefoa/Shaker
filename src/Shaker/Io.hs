@@ -23,10 +23,10 @@ getCurrentFpCl fileListen = listFiles fileListen >>= \lstFp ->
 -- |List files in the given directory 
 -- Files matching one regexp in the ignore argument are excluded
 listFiles :: FileListenInfo -> IO[FilePath]
-listFiles (FileListenInfo dir ignore) = 
+listFiles (FileListenInfo dir ignore include) = 
     canonicalizePath dir >>= \curDir ->
     getDirectoryContents curDir >>= \res ->
-    return $ filterListWithRegexp (convertToFullPath curDir res) ignore
+    return $ excludeListWithRegexp (convertToFullPath curDir res) ignore
 
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir lstFp = map (\a-> concat [absDir, "/",a]) lstFp

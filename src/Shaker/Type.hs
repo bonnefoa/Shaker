@@ -15,6 +15,7 @@ hasSameFilePath (FileInfo fp1 _) (FileInfo fp2 _) = fp1 == fp2
 data FileListenInfo = FileListenInfo{
   dir :: FilePath     -- location of the listened directory
   ,ignore :: [String] -- ignore patterns
+  ,include :: [String] -- include patterns
   }
   deriving (Show,Eq)
 
