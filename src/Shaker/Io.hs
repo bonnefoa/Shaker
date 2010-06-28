@@ -23,11 +23,22 @@ getCurrentFpCl fileListen = listFiles fileListen >>= \lstFp ->
 -- |List files in the given directory 
 -- Files matching one regexp in the ignore argument are excluded
 listFiles :: FileListenInfo -> IO[FilePath]
-listFiles (FileListenInfo dir ignore include) = 
+listFiles fli@(FileListenInfo dir ignore include) = 
     canonicalizePath dir >>= \curDir ->
     getDirectoryContents curDir >>= \res ->
-    return $ processListWithRegexp (convertToFullPath curDir res) ignore include
+    return $ filteredList curDir res
+    where filteredList curDir res = processListWithRegexp (convertToFullPath curDir res) ignore include
+
+recurseListFiles :: FileListenInfo -> IO [FilePath]
+recurseListFiles fli@(FileListenInfo dir ignore include) = 
+  canonicalizePath dir >>= \curDir ->
+  getDirectoryContents curDir >>= \content -> 
+  filterM (doesDirectoryExist) (convertToFullPath curDir (removeDotDirectory content) ) >>= \directories ->
+  mapM (\a -> recurseListFiles fli{dir=a}) directories >>= \sub ->  
+  listFiles fli >>= \curListFiles ->
+  return $ curListFiles ++ (concat $ sub)
 
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir lstFp = map (\a-> concat [absDir, "/",a]) lstFp
 
+removeDotDirectory = filter (\a -> not $ isSuffixOf "." a )

@@ -10,6 +10,7 @@ import Data.List
 import Test.QuickCheck 
 import Test.QuickCheck.Monadic 
 import Shaker.Properties
+import Test.HUnit hiding (assert)
 
 aTimeDiff :: TimeDiff
 aTimeDiff = TimeDiff { tdYear = 0, tdMonth = 0, tdDay = 0, tdHour =0, tdMin=0, tdSec = -1, tdPicosec =0 }
@@ -50,3 +51,14 @@ prop_listCreatedFiles fli =
 prop_listModifiedAndCreatedFiles fli = 
   testModifiedFiles fli ((map modifyFileInfoClock) . init) (\a b -> length a == length b)
 
+
+test_recurseListFiles = TestCase $ 
+  recurseListFiles (FileListenInfo "." ["\\.$"] []) >>= \res ->
+  assertBool ("Should contains IoTest.hs file "++show res) $
+    any ("IoTest.hs" `isSuffixOf`) res
+  
+test_listFiles = TestCase $ 
+  listFiles (FileListenInfo "." [] []) >>= \res ->
+  assertBool ("Should contains src dir"++show res) $
+    any ("src" `isSuffixOf`) res
+  
