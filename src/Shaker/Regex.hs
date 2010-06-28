@@ -6,6 +6,7 @@ import Data.List
 
 processListWithRegexp :: [String] -> [String] -> [String] -> [String]
 processListWithRegexp list [] [] = list
+processListWithRegexp list [] include = nub $ getIncluded list include
 processListWithRegexp list ignore include = 
   nub $ (getExcluded list ignore) ++ (getIncluded list include)
 

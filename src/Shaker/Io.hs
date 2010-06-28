@@ -26,7 +26,7 @@ listFiles :: FileListenInfo -> IO[FilePath]
 listFiles (FileListenInfo dir ignore include) = 
     canonicalizePath dir >>= \curDir ->
     getDirectoryContents curDir >>= \res ->
-    return $ excludeListWithRegexp (convertToFullPath curDir res) ignore
+    return $ processListWithRegexp (convertToFullPath curDir res) ignore include
 
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir lstFp = map (\a-> concat [absDir, "/",a]) lstFp

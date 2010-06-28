@@ -27,10 +27,13 @@ prop_listFiles :: FileListenInfo -> Property
 prop_listFiles fli = testListFiles fli{ignore=[]} (\a b -> length b>2)
 
 prop_listFilesWithIgnoreAll :: FileListenInfo -> Property
-prop_listFilesWithIgnoreAll fli = testListFiles fli{ignore= [".*"]} (\a b -> b==[])
+prop_listFilesWithIgnoreAll fli = testListFiles fli{ignore= [".*"], include=[]} (\a b -> b==[])
 
 prop_listFilesWithIgnore :: FileListenInfo -> Property
-prop_listFilesWithIgnore fli = testListFiles fli{ignore= ["\\.$"]} (\a b-> length a == length b + 2)
+prop_listFilesWithIgnore fli = testListFiles fli{ignore= ["\\.$"], include=[]} (\a b-> length a == length b + 2)
+
+prop_listFilesWithIncludeAll :: FileListenInfo -> Property
+prop_listFilesWithIncludeAll fli = testListFiles fli{include=[".*"]} (\a b->length a== length b)
 
 testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
 testModifiedFiles fli proc pred= monadicIO test
