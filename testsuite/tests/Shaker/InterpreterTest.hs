@@ -1,4 +1,4 @@
-module Shaker.ParseTest
+module Shaker.InterpreterTest
  where
 
 import Shaker.Parse

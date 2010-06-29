@@ -26,12 +26,11 @@ instance Arbitrary FileListenInfo where
    arbitrary = FileListenInfo `liftM` elements [".",".."]
 			      `ap` listOf (elements ["\\.$","ab"])
 			      `ap` elements [[],[".*"]]
-                              
-
 
 instance Arbitrary FileInfo where
    arbitrary = arbitrary >>= \cl ->
                elements [".",".."] >>= \ele ->
                return $ (FileInfo ele cl)
 
-
+instance Arbitrary Action where
+  arbitrary = elements [Load,Compile,QuickCheck]

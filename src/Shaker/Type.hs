@@ -4,6 +4,13 @@ module Shaker.Type
 import System.Directory
 import System.Time
 
+data Duration = OneShot | Continuous
+  deriving (Show,Eq)
+data Action = Load | Compile | QuickCheck
+  deriving (Show,Eq)
+data Command = Command Duration Action
+  deriving (Show,Eq)
+
 -- |Agregate a FilePath with its modification time
 data FileInfo = FileInfo FilePath ClockTime 
   deriving (Show,Eq)

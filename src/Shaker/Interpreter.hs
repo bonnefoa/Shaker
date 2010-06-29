@@ -1,4 +1,4 @@
-module Shaker.Parse 
+module Shaker.Interpreter
  where
 
 import Language.Haskell.Interpreter
