@@ -12,8 +12,7 @@ loadFiles :: [FilePath] -> Interpreter()
 loadFiles files = 
   set [searchPath := ["./src/","./testsuite/tests"] ] >>
   loadModules files >>
-  getLoadedModules  >>= \exp ->
-  liftIO $ putStrLn (show exp) 
+  getLoadedModules >>= liftIO . putStrLn . show
 
 --compileFiles :: [FilePath] -> Interpreter() 
 compileFiles = runInterpreter . loadFiles

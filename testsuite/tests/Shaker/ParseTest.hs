@@ -8,7 +8,9 @@ import Shaker.Type
 import Control.Monad.Trans
 
 test_compileFiles = TestCase $
-  listFiles (FileListenInfo "." [] [".*\\.hs"]) >>= \files ->
-  runLoadFiles files >>
-  assertBool "ga" True
+  recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \files ->
+  runLoadFiles files >>= \res ->
+  case res of 
+      Left mes -> assertFailure (show mes) 
+      _ -> assertBool "" True
 
