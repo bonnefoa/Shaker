@@ -29,3 +29,6 @@ tm.out
 .idea
 .scala_dependencies
 *.swp
+*.o
+*.hi
+target
