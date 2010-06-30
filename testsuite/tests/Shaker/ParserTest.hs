@@ -16,15 +16,17 @@ prop_parseTypeOneShot cont = checkRes res (== OneShot)
 prop_parseTypeContinuous num= num <1000 ==> checkRes res (== Continuous)
   where res = parse typeDuration "test" ((replicate num ' ')++"~" )
 
---prop_parseAction :: Action -> Property
+prop_parseDefaultAction act = res == Command OneShot Help  
+  where res = parseCommand (act ++"x")
+
 prop_parseAction act = checkRes res (==act)  
   where res = parse typeAction "test" (show act)
 
 prop_parseOneShotCommand act = checkRes res (== Command OneShot act)
-  where res = parse commandParse "test" (show act)
+  where res = parse typeCommand "test" (show act)
 
 prop_parseContinuousCommand act = checkRes res (== Command Continuous act)
-  where res = parse commandParse "test" ("~"++show act)
+  where res = parse typeCommand "test" ("~"++show act)
 
 checkRes (Left _) _ = False
 checkRes (Right val) pred = pred val

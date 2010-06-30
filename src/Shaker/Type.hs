@@ -6,7 +6,7 @@ import System.Time
 
 data Duration = OneShot | Continuous
   deriving (Show,Eq)
-data Action = Load | Compile | QuickCheck
+data Action = Load | Compile | QuickCheck |Help
   deriving (Show,Eq)
 data Command = Command Duration Action
   deriving (Show,Eq)
