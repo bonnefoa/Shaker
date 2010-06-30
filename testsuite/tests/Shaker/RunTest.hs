@@ -2,7 +2,7 @@ module Shaker.RunTest
  where
 
 import Shaker.ListenerTest
-import Shaker.ParseTest
+import Shaker.ParserTest
 import Shaker.RegexTest
 import Shaker.IoTest
 import Test.QuickCheck

@@ -1,7 +1,8 @@
 module Shaker.LoadActionTest
  where
 
-import Shaker.Parse
+import Shaker.LoadAction
+import Shaker.Parser
 import Shaker.Io 
 import Test.HUnit 
 import Shaker.Type

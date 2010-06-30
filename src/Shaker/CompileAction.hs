@@ -3,26 +3,26 @@ module Shaker.CompileAction
 
 import GHC
 import Outputable
-import DynFlags ( defaultDynFlags )
+import DynFlags 
 import GHC.Paths
+import Shaker.Io
 
-runCompile targetFile = defaultErrorHandler defaultDynFlags $ do
+runCompileProject = listProjectFiles >>= runCompile 
+
+runCompile :: [String] -> IO [String]
+runCompile targetFiles = defaultErrorHandler defaultDynFlags $ do
 	runGhc (Just libdir) $ do
 	dflags <- getSessionDynFlags
-	setSessionDynFlags dflags {importPaths = ["src/","testsuite/tests/"], verbosity = 2, objectDir = Just "target" }
-	target <- guessTarget targetFile Nothing
-	setTargets [target]
+	setSessionDynFlags dflags {
+          importPaths = ["src/","testsuite/tests/"], 
+          verbosity = 2, 
+          objectDir = Just "target",
+          packageFlags = [ExposePackage "ghc"]
+        }
+	target <- mapM (\a -> guessTarget a Nothing) targetFiles
+	setTargets target
 	load LoadAllTargets
-{-
-	modSum <- getModSummary $ mkModuleName "B"
-	p <- parseModule modSum
-	t <- typecheckModule p
-	d <- desugarModule t
-	l <- loadModule d
-	n <- getNamesInScope
-	c <- return $ coreModule d
 	g <- getModuleGraph
 	mapM showModule g     
--}
---	return $ (parsedSource d,"/n-/n",  typecheckedSource d)
+
 
