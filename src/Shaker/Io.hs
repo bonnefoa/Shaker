@@ -8,6 +8,10 @@ import Data.List
 import Shaker.Regex
 import Shaker.Type
 
+-- |Recursivly list all hs files
+listProjectFiles :: IO([FilePath])
+listProjectFiles = listFiles $ FileListenInfo "." [] [".*\\.hs$"]
+
 -- |Get the tuples of (newFiles,modifiedFiles) from given directory
 listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
 listModifiedAndCreatedFiles fileListen oldFileInfo = 

@@ -62,3 +62,8 @@ test_listFiles = TestCase $
   assertBool ("Should contains src dir"++show res) $
     any ("src" `isSuffixOf`) res
   
+test_listHsFiles = TestCase $
+  listProjectFiles >>= \res ->
+  assertBool ("Should only contains hs files " ++ show res) $
+    all (".hs" `isSuffixOf`) res
+
