@@ -4,8 +4,7 @@ module Shaker.CompileAction
 import GHC
 import Outputable
 import DynFlags ( defaultDynFlags )
-
-libdir = "D:/dev/Haskell/2010.1.0.0/lib"
+import GHC.Paths
 
 runCompile targetFile = defaultErrorHandler defaultDynFlags $ do
 	runGhc (Just libdir) $ do
