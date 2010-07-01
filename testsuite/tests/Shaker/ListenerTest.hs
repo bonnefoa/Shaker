@@ -10,7 +10,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Monadic 
 import Shaker.Type
 import Shaker.Io
-
+    
 prop_updateFileStat curF curM = not (null curM) ==>
   monadicIO (test curF curM)
   where test curF curM = 

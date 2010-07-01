@@ -20,7 +20,7 @@ listModifiedAndCreatedFiles fileListen oldFileInfo =
 
 -- |Get the list of FileInfo of the given directory
 getCurrentFpCl :: FileListenInfo -> IO [FileInfo]
-getCurrentFpCl fileListen = listFiles fileListen >>= \lstFp ->
+getCurrentFpCl fileListen = recurseListFiles fileListen >>= \lstFp ->
       mapM getModificationTime lstFp >>= \lstCl ->
             zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
@@ -45,4 +45,4 @@ recurseListFiles fli@(FileListenInfo dir ignore include) =
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir lstFp = map (\a-> concat [absDir, "/",a]) lstFp
 
-removeDotDirectory = filter (\a -> not $ isSuffixOf "." a )
+removeDotDirectory = filter (\a -> not $ isSuffixOf "." a ) 

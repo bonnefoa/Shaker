@@ -9,6 +9,8 @@ import Shaker.HelpAction
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.MVar
+import Shaker.Listener
+
 
 initThread = 
   newEmptyMVar >>= \mv ->
@@ -31,8 +33,9 @@ getInput mv token =
  tryPutMVar mv (parseCommand input) >>
  return ()
 
-executeCommand (Command _ Compile) = runCompileProject >>= \res ->
-  putStrLn $ "project compiled with modules " ++ show res 
-executeCommand (Command _ Quit) = putStrLn "Exiting"
-executeCommand _ = runHelp
+executeCommand (Command OneShot act) = executeAction act
+executeCommand (Command Continuous act) = executeAction act
 
+executeAction Compile = runCompileProject >> return()
+executeAction Quit = putStrLn "Exiting"
+executeAction _ = runHelp

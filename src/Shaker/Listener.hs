@@ -13,11 +13,15 @@ type Job = MVar FileListenInfo
 
 defaultDelay = 5*10^6
 
+listenProjectFiles :: IO(CurrentFiles, ModifiedFiles) 
+listenProjectFiles = initialize $ FileListenInfo "." [] [".*\\.hs$"]
+
 -- | listen to the job box and process the job
 listen :: CurrentFiles -> ModifiedFiles -> Job -> IO ()
 listen mC mM mJ = takeMVar mJ  >>= \job ->
   readMVar mC >>= \curFiles ->
   readMVar mM >>= \curMod ->
+  putStrLn "ga" >>
   listModifiedAndCreatedFiles job curFiles >>= \(newFiles,modFiles) ->
   updateFileStat mC mM newFiles modFiles >>
   return ()
@@ -26,9 +30,10 @@ listen mC mM mJ = takeMVar mJ  >>= \job ->
 updateFileStat :: CurrentFiles -> ModifiedFiles -> [FileInfo] -> [FileInfo] -> IO ()
 updateFileStat mC mM curFiles [] = return ()
 updateFileStat mC mM curFiles curMod =
+  putStrLn ("Modified ::"++ (show curMod) )>>
   swapMVar mC curFiles >>
   swapMVar mM curMod >>
-  return()
+  return()  
 
 -- | initialize the mvar and launch forks
 initialize :: FileListenInfo -> IO (CurrentFiles, ModifiedFiles)
@@ -44,6 +49,7 @@ initialize fli =
 schedule :: Int -> FileListenInfo -> Job -> IO()
 schedule delay fileListenInfo mJ =
   putMVar mJ fileListenInfo >>
+  putStrLn "uguu" >>
   threadDelay delay >>
   return ()
-
+     
