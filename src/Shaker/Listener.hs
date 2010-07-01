@@ -7,13 +7,10 @@ import Control.Concurrent
 import Shaker.Type
 import Shaker.Io
 
-type CurrentFiles = MVar [FileInfo]
-type ModifiedFiles = MVar [FileInfo]
-type Job = MVar FileListenInfo
 
 defaultDelay = 5*10^6
 
-listenProjectFiles :: IO(CurrentFiles, ModifiedFiles) 
+listenProjectFiles :: IO(ListenState) 
 listenProjectFiles = initialize $ FileListenInfo "." [] [".*\\.hs$"]
 
 -- | listen to the job box and process the job
@@ -36,14 +33,14 @@ updateFileStat mC mM curFiles curMod =
   return()  
 
 -- | initialize the mvar and launch forks
-initialize :: FileListenInfo -> IO (CurrentFiles, ModifiedFiles)
+initialize :: FileListenInfo -> IO (ListenState)
 initialize fli =
   newMVar [] >>= \mC ->
   newMVar [] >>= \mM ->
   newEmptyMVar >>= \mJ ->
-  (forkIO $ forever $ listen mC mM mJ) >>
-  (forkIO $ forever $ schedule defaultDelay fli mJ) >>
-  return (mC,mM)
+  (forkIO $ forever $ listen mC mM mJ) >>= \idLst ->
+  (forkIO $ forever $ schedule defaultDelay fli mJ) >>= \idSch ->
+  return $ ListenState mC mM idLst idSch
 
 -- | manage the job box. Fill it with a job every delay
 schedule :: Int -> FileListenInfo -> Job -> IO()
