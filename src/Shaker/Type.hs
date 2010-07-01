@@ -32,17 +32,23 @@ data FileListenInfo = FileListenInfo{
   }
   deriving (Show,Eq)
 
+type Input = MVar Command
+type Token = MVar Int
 data ListenState = ListenState CurrentFiles ModifiedFiles ThreadId ThreadId
 
-type Input = MVar String
-type Token = MVar Int
-data InputState = InputState Input Token ThreadId 
-
 data ShakerState = ShakerState {
-  listenState :: ListenState -- ^ Listen state information (var and thread ids) 
-  ,inputState :: InputState -- ^ Input information 
+  currentFiles :: CurrentFiles,
+  modifiedFiles :: ModifiedFiles,
+  threadListen :: ThreadId,
+  threadSchedule :: ThreadId
+}
+
+data InputState = InputState {  
+  input :: Input,
+  token :: Token,
+  threadCli :: ThreadId
 }
 
 -- | The shaker monad 
-type Shaker = StateT ShakerState IO
+type InputShaker = StateT InputState 
 

@@ -10,27 +10,38 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.MVar
 import Shaker.Listener
+import Control.Monad.State
 
 
 initThread = 
-  newEmptyMVar >>= \mv ->
-  newEmptyMVar >>= \token ->
-  (forkIO $ forever (getInput mv token) )  >>= \procId -> 
-  mainThread mv procId token
+  newEmptyMVar >>= \inputMv ->
+  newEmptyMVar >>= \tokenMv ->
+  (forkIO $ forever (getInput inputMv tokenMv) )  >>= \procId -> 
+  mainThread InputState { 
+      input = inputMv,
+      token =  tokenMv,
+      threadCli = procId
+  } >>= \inputState ->
+  killThreads inputState
 
-mainThread mv procId token = 
-  tryPutMVar token "42">>
-  takeMVar mv >>= \cmd -> 
+-- mainThread :: InputShaker IO()
+mainThread st@(InputState input token threadCli) = 
+  tryPutMVar token 42 >>
+  takeMVar input >>= \cmd -> 
   executeCommand cmd >>
-  case cmd of 
-       (Command _ Quit) ->  killThread procId
-       _ -> mainThread mv procId token
+  case cmd of
+       Command _ Quit -> return st
+       _ ->  mainThread st
 
-getInput mv token = 
+-- killThreads:: InputShaker IO()
+killThreads (InputState _ _ threadCli)= 
+  killThread threadCli   
+
+getInput inputMv token = 
  takeMVar token >>
  putStr ">" >>
  getLine >>= \input ->
- tryPutMVar mv (parseCommand input) >>
+ tryPutMVar inputMv (parseCommand input) >>
  return ()
 
 executeCommand (Command OneShot act) = executeAction act
@@ -39,3 +50,4 @@ executeCommand (Command Continuous act) = executeAction act
 executeAction Compile = runCompileProject >> return()
 executeAction Quit = putStrLn "Exiting"
 executeAction _ = runHelp
+
