@@ -12,19 +12,20 @@ import Control.Concurrent.MVar
 
 initThread = 
   newEmptyMVar >>= \mv ->
-  forever (forkIO (getInput mv ) )  >> 
-  mainThread mv
+  newEmptyMVar >>= \token ->
+  (forkIO $ forever (getInput mv token) )  >>= \procId -> 
+  mainThread mv procId token
 
-mainThread mv = 
+mainThread mv procId token = 
+  tryPutMVar token "42">>
   takeMVar mv >>= \cmd -> 
   executeCommand cmd >>
   case cmd of 
-       (Command _ Quit) -> return "Exiting"
-       _ -> mainThread mv
+       (Command _ Quit) ->  killThread procId
+       _ -> mainThread mv procId token
 
-
-getInput :: MVar Command -> IO()
-getInput mv = 
+getInput mv token = 
+ takeMVar token >>
  putStr ">" >>
  getLine >>= \input ->
  tryPutMVar mv (parseCommand input) >>
@@ -32,5 +33,6 @@ getInput mv =
 
 executeCommand (Command _ Compile) = runCompileProject >>= \res ->
   putStrLn $ "project compiled with modules " ++ show res 
+executeCommand (Command _ Quit) = putStrLn "Exiting"
 executeCommand _ = runHelp
 

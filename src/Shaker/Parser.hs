@@ -16,7 +16,7 @@ typeCommand = typeDuration >>= \dur ->
 
 typeAction :: GenParser Char st Action
 typeAction =  skipMany (char ' ') >>
-  choice [loadParser,compileParser, quickCheckParser]
+  choice [loadParser,compileParser,quitParser, quickCheckParser, helpParser]
 
 typeDuration :: GenParser Char st Duration
 typeDuration = skipMany (char ' ') >>
@@ -24,6 +24,8 @@ typeDuration = skipMany (char ' ') >>
 
 loadParser = string "Load" >> return Load
 compileParser = string "Compile" >> return Compile
-quickCheckParser = string "QuickCheck" >> return QuickCheck
+quickCheckParser = try ( string "QuickCheck") >> return QuickCheck
+helpParser = string "Help" >> return Help
+quitParser = try (string "Quit") >> return Quit
 
 

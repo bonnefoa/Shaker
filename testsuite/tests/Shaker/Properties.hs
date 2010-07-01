@@ -33,4 +33,4 @@ instance Arbitrary FileInfo where
                return $ (FileInfo ele cl)
 
 instance Arbitrary Action where
-  arbitrary = elements [Load,Compile,QuickCheck]
+  arbitrary = elements [Load,Compile,QuickCheck,Quit,Help]
