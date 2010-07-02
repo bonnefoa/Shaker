@@ -12,61 +12,51 @@ import Control.Concurrent.MVar
 import Shaker.Listener
 import Control.Monad.State
 
-initThread = 
-  newEmptyMVar >>= \inputMv ->
-  newEmptyMVar >>= \tokenMv ->
-  (forkIO $ forever (getInput inputMv tokenMv) )  >>= \procId -> 
+initThread = do
+  inputMv <-  newEmptyMVar 
+  tokenMv <-  newEmptyMVar 
+  procId <- (forkIO $ forever (getInput inputMv tokenMv) )  
   mainThread InputState { 
       input = inputMv,
-      token =  tokenMv,
-      threadCli = procId
-  } >>= \inputState ->
-  killThreads inputState
+      token =  tokenMv
+  }
+  killThread procId
 
 -- mainThread :: InputShaker IO()
-mainThread st@(InputState input token threadCli) = 
-  tryPutMVar token 42 >>
-  takeMVar input >>= \cmd -> 
-  executeCommand cmd >>
+mainThread st@(InputState input token ) = do
+  tryPutMVar token 42
+  cmd <- takeMVar input
+  executeCommand cmd
   case cmd of
-       Command _ Quit -> return st
+       Command _ Quit -> return ()
        _ ->  mainThread st
 
--- killThreads:: InputShaker IO()
-killThreads (InputState _ _ threadCli)= 
-  killThread threadCli   
+leon :: [ThreadId] -> IO()
+leon = mapM_ killThread
 
-killListenThread (ListenState _ _ threadListen threadSchedule)= 
-  killThread threadListen >>
-  killThread threadSchedule
-
--- listenManager :: ([FileInfo]-> IO()) -> IO() 
-listenManager fun = newEmptyMVar >>= \endToken ->
-  forkIO ( charListen endToken) >>
-  listenProjectFiles >>= \listenState ->
-  forkIO (forever (threadExecutor listenState fun)) >>= \procId ->
-  readMVar endToken >>
-  killListenThread listenState >>
-  killThread procId
+listenManager fun = do
+  endToken <- newEmptyMVar 
+  procCharListener <- forkIO ( charListen endToken) 
+  listenState <- listenProjectFiles 
+  procId <- forkIO (forever (threadExecutor listenState fun)) 
+  readMVar endToken 
+  leon $  [procId,procCharListener] ++ getListenThreads listenState
   
---threadExecutor :: ListenState -> (->IO()) -> IO ()
-threadExecutor (ListenState _ modF _ _) fun = 
-  takeMVar modF >>= \files ->
-  fun 
+threadExecutor (ListenState _ modF  _) fun = 
+  takeMVar modF >> fun 
   
-
 charListen endToken = getChar >>= putMVar endToken
 
 -- ^ Listen to keyboard input and parse command
-getInput inputMv token = 
- takeMVar token >>
- putStr ">" >>
- getLine >>= \input ->
- tryPutMVar inputMv (parseCommand input) >>
+getInput inputMv token = do
+ takeMVar token 
+ putStr ">" 
+ inputt <- getLine
+ tryPutMVar inputMv (parseCommand input)
  return ()
 
 executeCommand (Command OneShot act) = executeAction act
-executeCommand (Command Continuous act) = executeAction act
+executeCommand (Command Continuous act) = listenManager $ executeAction act
 
 executeAction Compile = runCompileProject >> return()
 executeAction Quit = putStrLn "Exiting"

@@ -17,6 +17,7 @@ runCompile targetFiles = defaultErrorHandler defaultDynFlags $ do
           importPaths = ["src/","testsuite/tests/"], 
           verbosity = 1, 
           objectDir = Just "target",
+          hiDir = Just "target",
           packageFlags = [ExposePackage "ghc"]
         }
 	target <- mapM (\a -> guessTarget a Nothing) targetFiles

@@ -39,17 +39,15 @@ type Token = MVar Int
 data ListenState = ListenState {
   currentFiles :: CurrentFiles,
   modifiedFiles :: ModifiedFiles,
-  threadListen :: ThreadId,
-  threadSchedule :: ThreadId
+  threadIds :: [ThreadId]
 }
+
+getListenThreads (ListenState _ _ threads) = threads
 
 data InputState = InputState {  
   input :: Input,
-  token :: Token,
-  threadCli :: ThreadId
+  token :: Token
 }
 
--- | The shaker monad 
-type InputShaker = StateT InputState 
 
-  
+   

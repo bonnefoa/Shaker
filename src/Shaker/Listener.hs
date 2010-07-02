@@ -40,7 +40,7 @@ initialize fli =
   newEmptyMVar >>= \mJ ->
   (forkIO $ forever $ listen mC mM mJ) >>= \idLst ->
   (forkIO $ forever $ schedule defaultDelay fli mJ) >>= \idSch ->
-  return $ ListenState mC mM idLst idSch
+  return $ ListenState mC mM [idLst,idSch]
 
 -- | manage the job box. Fill it with a job every delay
 schedule :: Int -> FileListenInfo -> Job -> IO()
