@@ -34,9 +34,7 @@ data FileListenInfo = FileListenInfo{
 
 type Input = MVar Command
 type Token = MVar Int
-data ListenState = ListenState CurrentFiles ModifiedFiles ThreadId ThreadId
-
-data ShakerState = ShakerState {
+data ListenState = ListenState {
   currentFiles :: CurrentFiles,
   modifiedFiles :: ModifiedFiles,
   threadListen :: ThreadId,
@@ -51,4 +49,3 @@ data InputState = InputState {
 
 -- | The shaker monad 
 type InputShaker = StateT InputState 
-

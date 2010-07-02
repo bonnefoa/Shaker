@@ -12,7 +12,6 @@ import Control.Concurrent.MVar
 import Shaker.Listener
 import Control.Monad.State
 
-
 initThread = 
   newEmptyMVar >>= \inputMv ->
   newEmptyMVar >>= \tokenMv ->
@@ -37,6 +36,20 @@ mainThread st@(InputState input token threadCli) =
 killThreads (InputState _ _ threadCli)= 
   killThread threadCli   
 
+killListenThread (ListenState _ _ threadListen threadSchedule)= 
+  killThread threadListen >>
+  killThread threadSchedule
+
+-- listenManager :: (-> IO(ListenState) ->  
+listenManager fun = newEmptyMVar >>= \endToken ->
+  forkIO ( charListen endToken) >>
+  listenProjectFiles >>= \listenState ->
+  readMVar endToken >>
+  killListenThread listenState
+  
+charListen endToken = getChar >>= putMVar endToken
+
+-- ^ Listen to keyboard input and parse command
 getInput inputMv token = 
  takeMVar token >>
  putStr ">" >>
