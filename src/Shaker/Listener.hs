@@ -18,7 +18,7 @@ listenProjectFiles = initialize $ FileListenInfo "." [] [".*\\.hs$"]
 listen :: CurrentFiles -> ModifiedFiles -> Job -> IO ()
 listen mC mM mJ = takeMVar mJ  >>= \job ->
   readMVar mC >>= \curFiles ->
-  readMVar mM >>= \curMod ->
+--  readMVar mM >>= \curMod ->
   listModifiedAndCreatedFiles job curFiles >>= \(newFiles,modFiles) ->
   updateFileStat mC mM newFiles modFiles >>
   return ()
@@ -29,7 +29,7 @@ updateFileStat mC mM curFiles [] = return ()
 updateFileStat mC mM curFiles curMod =
   putStrLn ("Modified files ::"++ (show curMod) )>>
   swapMVar mC curFiles >>
-  swapMVar mM curMod >>
+  putMVar mM curMod >>
   return()  
 
 -- | initialize the mvar and launch forks

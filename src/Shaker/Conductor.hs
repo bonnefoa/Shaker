@@ -40,13 +40,21 @@ killListenThread (ListenState _ _ threadListen threadSchedule)=
   killThread threadListen >>
   killThread threadSchedule
 
--- listenManager :: (-> IO(ListenState) ->  
+-- listenManager :: ([FileInfo]-> IO()) -> IO() 
 listenManager fun = newEmptyMVar >>= \endToken ->
   forkIO ( charListen endToken) >>
   listenProjectFiles >>= \listenState ->
+  forkIO (forever (threadExecutor listenState fun)) >>= \procId ->
   readMVar endToken >>
-  killListenThread listenState
+  killListenThread listenState >>
+  killThread procId
   
+--threadExecutor :: ListenState -> (->IO()) -> IO ()
+threadExecutor (ListenState _ modF _ _) fun = 
+  takeMVar modF >>= \files ->
+  fun 
+  
+
 charListen endToken = getChar >>= putMVar endToken
 
 -- ^ Listen to keyboard input and parse command
@@ -63,4 +71,4 @@ executeCommand (Command Continuous act) = executeAction act
 executeAction Compile = runCompileProject >> return()
 executeAction Quit = putStrLn "Exiting"
 executeAction _ = runHelp
-
+   

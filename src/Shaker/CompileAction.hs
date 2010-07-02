@@ -15,7 +15,7 @@ runCompile targetFiles = defaultErrorHandler defaultDynFlags $ do
 	dflags <- getSessionDynFlags
 	setSessionDynFlags dflags {
           importPaths = ["src/","testsuite/tests/"], 
-          verbosity = 2, 
+          verbosity = 1, 
           objectDir = Just "target",
           packageFlags = [ExposePackage "ghc"]
         }

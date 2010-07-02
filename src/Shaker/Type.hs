@@ -21,6 +21,8 @@ type Job = MVar FileListenInfo
 data FileInfo = FileInfo FilePath ClockTime 
   deriving (Show,Eq)
 
+getFilePath (FileInfo fp _) = fp
+
 hasSameFilePath :: FileInfo -> FileInfo -> Bool
 hasSameFilePath (FileInfo fp1 _) (FileInfo fp2 _) = fp1 == fp2
 
@@ -49,3 +51,5 @@ data InputState = InputState {
 
 -- | The shaker monad 
 type InputShaker = StateT InputState 
+
+  
