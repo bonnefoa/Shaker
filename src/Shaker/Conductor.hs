@@ -43,7 +43,7 @@ listenManager fun = do
   leon $  [procId,procCharListener] ++ getListenThreads listenState
   
 threadExecutor (ListenState _ modF  _) fun = 
-  takeMVar modF >> fun 
+  takeMVar modF >> forkIO fun 
   
 charListen endToken = getChar >>= putMVar endToken
 
@@ -51,9 +51,9 @@ charListen endToken = getChar >>= putMVar endToken
 getInput inputMv token = do
  takeMVar token 
  putStr ">" 
- inputt <- getLine
+ input <- getLine
  tryPutMVar inputMv (parseCommand input)
- return ()
+ return () 
 
 executeCommand (Command OneShot act) = executeAction act
 executeCommand (Command Continuous act) = listenManager $ executeAction act

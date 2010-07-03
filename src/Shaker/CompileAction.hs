@@ -2,6 +2,10 @@ module Shaker.CompileAction
  where
 
 import GHC
+import Control.Exception
+import System
+import Exception
+import Control.Monad.Trans
 import Outputable
 import DynFlags 
 import GHC.Paths
@@ -25,5 +29,4 @@ runCompile targetFiles = defaultErrorHandler defaultDynFlags $ do
 	load LoadAllTargets
 	g <- getModuleGraph
 	mapM showModule g     
-
 
