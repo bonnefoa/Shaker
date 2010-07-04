@@ -13,11 +13,11 @@ import Shaker.Io
     
 prop_updateFileStat curF curM = not (null curM) ==>
   monadicIO (test curF curM)
-  where test curF curM = 
-          run (newMVar []) >>= \mC ->    
-          run (newMVar []) >>= \mM ->    
-          run (updateFileStat mC mM curF curM) >>
-          run (readMVar mC) >>= \mCurF ->
+  where test curF curM = do
+          mC <- run $ newMVar []
+          mM <- run $ newEmptyMVar 
+          run (updateFileStat mC mM curF curM) 
+          mCurF <- run $ readMVar mC
           assert $  curF == mCurF
 
 prop_schedule :: FileListenInfo -> Property
@@ -29,13 +29,13 @@ prop_schedule fli = monadicIO $ test fli
 		   assert $ res == (Just fli)
 
 prop_listen fli = monadicIO $ test fli
- where test fli = 
-        run (getCurrentFpCl fli) >>= \exp ->
-	run (newMVar []) >>= \mC ->
-	run (newMVar []) >>= \mM ->
-	run (newMVar fli) >>= \mJ ->
-	run (listen mC mM mJ) >>
-	run (tryTakeMVar mC) >>= \(Just res) ->
+ where test fli = do
+        exp <- run $ getCurrentFpCl fli
+	mC <- run $ newMVar []
+	mM <- run $ newEmptyMVar 
+	mJ <- run $ newMVar fli
+	run $ listen mC mM mJ
+	Just res <- run $ tryTakeMVar mC
 	assert $ exp == res
 
 

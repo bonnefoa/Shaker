@@ -14,15 +14,16 @@ listProjectFiles = recurseListFiles $ FileListenInfo "." [] [".*\\.hs$"]
 
 -- |Get the tuples of (newFiles,modifiedFiles) from given directory
 listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
-listModifiedAndCreatedFiles fileListen oldFileInfo = 
-  getCurrentFpCl fileListen >>= \curFileInfo ->
+listModifiedAndCreatedFiles fileListen oldFileInfo = do
+  curFileInfo <- getCurrentFpCl fileListen
   return $ (curFileInfo, curFileInfo \\ oldFileInfo)
 
 -- |Get the list of FileInfo of the given directory
 getCurrentFpCl :: FileListenInfo -> IO [FileInfo]
-getCurrentFpCl fileListen = recurseListFiles fileListen >>= \lstFp ->
-      mapM getModificationTime lstFp >>= \lstCl ->
-            zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
+getCurrentFpCl fileListen = do 
+      lstFp <- recurseListFiles fileListen 
+      lstCl <- mapM getModificationTime lstFp 
+      zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
 -- |List files in the given directory 
 -- Files matching one regexp in the ignore argument are excluded

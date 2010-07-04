@@ -38,8 +38,9 @@ prop_listFilesWithIncludeAll fli = testListFiles fli{include=[".*"]} (\a b->leng
 
 testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
 testModifiedFiles fli proc pred= monadicIO test
-  where test = run (getCurrentFpCl fli) >>= \curList ->    
-               run (listModifiedAndCreatedFiles fli (proc curList)) >>= \(_,newList) ->
+  where test = do 
+               curList <- run $ getCurrentFpCl fli 
+               (_,newList) <- run $ listModifiedAndCreatedFiles fli (proc curList)
                assert $ pred curList newList 
 
 prop_listModifiedFiles fli = 
@@ -50,7 +51,6 @@ prop_listCreatedFiles fli =
 
 prop_listModifiedAndCreatedFiles fli = 
   testModifiedFiles fli ((map modifyFileInfoClock) . init) (\a b -> length a == length b)
-
 
 test_recurseListFiles = TestCase $ 
   recurseListFiles (FileListenInfo "." ["\\.$"] []) >>= \res ->

@@ -23,7 +23,7 @@ instance Arbitrary ClockTime where
 		   `ap` elements [1..1000]
 
 instance Arbitrary FileListenInfo where 
-   arbitrary = FileListenInfo `liftM` elements [".",".."]
+   arbitrary = FileListenInfo `liftM` elements ["src","testsuite"]
 			      `ap` listOf (elements ["\\.$","ab"])
 			      `ap` elements [[],[".*"]]
 

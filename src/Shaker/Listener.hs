@@ -29,7 +29,7 @@ listen mC mM mJ = takeMVar mJ  >>= \job ->
 updateFileStat :: CurrentFiles -> ModifiedFiles -> [FileInfo] -> [FileInfo] -> IO ()
 updateFileStat mC mM curFiles [] = return ()
 updateFileStat mC mM curFiles curMod =
-  putStrLn ("Modified files ::"++ (show curMod) )>>
+--  putStrLn ("Modified files ::"++ (show curMod) )>>
   swapMVar mC curFiles >>
   putMVar mM curMod >>
   return()  
