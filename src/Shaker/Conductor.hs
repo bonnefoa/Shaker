@@ -3,8 +3,8 @@ module Shaker.Conductor
 
 import Shaker.Type
 import Shaker.Parser
-import Shaker.CompileAction
-import Shaker.LoadAction
+import Shaker.Action.Compile
+import Shaker.Action.Load
 import Shaker.HelpAction
 import Control.Monad
 import Control.Concurrent
