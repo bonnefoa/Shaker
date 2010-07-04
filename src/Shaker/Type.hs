@@ -28,12 +28,14 @@ data InputState = InputState {
 data ShakerInput = ShakerInput {
   compileInput :: CompileInput,
   listenerInput :: ListenerInput,
-  pluginMap :: PluginMap
+  pluginMap :: PluginMap,
+  commandMap :: CommandMap
 }
 
-getCompileInput (ShakerInput compileInput _ _ ) = compileInput
-getListenerInput  (ShakerInput _ listenerInput _ )= listenerInput
-getPluginMap (ShakerInput _ _ pluginMap )= pluginMap
+getCompileInput (ShakerInput compileInput _ _ _ ) = compileInput
+getListenerInput  (ShakerInput _ listenerInput _ _ )= listenerInput
+getPluginMap (ShakerInput _ _ pluginMap _ )= pluginMap
+getCommandMap (ShakerInput _ _ _ commandMap)= commandMap
 
 data CompileInput = CompileInput{
   cfDynFlags :: (DynFlags->DynFlags)
@@ -69,4 +71,6 @@ data ListenState = ListenState {
 getListenThreads (ListenState _ _ threads) = threads
 
 type PluginMap = M.Map Action (ShakerInput -> IO())
+type CommandMap = M.Map String Action 
 type Plugin = ShakerInput -> IO()
+

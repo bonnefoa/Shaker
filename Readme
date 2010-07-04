@@ -2,7 +2,11 @@ Shaker is a build tool which allow to compile and launch test on haskell project
 
 TODO : 
 Enhanced command-line interface (use haskell-line?)
+  Support Completion
+Make action take parameters from command line
 Externalize configuration
-A more flexible action plugin system
 Implement Clean and QuickCheck Action
+
+Done : 
+A more flexible action plugin system
 

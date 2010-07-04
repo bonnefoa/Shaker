@@ -3,29 +3,30 @@ module Shaker.Parser
 
 import Text.ParserCombinators.Parsec
 import Shaker.Type
+import qualified Data.Map as M
 
-parseCommand :: String -> Command
-parseCommand str = case (parse typeCommand "parseCommand" str) of
+-- | Parse the given string to a Command
+parseCommand :: ShakerInput -> String -> Command
+parseCommand shIn str = case (parse (typeCommand $ getCommandMap shIn) "parseCommand" str) of
     Left err -> Command OneShot Help
     Right val -> val
 
-typeCommand :: GenParser Char st Command
-typeCommand = typeDuration >>= \dur ->
-  typeAction >>= \act ->
+-- | Parse to a Type
+typeCommand :: CommandMap -> GenParser Char st Command
+typeCommand cmMap = typeDuration >>= \dur ->
+  typeAction cmMap >>= \act ->
   return (Command dur act)
 
-typeAction :: GenParser Char st Action
-typeAction =  skipMany (char ' ') >>
-  choice [loadParser,compileParser,quitParser, quickCheckParser, helpParser]
+-- | Parse to an action
+typeAction :: CommandMap -> GenParser Char st Action
+typeAction cmMap =  skipMany (char ' ') >>
+--  choice [loadParser,compileParser,quitParser, quickCheckParser, helpParser]
+  choice (parseMapAction cmMap)
 
+-- | Parse the continuous tag (~)
 typeDuration :: GenParser Char st Duration
 typeDuration = skipMany (char ' ') >>
   option OneShot (char '~' >> return Continuous)
 
-loadParser = string "Load" >> return Load
-compileParser = string "Compile" >> return Compile
-quickCheckParser = try ( string "QuickCheck") >> return QuickCheck
-helpParser = string "Help" >> return Help
-quitParser = try (string "Quit") >> return Quit
-
+parseMapAction cmMap= map (\(k,v) -> try (string k) >> return v) (M.toList cmMap)
 

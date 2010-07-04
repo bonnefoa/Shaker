@@ -24,7 +24,8 @@ defaultInput = ShakerInput {
     fileListenInfo= FileListenInfo "." [] [".*\\.hs$"], 
     delay = 2*10^6
     },
-  pluginMap = defaultPluginMap
+  pluginMap = defaultPluginMap,
+  commandMap = defaultCommandMap
   }
 
 defaultPluginMap :: PluginMap
@@ -34,3 +35,13 @@ defaultPluginMap = M.fromList list
                 (Help,runHelp),
                 (Quit,runExit)
               ]
+
+defaultCommandMap :: CommandMap 
+defaultCommandMap = M.fromList list
+  where list = [
+            ("Compile",Compile),
+            ("Help", Help),
+            ("QuickCheck",QuickCheck),
+            ("q",Quit),
+            ("Quit",Quit)
+          ]

@@ -17,7 +17,7 @@ import qualified Data.Map as M
 -- Once the master thread is finished, all input threads are killed
 initThread :: InputState -> ShakerInput -> IO()
 initThread inputState shakerInput = do
-  procId <- forkIO $ forever (getInput inputState)   
+  procId <- forkIO $ forever (getInput shakerInput inputState)   
   mainThread inputState shakerInput 
   killThread procId
  
