@@ -6,15 +6,21 @@ import Control.Exception
 import System
 import Exception
 import Control.Monad.Trans
+import Control.Monad.Reader
 import Outputable
 import DynFlags 
 import GHC.Paths
 import Shaker.Io
+import Shaker.Type
+import Shaker.Config
 
-runCompileProject = listProjectFiles >>= runCompile 
+-- runCompileProject :: ReaderT ShakerConfig IO[String]
+runCompileProject =  listProjectFiles >>= \a -> runReaderT (runCompile a) defaultConfig
 
-runCompile :: [String] -> IO [String]
-runCompile targetFiles = defaultErrorHandler defaultDynFlags $ do
+--runCompile :: [String] -> IO [String]
+runCompile targetFiles = do
+        ga <-  ask 
+        defaultErrorHandler defaultDynFlags $ do
 	runGhc (Just libdir) $ do
 	dflags <- getSessionDynFlags
 	setSessionDynFlags dflags {

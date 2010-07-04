@@ -2,16 +2,19 @@ module Shaker.Listener
 where
 
 import Control.Monad
+import Control.Monad.Reader
 import Control.Concurrent.MVar
 import Control.Concurrent
 import Shaker.Type
 import Shaker.Io
 
 
-defaultDelay = 2*10^6
-
 listenProjectFiles :: IO(ListenState) 
-listenProjectFiles = initialize $ FileListenInfo "." [] [".*\\.hs$"] 
+listenProjectFiles = do
+  initialize $ ListenerInput {
+    fileListenInfo= FileListenInfo "." [] [".*\\.hs$"],
+    delay = 2*10^6
+   }
 
 
 -- | listen to the job box and process the job
@@ -33,18 +36,18 @@ updateFileStat mC mM curFiles curMod =
   return()  
 
 -- | initialize the mvar and launch forks
-initialize :: FileListenInfo -> IO (ListenState)
-initialize fli =
-  newMVar [] >>= \mC ->
-  newMVar [] >>= \mM ->
-  newEmptyMVar >>= \mJ ->
-  (forkIO $ forever $ listen mC mM mJ) >>= \idLst ->
-  (forkIO $ forever $ schedule defaultDelay fli mJ) >>= \idSch ->
+initialize :: ListenerInput -> IO (ListenState)
+initialize lstInput = do
+  mC <- newMVar [] 
+  mM <- newMVar [] 
+  mJ <- newEmptyMVar 
+  idLst <- forkIO $ forever $ listen mC mM mJ
+  idSch <- forkIO $ forever $ schedule lstInput mJ
   return $ ListenState mC mM [idLst,idSch]
 
 -- | manage the job box. Fill it with a job every delay
-schedule :: Int -> FileListenInfo -> Job -> IO()
-schedule delay fileListenInfo mJ =
+schedule :: ListenerInput -> Job -> IO()
+schedule (ListenerInput fileListenInfo delay) mJ =
   putMVar mJ fileListenInfo >>
   threadDelay delay >>
   return ()
