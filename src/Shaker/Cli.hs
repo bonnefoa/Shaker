@@ -9,10 +9,12 @@ import Control.Monad.Trans
 import Control.Concurrent.MVar
 import System.Console.Haskeline
 import System.Console.Haskeline.Completion
+import qualified Data.Map as M
+import Data.List
 
 -- | Listen to keyboard input and parse command
 getInput :: ShakerInput -> InputState -> IO()
-getInput shIn (InputState inputMv token) =runInputT myDefaultSettings action
+getInput shIn (InputState inputMv token) =runInputT (myDefaultSettings shIn) action
  where  action::InputT IO()
         action  = do
         lift $ takeMVar token 
@@ -21,16 +23,19 @@ getInput shIn (InputState inputMv token) =runInputT myDefaultSettings action
              Nothing -> return()
              Just str -> lift $ tryPutMVar inputMv (parseCommand shIn str) >> return() 
 
-myDefaultSettings :: MonadIO m => Settings m
-myDefaultSettings = Settings {
-  complete = completeAction ,
+myDefaultSettings :: MonadIO m => ShakerInput-> Settings m
+myDefaultSettings shIn = Settings {
+  complete = completeAction shIn,
   historyFile = Nothing,
   autoAddHistory = True
 }
 
-completeAction :: Monad m => CompletionFunc m
-completeAction = completeWord (Just '\\') "\"'" listActions
+completeAction :: Monad m => ShakerInput -> CompletionFunc m
+completeAction shIn = completeWord (Just '\\') "\"'~" (listActions shIn)
 
-listActions :: Monad m => String -> m [Completion]
-listActions  str = return $  [simpleCompletion "Quit"]
+listActions :: Monad m => ShakerInput -> (String -> m [Completion])
+listActions shIn = fun 
+  where fun str = return $ filtered str
+        cmdMap = getCommandMap shIn 
+        filtered input = map simpleCompletion $ filter (\k -> input `isPrefixOf` k) $ M.keys cmdMap
 

@@ -20,7 +20,6 @@ typeCommand cmMap = typeDuration >>= \dur ->
 -- | Parse to an action
 typeAction :: CommandMap -> GenParser Char st Action
 typeAction cmMap =  skipMany (char ' ') >>
---  choice [loadParser,compileParser,quitParser, quickCheckParser, helpParser]
   choice (parseMapAction cmMap)
 
 -- | Parse the continuous tag (~)

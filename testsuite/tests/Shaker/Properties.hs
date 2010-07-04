@@ -34,3 +34,10 @@ instance Arbitrary FileInfo where
 
 instance Arbitrary Action where
   arbitrary = elements [Load,Compile,QuickCheck,Quit,Help]
+
+data ActionInt = ActionInt Action Int
+  deriving (Show)
+instance Arbitrary ActionInt where
+  arbitrary = ActionInt `liftM` arbitrary
+                        `ap` elements [1..5]
+

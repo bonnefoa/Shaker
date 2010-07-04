@@ -39,7 +39,7 @@ listenManager fun shakerInput = do
   endToken <- newEmptyMVar 
   procCharListener <- forkIO $ getChar >>= putMVar endToken
   -- Setup source listener
-  listenState <- listenProjectFiles listenInput
+  listenState <- initialize listenInput
   -- Run the action
   procId <- forkIO $ forever $ threadExecutor listenState fun
   readMVar endToken 

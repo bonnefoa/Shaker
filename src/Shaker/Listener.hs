@@ -8,15 +8,6 @@ import Control.Concurrent
 import Shaker.Type
 import Shaker.Io
 
-listenProjectFiles :: ListenerInput -> IO(ListenState)
-listenProjectFiles = initialize 
-  {-
-  ListenerInput {
-    fileListenInfo= FileListenInfo "." [] [".*\\.hs$"],
-    delay = 2*10^6
-   }
-   -}
-
 -- | listen to the job box and process the job
 listen :: CurrentFiles -> ModifiedFiles -> Job -> IO ()
 listen mC mM mJ = do 
