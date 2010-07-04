@@ -14,12 +14,14 @@ defaultInput = ShakerInput {
   compileInput = CompileInput (\a-> a  {
     importPaths = ["src/","testsuite/tests/"], 
     verbosity = 1, 
+    outputFile = Just "target/Main",
     objectDir = Just "target",
     hiDir = Just "target",
+    ghcLink = NoLink,
     packageFlags = [ExposePackage "ghc"]
   }),
   listenerInput = ListenerInput {
-    fileListenInfo= FileListenInfo "." [] [".*\\.hs$"],
+    fileListenInfo= FileListenInfo "." [] [".*\\.hs$"], 
     delay = 2*10^6
     },
   pluginMap = defaultPluginMap

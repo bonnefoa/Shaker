@@ -9,6 +9,7 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.MVar
 import Shaker.Listener
+import Shaker.Cli
 import Control.Monad.State
 import qualified Data.Map as M
  
@@ -50,15 +51,6 @@ threadExecutor :: ListenState -> IO() -> IO(ThreadId)
 threadExecutor (ListenState _ modF  _) fun = 
   takeMVar modF >> forkIO fun 
 
--- | Listen to keyboard input and parse command
-getInput :: InputState -> IO()
-getInput (InputState inputMv token) = do
- takeMVar token 
- putStr ">" 
- input <- getLine
- tryPutMVar inputMv (parseCommand input)
- return () 
- 
 -- | Execute Given Command in a new thread
 executeCommand :: Command -> ShakerInput -> IO()
 executeCommand (Command OneShot act) shakerInput = executeAction act shakerInput 
