@@ -14,7 +14,7 @@ import Shaker.Io
 import Shaker.Type
 
 -- |Run haskell compilation on given file input 
-runCompile :: ShakerInput -> IO ()
+runCompile :: Plugin
 runCompile shakerInput = do
         targetFiles <-  recurseListFiles fli
         defaultErrorHandler defaultDynFlags $ do

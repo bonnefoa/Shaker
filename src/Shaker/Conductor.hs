@@ -5,12 +5,12 @@ import Shaker.Type
 import Shaker.Parser
 import Shaker.Action.Compile
 import Shaker.Action.Load
-import Shaker.HelpAction
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.MVar
 import Shaker.Listener
 import Control.Monad.State
+import qualified Data.Map as M
  
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
@@ -66,8 +66,15 @@ executeCommand (Command Continuous act) shakerInput = listenManager ( executeAct
 
 -- | Execute given action
 executeAction :: Action -> ShakerInput -> IO()
-executeAction Compile shakerInput = runCompile shakerInput   >> return()
+executeAction act shakerInput = 
+    case M.lookup act (getPluginMap shakerInput) of
+      Just action -> action shakerInput
+      Nothing -> putStrLn $ "action "++ show act ++" is not registered"
+                                     
+{-
+executeAction Compile shakerInput = runCompile shakerInput   
 executeAction Quit _ = putStrLn "Exiting"
-executeAction _ _ = runHelp
+-}
+-- executeAction _ _ = runHelp
 
 

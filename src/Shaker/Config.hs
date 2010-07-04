@@ -7,6 +7,7 @@ import GHC
 import Shaker.Conductor
 import qualified Data.Map as M
 import Shaker.Action.Compile
+import Shaker.Action.Standard
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
@@ -25,4 +26,8 @@ defaultInput = ShakerInput {
   }
 
 defaultPluginMap :: PluginMap
-defaultPluginMap = M.insert Compile runCompile M.empty
+defaultPluginMap = foldl (\m (k,v) -> M.insert k v m) M.empty list
+  where list = [
+                (Compile,runCompile),
+                (Help,runHelp)
+              ]

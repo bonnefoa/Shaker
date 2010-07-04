@@ -69,3 +69,4 @@ data ListenState = ListenState {
 getListenThreads (ListenState _ _ threads) = threads
 
 type PluginMap = M.Map Action (ShakerInput -> IO())
+type Plugin = ShakerInput -> IO()
