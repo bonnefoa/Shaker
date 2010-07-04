@@ -4,14 +4,12 @@ module Shaker.Action.CompileTest
 import Shaker.Action.Compile
 import Test.HUnit
 import System.Directory
-
-test_runCompile = TestCase $ 
-  runCompile ["Shaker.Parser"] >> 
-  doesFileExist "target/Shaker/Parser.o" >>= \ex -> 
-  assertBool ("File .o should exists ") ex
+import Shaker.Io 
+import Shaker.Type
+import Shaker.Config 
   
 test_runCompileProject = TestCase $ 
-  runCompileProject >>
+  runCompile defaultInput >> 
   getDirectoryContents "target/Shaker" >>= \cont ->
   doesFileExist "target/Shaker.Action.CompileTest.o" >>= \ex ->
   doesFileExist "target/Shaker.Action.CompileTest.hi" >>= \ex2 ->

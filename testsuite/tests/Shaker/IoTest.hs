@@ -20,8 +20,9 @@ modifyFileInfoClock (FileInfo fp cl) = FileInfo fp (addToClockTime aTimeDiff cl)
 
 testListFiles :: FileListenInfo -> ([FilePath] -> [FilePath] -> Bool) -> Property
 testListFiles fli pred = monadicIO test
-  where test = run (listFiles fli{ignore= []}) >>= \lstFile ->
-               run (listFiles fli) >>= \r->
+  where test = do
+               lstFile <- run $ listFiles fli{ignore= []}
+               r <- run $listFiles fli
                assert $ pred lstFile r 
 
 prop_listFiles :: FileListenInfo -> Property
@@ -63,7 +64,7 @@ test_listFiles = TestCase $
     any ("src" `isSuffixOf`) res
   
 test_listHsFiles = TestCase $
-  listProjectFiles >>= \res ->
+  recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \res ->
   assertBool ("Should only contains hs files " ++ show res) $
     all (".hs" `isSuffixOf`) res
 

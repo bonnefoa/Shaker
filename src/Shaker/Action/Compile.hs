@@ -12,30 +12,27 @@ import DynFlags
 import GHC.Paths
 import Shaker.Io
 import Shaker.Type
-import Shaker.Config
 
-data CompileInput = CompileInput{
-  cfImportPaths :: [String],
-  cfVerbosity :: Int,
-  cfTargetDir :: String,
-  cfPackageFlags :: [PackageFlag]
-}
 
 -- runCompileProject :: ReaderT ShakerConfig IO[String]
-runCompileProject =  listProjectFiles >>= runCompile 
+-- runCompileProject =  listProjectFiles >>= runCompile 
 
---runCompile :: [String] -> IO [String]
-runCompile targetFiles = do
+runCompile :: ShakerInput -> IO [String]
+runCompile (ShakerInput (CompileInput procFlags) (ListenerInput fli _)) = do
+        targetFiles <-  recurseListFiles fli
         defaultErrorHandler defaultDynFlags $ do
 	runGhc (Just libdir) $ do
 	dflags <- getSessionDynFlags
-	setSessionDynFlags dflags {
+	setSessionDynFlags $ procFlags dflags 
+        {-
+        dflags {
           importPaths = ["src/","testsuite/tests/"], 
           verbosity = 1, 
           objectDir = Just "target",
           hiDir = Just "target",
           packageFlags = [ExposePackage "ghc"]
         }
+        -}
 	target <- mapM (\a -> guessTarget a Nothing) targetFiles
 	setTargets target
 	load LoadAllTargets

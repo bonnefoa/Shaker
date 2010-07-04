@@ -12,38 +12,45 @@ import Control.Concurrent.MVar
 import Shaker.Listener
 import Control.Monad.State
 
-initThread :: InputState -> ListenerInput -> IO()
-initThread inputState listenInput= do
+-- | Initialize the master thread 
+-- Once the master thread is finished, all input threads are killed
+initThread :: InputState -> ShakerInput -> IO()
+initThread inputState shakerInput = do
   procId <- forkIO $ forever (getInput inputState)   
-  mainThread inputState listenInput
+  mainThread inputState shakerInput 
   killThread procId
 
--- mainThread :: InputShaker IO()
-mainThread st@(InputState input token) listenInput = do
+-- | The main thread. 
+-- Loop until a Quit action is called
+mainThread :: InputState -> ShakerInput -> IO()
+mainThread st@(InputState input token) shakerInput = do
   tryPutMVar token 42
   cmd <- takeMVar input
-  executeCommand cmd listenInput
+  executeCommand cmd shakerInput
   case cmd of
        Command _ Quit -> return ()
-       _ ->  mainThread st listenInput
+       _ ->  mainThread st shakerInput 
 
-leon :: [ThreadId] -> IO()
-leon = mapM_ killThread
-
-listenManager fun listenInput = do
+-- | Continuously execute the given action until a keyboard input is done
+listenManager :: IO() -> ShakerInput -> IO()
+listenManager fun (ShakerInput _ listenInput) = do
+  -- Setup keyboard listener
   endToken <- newEmptyMVar 
-  procCharListener <- forkIO ( charListen endToken) 
+  procCharListener <- forkIO $ getChar >>= putMVar endToken
+  -- Setup source listener
   listenState <- listenProjectFiles listenInput
-  procId <- forkIO (forever (threadExecutor listenState fun)) 
+  -- Run the action
+  procId <- forkIO $ forever $ threadExecutor listenState fun
   readMVar endToken 
-  leon $  [procId,procCharListener] ++ getListenThreads listenState
+  mapM_ killThread  $  [procId,procCharListener] ++ getListenThreads listenState
   
+-- | Execute the given action when the modified MVar is filled
+threadExecutor :: ListenState -> IO() -> IO(ThreadId)
 threadExecutor (ListenState _ modF  _) fun = 
   takeMVar modF >> forkIO fun 
-  
-charListen endToken = getChar >>= putMVar endToken
 
--- ^ Listen to keyboard input and parse command
+-- | Listen to keyboard input and parse command
+getInput :: InputState -> IO()
 getInput (InputState inputMv token) = do
  takeMVar token 
  putStr ">" 
@@ -51,11 +58,14 @@ getInput (InputState inputMv token) = do
  tryPutMVar inputMv (parseCommand input)
  return () 
 
-executeCommand (Command OneShot act) _ = executeAction act
-executeCommand (Command Continuous act) listenInput = listenManager ( executeAction act) listenInput
+-- | Execute Given Command in a new thread
+executeCommand :: Command -> ShakerInput -> IO()
+executeCommand (Command OneShot act) shakerInput = executeAction act shakerInput 
+executeCommand (Command Continuous act) shakerInput = listenManager ( executeAction act shakerInput) shakerInput
 
-executeAction Compile = runCompileProject >> return()
-executeAction Quit = putStrLn "Exiting"
-executeAction _ = runHelp
-   
+-- | Execute given action
+executeAction :: Action -> ShakerInput -> IO()
+executeAction Compile shakerInput = runCompile shakerInput   >> return()
+executeAction Quit _ = putStrLn "Exiting"
+executeAction _ _ = runHelp
 

@@ -7,6 +7,7 @@ import Control.Monad.Reader
 import Control.Concurrent.MVar (MVar)
 import Control.Concurrent (ThreadId)
 import Control.Monad.State
+import DynFlags 
 
 data Duration = OneShot | Continuous
   deriving (Show,Eq)
@@ -23,12 +24,19 @@ data InputState = InputState {
   token :: Token
 }
 
-data ShakerConfig = ShakerConfig {
-  cfImportPaths :: [String],
-  cfDelay :: Int
+data ShakerInput = ShakerInput {
+  compileInput :: CompileInput,
+  listenerInput :: ListenerInput
 }
 
-type ShakerMonad a = ReaderT ShakerConfig a
+data CompileInput = CompileInput{
+  cfDynFlags :: (DynFlags->DynFlags)
+}
+-- ListenerStuff
+data ListenerInput = ListenerInput {
+  fileListenInfo :: FileListenInfo,
+  delay :: Int  
+}
 
 -- | Represents directory to listen 
 data FileListenInfo = FileListenInfo{
@@ -37,11 +45,6 @@ data FileListenInfo = FileListenInfo{
   ,include :: [String] -- ^include patterns
   }
   deriving (Show,Eq)
--- ListenerStuff
-data ListenerInput = ListenerInput {
-  fileListenInfo :: FileListenInfo,
-  delay :: Int  
-}
 type CurrentFiles = MVar [FileInfo]
 type ModifiedFiles = MVar [FileInfo]
 type Job = MVar FileListenInfo
