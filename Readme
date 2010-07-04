@@ -1,0 +1,8 @@
+Shaker is a build tool which allow to compile and launch test on haskell project with some features like continuous action similar to SBT.
+
+TODO : 
+Enhanced command-line interface (use haskell-line?)
+Externalize configuration
+A more flexible action plugin system
+Implement Clean and QuickCheck Action
+
