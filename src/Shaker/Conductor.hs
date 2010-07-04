@@ -11,7 +11,7 @@ import Control.Concurrent
 import Control.Concurrent.MVar
 import Shaker.Listener
 import Control.Monad.State
-
+ 
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
 initThread :: InputState -> ShakerInput -> IO()
@@ -33,7 +33,7 @@ mainThread st@(InputState input token) shakerInput = do
 
 -- | Continuously execute the given action until a keyboard input is done
 listenManager :: IO() -> ShakerInput -> IO()
-listenManager fun (ShakerInput _ listenInput) = do
+listenManager fun shakerInput = do
   -- Setup keyboard listener
   endToken <- newEmptyMVar 
   procCharListener <- forkIO $ getChar >>= putMVar endToken
@@ -43,6 +43,7 @@ listenManager fun (ShakerInput _ listenInput) = do
   procId <- forkIO $ forever $ threadExecutor listenState fun
   readMVar endToken 
   mapM_ killThread  $  [procId,procCharListener] ++ getListenThreads listenState
+  where listenInput = getListenerInput shakerInput
   
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ListenState -> IO() -> IO(ThreadId)
@@ -68,4 +69,5 @@ executeAction :: Action -> ShakerInput -> IO()
 executeAction Compile shakerInput = runCompile shakerInput   >> return()
 executeAction Quit _ = putStrLn "Exiting"
 executeAction _ _ = runHelp
+
 

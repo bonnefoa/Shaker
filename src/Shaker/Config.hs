@@ -5,6 +5,8 @@ import Shaker.Type
 import DynFlags
 import GHC
 import Shaker.Conductor
+import qualified Data.Map as M
+import Shaker.Action.Compile
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
@@ -18,5 +20,9 @@ defaultInput = ShakerInput {
   listenerInput = ListenerInput {
     fileListenInfo= FileListenInfo "." [] [".*\\.hs$"],
     delay = 2*10^6
-    }
+    },
+  pluginMap = defaultPluginMap
   }
+
+defaultPluginMap :: PluginMap
+defaultPluginMap = M.insert Compile runCompile M.empty

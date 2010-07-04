@@ -13,29 +13,18 @@ import GHC.Paths
 import Shaker.Io
 import Shaker.Type
 
-
--- runCompileProject :: ReaderT ShakerConfig IO[String]
--- runCompileProject =  listProjectFiles >>= runCompile 
-
-runCompile :: ShakerInput -> IO [String]
-runCompile (ShakerInput (CompileInput procFlags) (ListenerInput fli _)) = do
+-- |Run haskell compilation on given file input 
+runCompile :: ShakerInput -> IO ()
+runCompile shakerInput = do
         targetFiles <-  recurseListFiles fli
         defaultErrorHandler defaultDynFlags $ do
 	runGhc (Just libdir) $ do
 	dflags <- getSessionDynFlags
 	setSessionDynFlags $ procFlags dflags 
-        {-
-        dflags {
-          importPaths = ["src/","testsuite/tests/"], 
-          verbosity = 1, 
-          objectDir = Just "target",
-          hiDir = Just "target",
-          packageFlags = [ExposePackage "ghc"]
-        }
-        -}
 	target <- mapM (\a -> guessTarget a Nothing) targetFiles
 	setTargets target
 	load LoadAllTargets
-	g <- getModuleGraph
-	mapM showModule g     
+        return ()
+        where (CompileInput procFlags) = getCompileInput shakerInput
+              (ListenerInput fli _) = getListenerInput shakerInput
 

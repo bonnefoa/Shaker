@@ -8,11 +8,12 @@ import Control.Concurrent.MVar (MVar)
 import Control.Concurrent (ThreadId)
 import Control.Monad.State
 import DynFlags 
+import qualified Data.Map as M
 
 data Duration = OneShot | Continuous
   deriving (Show,Eq)
 data Action = Load | Compile | QuickCheck |Help |Quit | Clean
-  deriving (Show,Eq)
+  deriving (Show,Eq,Ord)
 data Command = Command Duration Action
   deriving (Show,Eq)
 
@@ -26,8 +27,13 @@ data InputState = InputState {
 
 data ShakerInput = ShakerInput {
   compileInput :: CompileInput,
-  listenerInput :: ListenerInput
+  listenerInput :: ListenerInput,
+  pluginMap :: PluginMap
 }
+
+getCompileInput (ShakerInput compileInput _ _ ) = compileInput
+getListenerInput  (ShakerInput _ listenerInput _ )= listenerInput
+getPluginMap (ShakerInput _ _ pluginMap )= pluginMap
 
 data CompileInput = CompileInput{
   cfDynFlags :: (DynFlags->DynFlags)
@@ -62,5 +68,4 @@ data ListenState = ListenState {
 
 getListenThreads (ListenState _ _ threads) = threads
 
-hasSameFilePath :: FileInfo -> FileInfo -> Bool
-hasSameFilePath (FileInfo fp1 _) (FileInfo fp2 _) = fp1 == fp2
+type PluginMap = M.Map Action (ShakerInput -> IO())
