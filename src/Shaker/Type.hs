@@ -10,7 +10,7 @@ import Control.Monad.State
 
 data Duration = OneShot | Continuous
   deriving (Show,Eq)
-data Action = Load | Compile | QuickCheck |Help |Quit
+data Action = Load | Compile | QuickCheck |Help |Quit | Clean
   deriving (Show,Eq)
 data Command = Command Duration Action
   deriving (Show,Eq)
@@ -25,12 +25,10 @@ data InputState = InputState {
 
 data ShakerConfig = ShakerConfig {
   cfImportPaths :: [String],
-  cfgDelay :: Int
+  cfDelay :: Int
 }
 
 type ShakerMonad a = ReaderT ShakerConfig a
-   
-
 
 -- | Represents directory to listen 
 data FileListenInfo = FileListenInfo{

@@ -6,5 +6,6 @@ import Shaker.Type
 defaultConfig :: ShakerConfig 
 defaultConfig = ShakerConfig {
   cfImportPaths = ["src/","testsuite/tests/"],
-  cfImportPaths = 2*10^6
+  cfDelay = 2*10^6
 }
+

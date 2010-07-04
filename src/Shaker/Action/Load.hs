@@ -1,4 +1,4 @@
-module Shaker.LoadAction
+module Shaker.Action.Load
  where
 
 import Language.Haskell.Interpreter

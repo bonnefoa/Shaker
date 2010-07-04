@@ -22,9 +22,10 @@ prop_updateFileStat curF curM = not (null curM) ==>
 
 prop_schedule :: FileListenInfo -> Property
 prop_schedule fli = monadicIO $ test fli
-  where test fli = run newEmptyMVar  >>= \mJ -> 
-  		   run (schedule 0 fli mJ) >> 
-  		   run (tryTakeMVar mJ) >>= \res ->
+  where test fli = do 
+                   mJ <- run newEmptyMVar 
+  		   run $ schedule (ListenerInput fli 0) mJ
+  		   res <- run (tryTakeMVar mJ)
 		   assert $ res == (Just fli)
 
 prop_listen fli = monadicIO $ test fli

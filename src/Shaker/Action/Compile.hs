@@ -1,4 +1,4 @@
-module Shaker.CompileAction
+module Shaker.Action.Compile
  where
 
 import GHC
@@ -14,12 +14,18 @@ import Shaker.Io
 import Shaker.Type
 import Shaker.Config
 
+data CompileInput = CompileInput{
+  cfImportPaths :: [String],
+  cfVerbosity :: Int,
+  cfTargetDir :: String,
+  cfPackageFlags :: [PackageFlag]
+}
+
 -- runCompileProject :: ReaderT ShakerConfig IO[String]
-runCompileProject =  listProjectFiles >>= \a -> runReaderT (runCompile a) defaultConfig
+runCompileProject =  listProjectFiles >>= runCompile 
 
 --runCompile :: [String] -> IO [String]
 runCompile targetFiles = do
-        ga <-  ask 
         defaultErrorHandler defaultDynFlags $ do
 	runGhc (Just libdir) $ do
 	dflags <- getSessionDynFlags
