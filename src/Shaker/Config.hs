@@ -26,8 +26,9 @@ defaultInput = ShakerInput {
   }
 
 defaultPluginMap :: PluginMap
-defaultPluginMap = foldl (\m (k,v) -> M.insert k v m) M.empty list
+defaultPluginMap = M.fromList list
   where list = [
                 (Compile,runCompile),
-                (Help,runHelp)
+                (Help,runHelp),
+                (Quit,runExit)
               ]

@@ -19,7 +19,7 @@ initThread inputState shakerInput = do
   procId <- forkIO $ forever (getInput inputState)   
   mainThread inputState shakerInput 
   killThread procId
-
+ 
 -- | The main thread. 
 -- Loop until a Quit action is called
 mainThread :: InputState -> ShakerInput -> IO()
@@ -58,7 +58,7 @@ getInput (InputState inputMv token) = do
  input <- getLine
  tryPutMVar inputMv (parseCommand input)
  return () 
-
+ 
 -- | Execute Given Command in a new thread
 executeCommand :: Command -> ShakerInput -> IO()
 executeCommand (Command OneShot act) shakerInput = executeAction act shakerInput 
@@ -71,10 +71,5 @@ executeAction act shakerInput =
       Just action -> action shakerInput
       Nothing -> putStrLn $ "action "++ show act ++" is not registered"
                                      
-{-
-executeAction Compile shakerInput = runCompile shakerInput   
-executeAction Quit _ = putStrLn "Exiting"
--}
--- executeAction _ _ = runHelp
 
 

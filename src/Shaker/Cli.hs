@@ -1,0 +1,3 @@
+module Shaker.Cli
+ where
+

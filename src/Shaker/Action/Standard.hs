@@ -2,10 +2,14 @@ module Shaker.Action.Standard
  where
 
 import Shaker.Type
+import qualified Data.Map as M
 
 runHelp :: Plugin
-runHelp _ = putStrLn "No help for now, but the answer should be 42"
+runHelp shakerInput = do 
+  putStrLn "Following actions are available : "
+  putStrLn $ show (M.keys $ getPluginMap shakerInput)
+  putStrLn "use ~[actionName] for continuous launch"
 
-runExit ::Plugin
+runExit :: Plugin
 runExit _ = putStrLn "Exiting"
 
