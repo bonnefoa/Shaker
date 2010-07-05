@@ -1,0 +1,47 @@
+name: shaker
+version: 0.1.0
+cabal-version: >= 1.8
+build-type: Simple
+license: BSD3
+license-file: LICENSE
+copyright: Copyright (c) 2010 Anthonin Bonnefoy
+author: Anthonin Bonnefoy
+maintainer: anthonin.bonnefoy@gmail.com
+homepage: http://github.com/bonnefoa/Shaker
+bug-reports: http://github.com/bonnefoa/Shaker/issues 
+category: Development
+synopsis: Shaker is an haskell build-tool inspired by SBT
+description:
+  Shaker is an interactive command-line build tool which allow you to 
+  compile, test or run any action on your haskell project. You can define
+  new actions to plug to the system.
+  One features is the continuous action. Shaker will execute the given 
+  action each time there is modification to your sources.
+
+Executable shaker
+  Main-Is: Shaker.hs
+  ghc-options: -Wall
+  build-depends: base >= 4.1,
+                 containers >= 0.3,
+                 haskeline >= 0.6.2.2,
+                 directory >= 1.0.1.0,
+                 filepath >= 1.1,
+                 ghc >= 6.12,
+                 hint >= 0.3.2.3,
+                 mtl >= 1.1,
+                 parsec >= 3.1
+
+Library
+  exposed-modules:
+                 Hsbot.Config
+  ghc-options: -Wall
+  build-depends: base >= 4.1,
+                 containers >= 0.3,
+                 haskeline >= 0.6.2.2,
+                 directory >= 1.0.1.0,
+                 filepath >= 1.1,
+                 ghc >= 6.12,
+                 mtl >= 1.1,
+                 parsec >= 3.1,
+                 hint >= 0.3.2.3
+
