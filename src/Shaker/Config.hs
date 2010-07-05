@@ -51,5 +51,6 @@ defaultCommandMap = M.fromList list
             ("Help", Help),
             ("QuickCheck",QuickCheck),
             ("q",Quit),
+            ("Load",Load),
             ("Quit",Quit)
           ]
