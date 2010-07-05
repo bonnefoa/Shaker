@@ -12,7 +12,7 @@ import Shaker.Type
 listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
 listModifiedAndCreatedFiles fileListen oldFileInfo = do
   curFileInfo <- getCurrentFpCl fileListen
-  return $ (curFileInfo, curFileInfo \\ oldFileInfo)
+  return (curFileInfo, curFileInfo \\ oldFileInfo)
 
 -- |Get the list of FileInfo of the given directory
 getCurrentFpCl :: FileListenInfo -> IO [FileInfo]
@@ -35,12 +35,12 @@ recurseListFiles :: FileListenInfo -> IO [FilePath]
 recurseListFiles fli@(FileListenInfo dir ignore include) = do
   curDir <- canonicalizePath dir 
   content <- getDirectoryContents curDir
-  directories <- filterM (doesDirectoryExist) (convertToFullPath curDir (removeDotDirectory content) ) 
+  directories <- filterM doesDirectoryExist (convertToFullPath curDir (removeDotDirectory content) ) 
   sub <- mapM (\a -> recurseListFiles fli{dir=a}) directories
   curListFiles <-  listFiles fli
-  return $ curListFiles ++ (concat $ sub)
+  return $ curListFiles ++ concat sub
 
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
-convertToFullPath absDir lstFp = map (\a-> concat [absDir, "/",a]) lstFp
+convertToFullPath absDir = map (\a-> concat [absDir, "/",a]) 
 
 removeDotDirectory = filter (\a -> not $ isSuffixOf "." a ) 

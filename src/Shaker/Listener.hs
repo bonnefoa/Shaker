@@ -27,7 +27,7 @@ updateFileStat mC mM curFiles curMod = do
   return()  
 
 -- | initialize the mvar and launch forks
-initialize :: ListenerInput -> IO (ListenState)
+initialize :: ListenerInput -> IO ListenState
 initialize lstInput = do
   mC <- newMVar [] 
   mM <- newMVar [] 

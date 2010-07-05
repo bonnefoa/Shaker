@@ -8,7 +8,7 @@ processListWithRegexp :: [String] -> [String] -> [String] -> [String]
 processListWithRegexp list [] [] = list
 processListWithRegexp list [] include = nub $ getIncluded list include
 processListWithRegexp list ignore include = 
-  nub $ (getExcluded list ignore) ++ (getIncluded list include)
+  nub $ getExcluded list ignore ++ getIncluded list include
 
 getExcluded :: [String] -> [String] -> [String]
 getExcluded list patterns = filter funExclude list

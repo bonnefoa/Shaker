@@ -33,9 +33,9 @@ myDefaultSettings shIn = Settings {
 completeAction :: Monad m => ShakerInput -> CompletionFunc m
 completeAction shIn = completeWord (Just '\\') "\"'~" (listActions shIn)
 
-listActions :: Monad m => ShakerInput -> (String -> m [Completion])
+listActions :: Monad m => ShakerInput -> String -> m [Completion]
 listActions shIn = fun 
   where fun str = return $ filtered str
         cmdMap = getCommandMap shIn 
-        filtered input = map simpleCompletion $ filter (\k -> input `isPrefixOf` k) $ M.keys cmdMap
+        filtered input = map simpleCompletion $ filter (input `isPrefixOf`) $ M.keys cmdMap
 

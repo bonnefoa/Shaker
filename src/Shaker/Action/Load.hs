@@ -12,6 +12,6 @@ loadFiles :: [FilePath] -> Interpreter()
 loadFiles files = 
   set [searchPath := ["./src/","./testsuite/tests"] ] >>
   loadModules files >>
-  getLoadedModules >>= liftIO . putStrLn . show
+  getLoadedModules >>= liftIO . print
 
 

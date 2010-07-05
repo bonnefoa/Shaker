@@ -21,14 +21,14 @@ defaultCompileInput :: CompileInput
 defaultCompileInput = CompileInput defaultCompileFlags
 
 defaultCompileFlags :: (DynFlags -> DynFlags)
-defaultCompileFlags = (\a-> a  {
+defaultCompileFlags = \a-> a  {
     importPaths = ["src/","testsuite/tests/"], 
     verbosity = 1, 
     outputFile = Just "target/Main",
     objectDir = Just "target",
     hiDir = Just "target",
     ghcLink = NoLink
-  }) 
+  } 
 
 defaultListenerInput :: ListenerInput                                   
 defaultListenerInput = ListenerInput {

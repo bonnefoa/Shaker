@@ -47,7 +47,7 @@ listenManager fun shakerInput = do
   where listenInput = getListenerInput shakerInput
   
 -- | Execute the given action when the modified MVar is filled
-threadExecutor :: ListenState -> IO() -> IO(ThreadId)
+threadExecutor :: ListenState -> IO() -> IO ThreadId
 threadExecutor (ListenState _ modF  _) fun = 
   takeMVar modF >> forkIO fun 
 

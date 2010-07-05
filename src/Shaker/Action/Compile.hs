@@ -17,14 +17,15 @@ import Shaker.Type
 runCompile :: Plugin
 runCompile shakerInput = do
         targetFiles <-  recurseListFiles fli
-        defaultErrorHandler defaultDynFlags $ do
-	runGhc (Just libdir) $ do
-	dflags <- getSessionDynFlags
-	setSessionDynFlags $ procFlags dflags 
-	target <- mapM (\a -> guessTarget a Nothing) targetFiles
-	setTargets target
-	load LoadAllTargets
-        return ()
+        defaultErrorHandler defaultDynFlags $ action targetFiles
         where (CompileInput procFlags) = getCompileInput shakerInput
               (ListenerInput fli _) = getListenerInput shakerInput
+              action targetFiles = 
+                       runGhc (Just libdir) $ do
+                       dflags <- getSessionDynFlags
+	               setSessionDynFlags $ procFlags dflags 
+                       target <- mapM (`guessTarget` Nothing) targetFiles
+                       setTargets target
+        	       load LoadAllTargets
+                       return ()
 

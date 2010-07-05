@@ -2,11 +2,13 @@ Shaker is a build tool which allow to compile and launch test on haskell project
 
 TODO : 
 Make action take parameters from command line
+FileListen should take a list of directory
 Externalize configuration
 Implement Clean and QuickCheck Action
 Support multi action
-Pass hlint on the project
+Use hlint on the project
 Convert InputShaker parameter to Monad
+Configure cabal
 
 Done : 
 A more flexible action plugin system
