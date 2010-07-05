@@ -15,7 +15,7 @@ prop_parseTypeOneShot cont = checkRes res (== OneShot)
   where res = parse typeDuration "test" (filter (/= '~') cont)
 
 prop_parseTypeContinuous num= num <1000 ==> checkRes res (== Continuous)
-  where res = parse typeDuration "test" ((replicate num ' ')++"~" )
+  where res = parse typeDuration "test" (replicate num ' '++"~" )
 
 prop_parseDefaultAction act = res == Command OneShot Help  
   where res = parseCommand defaultInput (act ++"x")
@@ -27,7 +27,7 @@ prop_parseOneShotCommand act = checkRes res (== Command OneShot act)
   where res = parse (typeCommand defaultCommandMap) "test" (show act)
 
 prop_parseContinuousCommand act = checkRes res (== Command Continuous act)
-  where res = parse (typeCommand defaultCommandMap) "test" ("~"++show act)
+  where res = parse (typeCommand defaultCommandMap) "test" ('~':show act)
 
 checkRes (Left _) _ = False
 checkRes (Right val) pred = pred val

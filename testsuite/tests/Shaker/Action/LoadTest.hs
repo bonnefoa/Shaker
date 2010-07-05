@@ -8,7 +8,7 @@ import Test.HUnit
 import Shaker.Type
 import Control.Monad.Trans
 
-test_compileFiles = TestCase $
+testCompileFiles = TestCase $
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \files ->
   runLoadFiles files >>= \res ->
   case res of 

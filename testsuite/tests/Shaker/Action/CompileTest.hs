@@ -8,7 +8,7 @@ import Shaker.Io
 import Shaker.Type
 import Shaker.Config 
   
-test_runCompileProject = TestCase $ 
+testRunCompileProject = TestCase $ 
   runCompile defaultInput >> 
   getDirectoryContents "target/Shaker" >>= \cont ->
   doesFileExist "target/Shaker.Action.CompileTest.o" >>= \ex ->

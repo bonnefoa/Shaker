@@ -15,7 +15,7 @@ prop_updateFileStat curF curM = not (null curM) ==>
   monadicIO (test curF curM)
   where test curF curM = do
           mC <- run $ newMVar []
-          mM <- run $ newEmptyMVar 
+          mM <- run newEmptyMVar 
           run (updateFileStat mC mM curF curM) 
           mCurF <- run $ readMVar mC
           assert $  curF == mCurF
@@ -26,13 +26,13 @@ prop_schedule fli = monadicIO $ test fli
                    mJ <- run newEmptyMVar 
   		   run $ schedule (ListenerInput fli 0) mJ
   		   res <- run (tryTakeMVar mJ)
-		   assert $ res == (Just fli)
+		   assert $ res == Just fli
 
 prop_listen fli = monadicIO $ test fli
  where test fli = do
         exp <- run $ getCurrentFpCl fli
 	mC <- run $ newMVar []
-	mM <- run $ newEmptyMVar 
+	mM <- run newEmptyMVar 
 	mJ <- run $ newMVar fli
 	run $ listen mC mM mJ
 	Just res <- run $ tryTakeMVar mC

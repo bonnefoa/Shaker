@@ -9,10 +9,11 @@ import Shaker.Properties
 
 prop_completeWord :: Action -> Bool
 prop_completeWord act = length proposedActions == 1
-  where proposedActions = (listActions defaultInput) (show act)
+  where proposedActions = listActions defaultInput (show act)
   
-prop_partialWords :: ActionInt -> Property
-prop_partialWords (ActionInt act num) = num < length strAct ==> length proposedActions > 0
-  where proposedActions = (listActions defaultInput) (take num $ strAct)
+prop_partialWords :: ActionInt -> Bool
+prop_partialWords (ActionInt act num) = length proposedActions > 0
+  where proposedActions = listActions defaultInput (take num strAct)
         strAct = show act 
+
 

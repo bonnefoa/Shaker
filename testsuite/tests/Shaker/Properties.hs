@@ -15,7 +15,7 @@ instance Arbitrary TimeDiff where
 			 `ap` elements tab
 			 `ap` elements tab
 			 `ap` elements tab
-			 `ap` (elements $ map fromIntegral tab)
+			 `ap` elements (map fromIntegral tab)
      where tab = [1..10] 
 
 instance Arbitrary ClockTime where
@@ -30,7 +30,7 @@ instance Arbitrary FileListenInfo where
 instance Arbitrary FileInfo where
    arbitrary = arbitrary >>= \cl ->
                elements [".",".."] >>= \ele ->
-               return $ (FileInfo ele cl)
+               return $ FileInfo ele cl
 
 instance Arbitrary Action where
   arbitrary = elements [Load,Compile,QuickCheck,Quit,Help]
