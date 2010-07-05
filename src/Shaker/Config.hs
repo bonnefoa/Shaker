@@ -11,22 +11,30 @@ import Shaker.Action.Standard
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
-  compileInput = CompileInput (\a-> a  {
+  compileInput = defaultCompileInput,
+  listenerInput = defaultListenerInput,
+  pluginMap = defaultPluginMap,
+  commandMap = defaultCommandMap
+  }
+
+defaultCompileInput :: CompileInput
+defaultCompileInput = CompileInput defaultCompileFlags
+
+defaultCompileFlags :: (DynFlags -> DynFlags)
+defaultCompileFlags = (\a-> a  {
     importPaths = ["src/","testsuite/tests/"], 
     verbosity = 1, 
     outputFile = Just "target/Main",
     objectDir = Just "target",
     hiDir = Just "target",
-    ghcLink = NoLink,
-    packageFlags = [ExposePackage "ghc"]
-  }),
-  listenerInput = ListenerInput {
+    ghcLink = NoLink
+  }) 
+
+defaultListenerInput :: ListenerInput                                   
+defaultListenerInput = ListenerInput {
     fileListenInfo= FileListenInfo "." [] [".*\\.hs$"], 
     delay = 2*10^6
-    },
-  pluginMap = defaultPluginMap,
-  commandMap = defaultCommandMap
-  }
+    }
 
 defaultPluginMap :: PluginMap
 defaultPluginMap = M.fromList list

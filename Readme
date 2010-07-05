@@ -4,6 +4,9 @@ TODO :
 Make action take parameters from command line
 Externalize configuration
 Implement Clean and QuickCheck Action
+Support multi action
+Pass hlint on the project
+Convert InputShaker parameter to Monad
 
 Done : 
 A more flexible action plugin system

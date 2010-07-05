@@ -1,1 +1,1 @@
-ghc -package ghc -isrc/ --make src/Main.hs
+ghc -package ghc -isrc/ --make Shaker.hs
