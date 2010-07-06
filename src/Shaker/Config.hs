@@ -28,7 +28,7 @@ defaultCompileFlags = \a-> a  {
     objectDir = Just "target",
     hiDir = Just "target",
     ghcLink = NoLink,
-    flags =standardWarnings 
+    flags =standardWarnings  
   } 
 
 standardWarnings :: [DynFlag]

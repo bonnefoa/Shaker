@@ -33,7 +33,7 @@ Library
                  mtl >= 1.1,
                  parsec >= 3.1.0,
                  regex-posix >= 0.94.1,
-                 time >= 1.1.4,
+                 old-time >= 1.0.0,
                  hint >= 0.3.2.3
 
 
