@@ -23,7 +23,8 @@ runCompile shakerInput = do
               action targetFiles = 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags
-	               setSessionDynFlags $ procFlags dflags 
+                       (newFlags,_,_) <- parseDynamicFlags dflags [noLoc "-Wall"]
+	               setSessionDynFlags $ procFlags newFlags
                        target <- mapM (`guessTarget` Nothing) targetFiles
                        setTargets target
         	       load LoadAllTargets
