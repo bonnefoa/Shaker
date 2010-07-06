@@ -1,16 +1,17 @@
 TODO : 
-Make action take parameters from command line
-FileListen should take a list of directory
-Externalize configuration
-Implement Clean and QuickCheck Action
-Support multi action
-Use hlint on the project
-Convert InputShaker parameter to Monad
-Configure cabal
-Optimisation possible by saving the files to listen
+  Make action take parameters from command line
+  FileListen should take a list of directory
+  Externalize configuration
+  Implement Clean and QuickCheck Action
+  Support multi action
+  Convert InputShaker parameter to Monad
+  Optimisation possible by saving the files to listen
+  Integrate with cabal for configuration    
 
 Done : 
-A more flexible action plugin system
-Enhanced command-line interface (use haskell-line?)
+  A more flexible action plugin system
+  Enhanced command-line interface (use haskell-line?)
   Support Completion
+  Use hlint on the project
+  Configure cabal
 
