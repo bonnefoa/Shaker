@@ -4,10 +4,9 @@ module Shaker.Action.CompileTest
 import Shaker.Action.Compile
 import Test.HUnit
 import System.Directory
-import Shaker.Io 
-import Shaker.Type
 import Shaker.Config 
   
+testRunCompileProject :: Test
 testRunCompileProject = TestCase $ 
   runCompile defaultInput >> 
   getDirectoryContents "target/Shaker" >>= \cont ->
