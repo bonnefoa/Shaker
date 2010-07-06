@@ -12,8 +12,8 @@ main = do
   inputMv <- newEmptyMVar 
   tokenMv <- newEmptyMVar  
   let inputState = InputState { input = inputMv, token =  tokenMv } 
-      shIn = defaultInput { compileInput = CompileInput (myCompileFlags .defaultCompileFlags)
-      }
+      shIn = defaultInput { compileInput = defaultCompileInput{cfDynFlags = (myCompileFlags .defaultCompileFlags)
+      }}
      in initThread inputState shIn
 
 myCompileFlags :: (DynFlags->DynFlags)

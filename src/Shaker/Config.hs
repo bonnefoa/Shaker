@@ -18,7 +18,7 @@ defaultInput = ShakerInput {
   }
 
 defaultCompileInput :: CompileInput
-defaultCompileInput = CompileInput defaultCompileFlags
+defaultCompileInput = CompileInput  defaultCompileFlags  "-Wall"
 
 defaultCompileFlags :: (DynFlags -> DynFlags)
 defaultCompileFlags = \a-> a  {

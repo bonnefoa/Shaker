@@ -38,7 +38,8 @@ getPluginMap (ShakerInput _ _ pluginMap _ )= pluginMap
 getCommandMap (ShakerInput _ _ _ commandMap)= commandMap
 
 data CompileInput = CompileInput{
-  cfDynFlags :: (DynFlags->DynFlags)
+  cfDynFlags :: (DynFlags->DynFlags),
+  cfCommandLineFlags :: String
 }
 -- ListenerStuff
 data ListenerInput = ListenerInput {
