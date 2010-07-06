@@ -18,6 +18,24 @@ description:
   One features is the continuous action. Shaker will execute the given 
   action each time there is modification to your sources.
 
+Executable shaker
+  Main-Is: Main.hs
+  ghc-options: -Wall
+  hs-source-dirs: src
+  build-depends: base >= 4.1,
+                 containers >= 0.3,
+                 haskeline >= 0.6.2.2,
+                 directory >= 1.0.1.0,
+                 filepath >= 1.1,
+                 ghc >= 6.12,
+                 ghc-paths >= 0.1.0.6,
+                 haskell98 >= 1.0,
+                 mtl >= 1.1,
+                 parsec >= 3.1.0,
+                 regex-posix >= 0.94.1,
+                 old-time >= 1.0.0,
+                 hint >= 0.3.2.3
+
 Library
   exposed-modules: Shaker.Config
   ghc-options: -Wall

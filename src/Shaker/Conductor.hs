@@ -1,3 +1,5 @@
+-- | Conductor is responsible to control the command-line listener, 
+-- the listener manager and the action to execute
 module Shaker.Conductor
   where
 
@@ -38,7 +40,7 @@ listenManager fun shakerInput = do
   -- Run the action
   procId <- forkIO $ forever $ threadExecutor listenState fun
   _ <- readMVar endToken 
-  mapM_ killThread  $  [procId,procCharListener] ++ getListenThreads listenState
+  mapM_ killThread  $  [procId,procCharListener] ++ threadIds listenState
   where listenInput = listenerInput shakerInput
   
 -- | Execute the given action when the modified MVar is filled
