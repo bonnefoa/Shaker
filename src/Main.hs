@@ -5,9 +5,9 @@ import Shaker.Conductor
 import Shaker.Type
 import Shaker.Config
 import Control.Concurrent
-import Control.Concurrent.MVar
 import DynFlags
 
+main :: IO()
 main = do
   inputMv <- newEmptyMVar 
   tokenMv <- newEmptyMVar  

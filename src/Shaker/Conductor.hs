@@ -2,15 +2,10 @@ module Shaker.Conductor
   where
 
 import Shaker.Type
-import Shaker.Parser
-import Shaker.Action.Compile
-import Shaker.Action.Load
 import Control.Monad
 import Control.Concurrent
-import Control.Concurrent.MVar
 import Shaker.Listener
 import Shaker.Cli
-import Control.Monad.State
 import qualified Data.Map as M
  
 -- | Initialize the master thread 
@@ -24,9 +19,9 @@ initThread inputState shakerInput = do
 -- | The main thread. 
 -- Loop until a Quit action is called
 mainThread :: InputState -> ShakerInput -> IO()
-mainThread st@(InputState input token) shakerInput = do
-  tryPutMVar token 42
-  cmd <- takeMVar input
+mainThread st@(InputState inputMv tokenMv) shakerInput = do
+  _ <- tryPutMVar tokenMv 42
+  cmd <- takeMVar inputMv
   executeCommand cmd shakerInput
   case cmd of
        Command _ Quit -> return ()
@@ -42,7 +37,7 @@ listenManager fun shakerInput = do
   listenState <- initialize listenInput
   -- Run the action
   procId <- forkIO $ forever $ threadExecutor listenState fun
-  readMVar endToken 
+  _ <- readMVar endToken 
   mapM_ killThread  $  [procId,procCharListener] ++ getListenThreads listenState
   where listenInput = listenerInput shakerInput
   

@@ -2,11 +2,9 @@ module Shaker.Action.Load
  where
 
 import Language.Haskell.Interpreter
-import Control.Monad
-import Control.Monad.Trans
           
---runLoadFiles :: [FilePath] -> 
-runLoadFiles = runInterpreter . loadFiles
+runLoadFiles :: [FilePath] -> IO (Either InterpreterError () )
+runLoadFiles = runInterpreter . loadFiles 
 
 loadFiles :: [FilePath] -> Interpreter()
 loadFiles files = 

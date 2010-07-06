@@ -2,7 +2,6 @@ module Shaker.Listener
 where
 
 import Control.Monad
-import Control.Monad.Reader
 import Control.Concurrent.MVar
 import Control.Concurrent
 import Shaker.Type
@@ -19,10 +18,10 @@ listen mC mM mJ = do
 
 -- | Update the files status
 updateFileStat :: CurrentFiles -> ModifiedFiles -> [FileInfo] -> [FileInfo] -> IO ()
-updateFileStat mC mM curFiles [] = return ()
+updateFileStat _ _ _ [] = return ()
 updateFileStat mC mM curFiles curMod = do
 --  putStrLn ("Modified files ::"++ (show curMod) )>>
-  swapMVar mC curFiles 
+  _ <- swapMVar mC curFiles 
   putMVar mM curMod 
   return()  
 
@@ -38,8 +37,8 @@ initialize lstInput = do
 
 -- | manage the job box. Fill it with a job every delay
 schedule :: ListenerInput -> Job -> IO()
-schedule (ListenerInput fileListenInfo delay) mJ = do
-  putMVar mJ fileListenInfo 
-  threadDelay delay 
+schedule lstInput mJ = do
+  putMVar mJ $ fileListenInfo lstInput
+  threadDelay $ delay lstInput
   return ()
      

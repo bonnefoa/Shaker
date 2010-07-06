@@ -4,7 +4,6 @@ module Shaker.CliTest
 import Shaker.Cli
 import Shaker.Config
 import Shaker.Type
-import Test.QuickCheck 
 import Shaker.Properties
 
 prop_completeWord :: Action -> Bool

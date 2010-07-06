@@ -3,7 +3,6 @@ module Shaker.Io
  
 import Control.Monad
 import System.Directory
-import System.Time
 import Data.List
 import Shaker.Regex
 import Shaker.Type
@@ -24,16 +23,16 @@ getCurrentFpCl fileListen = do
 -- |List files in the given directory 
 -- Files matching one regexp in the ignore argument are excluded
 listFiles :: FileListenInfo -> IO[FilePath]
-listFiles fli@(FileListenInfo dir ignore include) = do
-    curDir <- canonicalizePath dir 
+listFiles (FileListenInfo inputDir inputIgnore inputInclude) = do
+    curDir <- canonicalizePath inputDir 
     res <- getDirectoryContents curDir
     return $ filteredList curDir res
-    where filteredList curDir res = processListWithRegexp (convertToFullPath curDir res) ignore include
+    where filteredList curDir res = processListWithRegexp (convertToFullPath curDir res) inputIgnore inputInclude
 
 -- | Recursively list all files
 recurseListFiles :: FileListenInfo -> IO [FilePath]
-recurseListFiles fli@(FileListenInfo dir ignore include) = do
-  curDir <- canonicalizePath dir 
+recurseListFiles fli@(FileListenInfo inputDir _ _) = do
+  curDir <- canonicalizePath inputDir
   content <- getDirectoryContents curDir
   directories <- filterM doesDirectoryExist (convertToFullPath curDir (removeDotDirectory content) ) 
   sub <- mapM (\a -> recurseListFiles fli{dir=a}) directories
@@ -43,4 +42,5 @@ recurseListFiles fli@(FileListenInfo dir ignore include) = do
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir = map (\a-> concat [absDir, "/",a]) 
 
+removeDotDirectory :: [String] -> [String]
 removeDotDirectory = filter (\a -> not $ isSuffixOf "." a ) 

@@ -3,8 +3,6 @@ module Shaker.Config
 
 import Shaker.Type
 import DynFlags
-import GHC
-import Shaker.Conductor
 import qualified Data.Map as M
 import Shaker.Action.Compile
 import Shaker.Action.Standard
@@ -27,28 +25,13 @@ defaultCompileFlags = \a-> a  {
     outputFile = Just "target/Main",
     objectDir = Just "target",
     hiDir = Just "target",
-    ghcLink = NoLink,
-    flags =standardWarnings  
+    ghcLink = NoLink
   } 
-
-standardWarnings :: [DynFlag]
-standardWarnings
-    = [ Opt_WarnWarningsDeprecations,
-        Opt_WarnDeprecatedFlags,
-        Opt_WarnUnrecognisedPragmas,
-        Opt_WarnOverlappingPatterns,
-        Opt_WarnMissingFields,
-        Opt_WarnMissingMethods,
-        Opt_WarnDuplicateExports,
-        Opt_WarnLazyUnliftedBindings,
-        Opt_WarnDodgyForeignImports,
-        Opt_WarnWrongDoBind
-      ]
 
 defaultListenerInput :: ListenerInput                                   
 defaultListenerInput = ListenerInput {
     fileListenInfo= FileListenInfo "." [] [".*\\.hs$"], 
-    delay = 2*10^6
+    delay = 2000000
     }
 
 defaultPluginMap :: PluginMap
