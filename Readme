@@ -9,6 +9,7 @@ Support multi action
 Use hlint on the project
 Convert InputShaker parameter to Monad
 Configure cabal
+Optimisation possible by saving the files to listen
 
 Done : 
 A more flexible action plugin system

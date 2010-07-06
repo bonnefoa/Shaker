@@ -27,8 +27,23 @@ defaultCompileFlags = \a-> a  {
     outputFile = Just "target/Main",
     objectDir = Just "target",
     hiDir = Just "target",
-    ghcLink = NoLink
+    ghcLink = NoLink,
+    flags =standardWarnings 
   } 
+
+standardWarnings :: [DynFlag]
+standardWarnings
+    = [ Opt_WarnWarningsDeprecations,
+        Opt_WarnDeprecatedFlags,
+        Opt_WarnUnrecognisedPragmas,
+        Opt_WarnOverlappingPatterns,
+        Opt_WarnMissingFields,
+        Opt_WarnMissingMethods,
+        Opt_WarnDuplicateExports,
+        Opt_WarnLazyUnliftedBindings,
+        Opt_WarnDodgyForeignImports,
+        Opt_WarnWrongDoBind
+      ]
 
 defaultListenerInput :: ListenerInput                                   
 defaultListenerInput = ListenerInput {
