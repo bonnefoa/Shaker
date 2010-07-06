@@ -18,8 +18,8 @@ runCompile :: Plugin
 runCompile shakerInput = do
         targetFiles <-  recurseListFiles fli
         defaultErrorHandler defaultDynFlags $ action targetFiles
-        where (CompileInput procFlags flags) = getCompileInput shakerInput
-              (ListenerInput fli _) = getListenerInput shakerInput
+        where (CompileInput procFlags flags) = compileInput shakerInput
+              (ListenerInput fli _) = listenerInput shakerInput
               action targetFiles = 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags

@@ -32,14 +32,9 @@ data ShakerInput = ShakerInput {
   commandMap :: CommandMap
 }
 
-getCompileInput (ShakerInput compileInput _ _ _ ) = compileInput
-getListenerInput  (ShakerInput _ listenerInput _ _ )= listenerInput
-getPluginMap (ShakerInput _ _ pluginMap _ )= pluginMap
-getCommandMap (ShakerInput _ _ _ commandMap)= commandMap
-
 data CompileInput = CompileInput{
   cfDynFlags :: (DynFlags->DynFlags),
-  cfCommandLineFlags :: String
+  cfCommandLineFlags :: String 
 }
 -- ListenerStuff
 data ListenerInput = ListenerInput {
@@ -61,6 +56,8 @@ type Job = MVar FileListenInfo
 -- |Agregate a FilePath with its modification time
 data FileInfo = FileInfo FilePath ClockTime 
   deriving (Show,Eq)
+
+getFilePath :: FileInfo -> FilePath  
 getFilePath (FileInfo fp _) = fp
 
 data ListenState = ListenState {
@@ -69,6 +66,7 @@ data ListenState = ListenState {
   threadIds :: [ThreadId]
 }
 
+getListenThreads :: ListenState -> [ThreadId] 
 getListenThreads (ListenState _ _ threads) = threads
 
 type PluginMap = M.Map Action (ShakerInput -> IO())

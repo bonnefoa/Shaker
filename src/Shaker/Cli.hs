@@ -36,6 +36,6 @@ completeAction shIn = completeWord (Just '\\') "\"'~" (listActions shIn)
 listActions :: Monad m => ShakerInput -> String -> m [Completion]
 listActions shIn = fun 
   where fun str = return $ filtered str
-        cmdMap = getCommandMap shIn 
+        cmdMap = commandMap shIn 
         filtered input = map simpleCompletion $ filter (input `isPrefixOf`) $ M.keys cmdMap
 

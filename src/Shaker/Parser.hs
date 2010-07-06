@@ -7,7 +7,7 @@ import qualified Data.Map as M
 
 -- | Parse the given string to a Command
 parseCommand :: ShakerInput -> String -> Command
-parseCommand shIn str = case (parse (typeCommand $ getCommandMap shIn) "parseCommand" str) of
+parseCommand shIn str = case (parse (typeCommand $ commandMap shIn) "parseCommand" str) of
     Left err -> Command OneShot Help
     Right val -> val
 

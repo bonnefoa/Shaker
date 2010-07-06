@@ -7,7 +7,7 @@ import qualified Data.Map as M
 runHelp :: Plugin
 runHelp shakerInput = do 
   putStrLn "Following actions are available : "
-  print $ M.keys $ getCommandMap shakerInput
+  print $ M.keys $ commandMap shakerInput
   putStrLn "use ~[actionName] for continuous launch"
 
 runExit :: Plugin

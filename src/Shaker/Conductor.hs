@@ -44,7 +44,7 @@ listenManager fun shakerInput = do
   procId <- forkIO $ forever $ threadExecutor listenState fun
   readMVar endToken 
   mapM_ killThread  $  [procId,procCharListener] ++ getListenThreads listenState
-  where listenInput = getListenerInput shakerInput
+  where listenInput = listenerInput shakerInput
   
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ListenState -> IO() -> IO ThreadId
@@ -59,7 +59,7 @@ executeCommand (Command Continuous act) shakerInput = listenManager ( executeAct
 -- | Execute given action
 executeAction :: Action -> ShakerInput -> IO()
 executeAction act shakerInput = 
-    case M.lookup act (getPluginMap shakerInput) of
+    case M.lookup act (pluginMap shakerInput) of
       Just action -> action shakerInput
       Nothing -> putStrLn $ "action "++ show act ++" is not registered"
                                      

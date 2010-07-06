@@ -2,12 +2,11 @@ module Shaker.Action.LoadTest
  where
 
 import Shaker.Action.Load
-import Shaker.Parser
 import Shaker.Io 
 import Test.HUnit 
 import Shaker.Type
-import Control.Monad.Trans
 
+testCompileFiles :: Test
 testCompileFiles = TestCase $
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \files ->
   runLoadFiles files >>= \res ->
