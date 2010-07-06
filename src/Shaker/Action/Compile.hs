@@ -10,7 +10,7 @@ import Shaker.Type
 -- |Run haskell compilation on given file input 
 runCompile :: Plugin
 runCompile shakerInput = do
-        targetFiles <-  recurseListFiles fli
+        targetFiles <-  recurseMultipleListFiles fli
         defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags

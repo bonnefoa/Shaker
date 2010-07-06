@@ -38,7 +38,7 @@ testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo]
 testModifiedFiles fli proc predicat= monadicIO action
   where action = do 
                curList <- run $ getCurrentFpCl fli 
-               (_,newList) <- run $ listModifiedAndCreatedFiles fli (proc curList)
+               (_,newList) <- run $ listModifiedAndCreatedFiles [fli] (proc curList)
                assert $ predicat curList newList 
 
 prop_listModifiedFiles :: FileListenInfo -> Property

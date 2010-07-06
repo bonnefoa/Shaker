@@ -7,9 +7,16 @@ import Data.List
 import Shaker.Regex
 import Shaker.Type
 
+
+-- |Get the tuples of (newFiles,modifiedFiles) from given list of directory
+listModifiedAndCreatedFiles :: [FileListenInfo] -> [FileInfo] -> IO ([FileInfo],[FileInfo])
+listModifiedAndCreatedFiles job curFiles = do
+   lstNewAndModifier <- mapM (`listModifiedAndCreatedFiles'` curFiles) job
+   return $ foldl1 (\(a,b) (c,d) -> (a++c,b++d)) lstNewAndModifier
+   
 -- |Get the tuples of (newFiles,modifiedFiles) from given directory
-listModifiedAndCreatedFiles :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
-listModifiedAndCreatedFiles fileListen oldFileInfo = do
+listModifiedAndCreatedFiles' :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
+listModifiedAndCreatedFiles' fileListen oldFileInfo = do
   curFileInfo <- getCurrentFpCl fileListen
   return (curFileInfo, curFileInfo \\ oldFileInfo)
 
@@ -28,6 +35,9 @@ listFiles (FileListenInfo inputDir inputIgnore inputInclude) = do
     res <- getDirectoryContents curDir
     return $ filteredList curDir res
     where filteredList curDir res = processListWithRegexp (convertToFullPath curDir res) inputIgnore inputInclude
+
+recurseMultipleListFiles :: [FileListenInfo] -> IO [FilePath]
+recurseMultipleListFiles flis = liftM concat $ mapM recurseListFiles flis
 
 -- | Recursively list all files
 recurseListFiles :: FileListenInfo -> IO [FilePath]

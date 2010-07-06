@@ -40,11 +40,11 @@ defaultCompileFlags = \a-> a  {
 -- The default delay is 2 sec
 defaultListenerInput :: ListenerInput                                   
 defaultListenerInput = ListenerInput {
-    fileListenInfo= FileListenInfo "." [] [".*\\.hs$"], 
-    delay = 2000000
+    fileListenInfo= [FileListenInfo "src/" [] [".*\\.hs$"], FileListenInfo "testsuite/" [] [".*\\.hs$"] ]
+    ,delay = 2000000
     }
 
--- | The default plugin map contains mapping for compile, help and exit action
+-- | The default plugin map contains mapping for compile, help and exit action 
 defaultPluginMap :: PluginMap
 defaultPluginMap = M.fromList list
   where list = [

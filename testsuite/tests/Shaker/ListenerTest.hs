@@ -21,16 +21,16 @@ prop_updateFileStat curF curM = not (null curM) ==>
 prop_schedule :: FileListenInfo -> Property
 prop_schedule fli = monadicIO $ do 
                    mJ <- run newEmptyMVar 
-  		   run $ schedule (ListenerInput fli 0) mJ
+  		   run $ schedule (ListenerInput [fli] 0) mJ
   		   res <- run (tryTakeMVar mJ)
-		   assert $ res == Just fli
+		   assert $ res == Just [fli]
 
 prop_listen :: FileListenInfo -> Property
 prop_listen fli = monadicIO $ do
         expected <- run $ getCurrentFpCl fli
 	mC <- run $ newMVar []
 	mM <- run newEmptyMVar 
-	mJ <- run $ newMVar fli
+	mJ <- run $ newMVar [fli]
 	run $ listen mC mM mJ
 	Just res <- run $ tryTakeMVar mC
 	assert $ expected == res

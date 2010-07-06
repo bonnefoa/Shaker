@@ -53,7 +53,7 @@ data CompileInput = CompileInput{
 
 -- | Configuration of the continuous listener
 data ListenerInput = ListenerInput {
-  fileListenInfo :: FileListenInfo -- ^ The files to listen
+  fileListenInfo :: [FileListenInfo] -- ^ The files to listen
   ,delay :: Int  -- ^ Delay beetween 2 check in microsecond
 }
 
@@ -70,7 +70,7 @@ type CurrentFiles = MVar [FileInfo]
 -- | MVar used to store modifiedFiles since the last check
 type ModifiedFiles = MVar [FileInfo]
 -- | MVar used to pass action to the directory scanner
-type Job = MVar FileListenInfo
+type Job = MVar [FileListenInfo]
 
 -- |Agregate a FilePath with its modification time
 data FileInfo = FileInfo FilePath ClockTime 

@@ -2,6 +2,7 @@ module Shaker.Listener
 where
 
 import Control.Monad
+import Control.Monad.Trans
 import Control.Concurrent.MVar
 import Control.Concurrent
 import Shaker.Type
@@ -12,7 +13,7 @@ listen :: CurrentFiles -> ModifiedFiles -> Job -> IO ()
 listen mC mM mJ = do 
   job <- takeMVar mJ
   curFiles <- readMVar mC 
-  (newFiles,modFiles) <-  listModifiedAndCreatedFiles job curFiles
+  (newFiles,modFiles) <- listModifiedAndCreatedFiles job curFiles
   updateFileStat mC mM newFiles modFiles 
   return ()
 
