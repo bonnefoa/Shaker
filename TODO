@@ -7,6 +7,10 @@ TODO :
   Optimisation possible by saving the files to listen
   Integrate with cabal for configuration    
   bug : ~Compile launche two fork the first time
+  Clean module export
+  Cabal Integration : 
+    Get config through cabal api
+    Propose which composant (Library? Executable?) to build
 
 Done : 
   FileListen should take a list of directory

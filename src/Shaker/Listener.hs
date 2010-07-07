@@ -2,7 +2,6 @@ module Shaker.Listener
 where
 
 import Control.Monad
-import Control.Monad.Trans
 import Control.Concurrent.MVar
 import Control.Concurrent
 import Shaker.Type

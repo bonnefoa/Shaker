@@ -15,8 +15,8 @@ description:
   Shaker is an interactive command-line build tool which allow you to 
   compile, test or run any action on your haskell project. You can define
   new actions to plug to the system.
-  One features is the continuous action. Shaker will execute the given 
-  action each time there is modification to your sources.
+  One interesting feature is the continuous action. 
+  Shaker will execute the given action each time there is modification to your sources.
 
 Executable shaker
   Main-Is: Main.hs
@@ -24,14 +24,14 @@ Executable shaker
   hs-source-dirs: src
   build-depends: base >= 4.1,
                  containers >= 0.3,
-                 haskeline >= 0.6.2.2,
+                 haskeline >= 0.6.0.0 ,
                  directory >= 1.0.1.0,
                  filepath >= 1.1,
-                 ghc >= 6.12,
-                 ghc-paths >= 0.1.0.6,
+                 ghc >= 6,
+                 ghc-paths >= 0.1,
                  haskell98 >= 1.0,
-                 mtl >= 1.1,
-                 parsec >= 3.1.0,
+                 mtl >= 1.0,
+                 parsec >= 3.0,
                  regex-posix >= 0.94.1,
                  old-time >= 1.0.0,
                  hint >= 0.3.2.3
@@ -42,16 +42,15 @@ Library
   hs-source-dirs: src
   build-depends: base >= 4.1,
                  containers >= 0.3,
-                 haskeline >= 0.6.2.2,
+                 haskeline >= 0.6.0.0 ,
                  directory >= 1.0.1.0,
                  filepath >= 1.1,
-                 ghc >= 6.12,
-                 ghc-paths >= 0.1.0.6,
+                 ghc >= 6,
+                 ghc-paths >= 0.1,
                  haskell98 >= 1.0,
-                 mtl >= 1.1,
-                 parsec >= 3.1.0,
+                 mtl >= 1.0,
+                 parsec >= 3.0,
                  regex-posix >= 0.94.1,
                  old-time >= 1.0.0,
                  hint >= 0.3.2.3
-
 
