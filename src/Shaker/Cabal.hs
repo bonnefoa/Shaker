@@ -13,44 +13,43 @@ readConf = getPersistBuildConfig "dist"
 
 cabalInput :: LocalBuildInfo -> ShakerInput 
 cabalInput lbi= ShakerInput {
-  compileInput = cabalCompileInput lbi,
+  compileInput = cabalCompileInput $ getCabalInformation lbi,
   listenerInput = defaultListenerInput,
   pluginMap = defaultPluginMap,
   commandMap = defaultCommandMap
   }
 
-cabalCompileInput :: LocalBuildInfo -> CompileInput
-cabalCompileInput lbi = CompileInput (cabalCompileFlags lbi) "-Wall"
+cabalCompileInput :: CabalInfo -> CompileInput
+cabalCompileInput cabInf = CompileInput (cabalCompileFlags cabInf)  $ compileOption cabInf
 
-cabalCompileFlags :: LocalBuildInfo -> (DynFlags -> DynFlags)
-cabalCompileFlags lbi = \a-> a  {
-    importPaths = ["src/","testsuite/tests/"]
-    ,verbosity = 1
+cabalCompileFlags :: CabalInfo -> (DynFlags -> DynFlags)
+cabalCompileFlags cabInfo = \a-> a  {
+    importPaths = sourceDir cabInfo
     ,outputFile = Just "target/Main"
     ,objectDir = Just "target"
     ,hiDir = Just "target"
     ,ghcLink = NoLink
   } 
 
-data CabalUsefulInfo = CabalUsefulInfo {
+data CabalInfo = CabalInfo {
     sourceDir :: [String]
     ,compileOption :: [String]
   }
+ deriving (Show)
 
-defaultCabalInfo :: CabalUsefulInfo
-defaultCabalInfo = CabalUsefulInfo ["src"] ["-Wall"]
+defaultCabalInfo :: CabalInfo
+defaultCabalInfo = CabalInfo ["src"] ["-Wall"]
 
-{-
-getCabalInformation :: LocalBuildInfo -> CabalUsefulInfo
+getCabalInformation :: LocalBuildInfo -> CabalInfo
 getCabalInformation lbi = 
  case library (localPkgDescr lbi) of
       Nothing -> defaultCabalInfo
-      Just lib -> let localBuildInfo = buildInfo lib in
-          CabalUsefulInfo {
-            sourceDir = hsSourceDirs localBuildInfo
-            ,compileOption = snd $ options localBuildInfo
+      Just lib -> let myLibBuildInfo = libBuildInfo lib in
+          CabalInfo {
+            sourceDir = hsSourceDirs myLibBuildInfo
+            ,compileOption = getCompileOptions myLibBuildInfo
           }
--}
 
-
+getCompileOptions :: BuildInfo -> [String]
+getCompileOptions myLibBuildInfo = snd . head $ options myLibBuildInfo
 

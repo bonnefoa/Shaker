@@ -19,7 +19,7 @@ defaultInput = ShakerInput {
 -- | Default compilation argument.
 -- Wall is activated by default
 defaultCompileInput :: CompileInput
-defaultCompileInput = CompileInput  defaultCompileFlags  "-Wall"
+defaultCompileInput = CompileInput  defaultCompileFlags  ["-Wall"]
 
 -- | default dynamics flags
 -- the sources are expected to be in src as described in <http://www.haskell.org/haskellwiki/structure_of_a_haskell_project>

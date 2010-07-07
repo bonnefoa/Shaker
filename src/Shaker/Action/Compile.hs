@@ -14,7 +14,7 @@ runCompile shakerInput = do
         defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags
-                       (newFlags,_,_) <- parseDynamicFlags dflags [noLoc strflags]
+                       (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
 	               _ <- setSessionDynFlags $ procFlags newFlags
                        target <- mapM (`guessTarget` Nothing) targetFiles
                        setTargets target

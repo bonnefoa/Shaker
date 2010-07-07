@@ -48,7 +48,7 @@ data ShakerInput = ShakerInput {
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
   cfDynFlags :: (DynFlags->DynFlags) -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
-  ,cfCommandLineFlags :: String  -- ^ The command line to pass options to pass to the ghc compiler
+  ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
 }
 
 -- | Configuration of the continuous listener
