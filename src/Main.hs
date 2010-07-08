@@ -4,19 +4,23 @@ module Main
 import Shaker.Conductor
 import Shaker.Type
 import Shaker.Config
-import Control.Concurrent
+import Shaker.Cabal
 import DynFlags
 
 main :: IO()
-main = do
-  inputMv <- newEmptyMVar 
-  tokenMv <- newEmptyMVar  
-  let inputState = InputState { input = inputMv, token =  tokenMv } 
-      shIn = defaultInput { compileInput = defaultCompileInput{cfDynFlags = (myCompileFlags .defaultCompileFlags)
-      }}
-     in initThread inputState shIn
+main = do 
+  inputState <- defaultInputState 
+  initThread inputState $  defaultInput { compileInput = defaultCompileInput{cfDynFlags = (myCompileFlags .defaultCompileFlags)} }
 
 myCompileFlags :: (DynFlags->DynFlags)
 myCompileFlags fl = fl {
           packageFlags = [ExposePackage "ghc"]
   }
+
+
+mainCabal :: IO()
+mainCabal = do
+  inputState <- defaultInputState
+  cab <- defaultCabalInput
+  initThread inputState cab
+

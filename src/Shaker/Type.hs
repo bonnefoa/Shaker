@@ -90,3 +90,18 @@ type CommandMap = M.Map String Action
 -- | Represents an action of shaker
 type Plugin = ShakerInput -> IO()
 
+
+
+
+data CabalInfo = CabalInfo {
+    sourceDir :: [String] -- ^ Location of hs sources
+    ,modules :: [String] -- ^ Exposed modules or main executable. It will be the target of the compilation.
+    ,compileOption :: [String] -- ^ Options to pass to the compiler
+    ,packageType :: PackageType -- ^ Type of cabal information (Library or Executable)
+    ,packagesToExpose :: [String] -- ^ List of package to expose 
+  }
+ deriving (Show)
+
+data PackageType = ExecutableType | LibraryType
+ deriving (Show)
+ 

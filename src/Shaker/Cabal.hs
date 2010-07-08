@@ -8,19 +8,10 @@ import Distribution.Compiler
 import Shaker.Type
 import Shaker.Config
 import DynFlags
+import Control.Monad
 
-
-data CabalInfo = CabalInfo {
-    sourceDir :: [String]
-    ,modules :: [String]
-    ,compileOption :: [String]
-    ,packageType :: PackageType
-  }
- deriving (Show)
-
-data PackageType = ExecutableType | LibraryType
- deriving (Show)
- 
+defaultCabalInput :: IO(ShakerInput)
+defaultCabalInput = liftM cabalInput readConf 
 
 cabalInput :: LocalBuildInfo -> ShakerInput 
 cabalInput lbi = ShakerInput {
@@ -46,21 +37,31 @@ getCabalLibInformation :: LocalBuildInfo -> CabalInfo
 getCabalLibInformation lbi = 
  case library (localPkgDescr lbi) of
       Nothing -> defaultCabalInfo
-      Just lib -> let myLibBuildInfo = libBuildInfo lib in
-          CabalInfo {
-            sourceDir = hsSourceDirs myLibBuildInfo
-            ,compileOption = getCompileOptions myLibBuildInfo
-            ,modules = map show $ exposedModules lib
-            ,packageType = LibraryType
-          }
+      Just lib -> getCabalLibInformation' lib
 
+getCabalLibInformation' :: Library -> CabalInfo
+getCabalLibInformation' lib = 
+  CabalInfo {
+     sourceDir = hsSourceDirs myLibBuildInfo
+     ,compileOption = getCompileOptions myLibBuildInfo
+     ,modules = map show $ exposedModules lib
+     ,packageType = LibraryType
+  }
+  where myLibBuildInfo = libBuildInfo lib
 
 getCabalExecutableInformation :: LocalBuildInfo -> [CabalInfo]
 getCabalExecutableInformation lbi = 
- map parseToCabalInfo $ executables (localPkgDescr lbi) 
+ map getCabalExecutableInformation' $ executables (localPkgDescr lbi) 
 
-parseToCabalInfo :: Executable -> CabalInfo
-parseToCabalInfo = undefined
+getCabalExecutableInformation' :: Executable -> CabalInfo
+getCabalExecutableInformation' executable = 
+  CabalInfo {
+    sourceDir = hsSourceDirs myExeBuildInfo
+    ,compileOption = getCompileOptions myExeBuildInfo
+    ,modules = [modulePath executable]
+    ,packageType = ExecutableType
+  }
+  where myExeBuildInfo = buildInfo executable
 
 getCompileOptions :: BuildInfo -> [String]
 getCompileOptions myLibBuildInfo = 
@@ -69,7 +70,7 @@ getCompileOptions myLibBuildInfo =
        Just res -> res 
  
 defaultCabalInfo :: CabalInfo
-defaultCabalInfo = CabalInfo ["src"] [] ["-Wall"] LibraryType
+defaultCabalInfo = CabalInfo ["src"] [] ["-Wall"] LibraryType []
 
 readConf :: IO (LocalBuildInfo)
 readConf = getPersistBuildConfig "dist"

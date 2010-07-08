@@ -7,6 +7,7 @@ import DynFlags
 import qualified Data.Map as M
 import Shaker.Action.Compile
 import Shaker.Action.Standard
+import Control.Concurrent
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
@@ -63,4 +64,10 @@ defaultCommandMap = M.fromList list
             ("Load",Load),
             ("Quit",Quit)
           ]
+
+defaultInputState :: IO (InputState)
+defaultInputState = do
+  inputMv <- newEmptyMVar 
+  tokenMv <- newEmptyMVar  
+  return $  InputState { input = inputMv, token =  tokenMv } 
 
