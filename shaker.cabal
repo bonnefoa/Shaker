@@ -23,6 +23,7 @@ Executable shaker
   ghc-options: -Wall
   hs-source-dirs: src
   build-depends: base >= 4.1,
+                 Cabal >= 1.8.0.2,
                  containers >= 0.3,
                  haskeline >= 0.6.0.0 ,
                  directory >= 1.0.1.0,
@@ -37,10 +38,14 @@ Executable shaker
                  hint >= 0.3.2.3
 
 Library
-  exposed-modules: Shaker.Config
+  exposed-modules:Shaker.Config
+                  Shaker.Conductor
+                  Shaker.Type
+                  Shaker.Cabal
   ghc-options: -Wall
-  hs-source-dirs: src
+  hs-source-dirs: src 
   build-depends: base >= 4.1,
+                 Cabal >= 1.8.0.2,
                  containers >= 0.3,
                  haskeline >= 0.6.0.0 ,
                  directory >= 1.0.1.0,

@@ -1,15 +1,12 @@
 TODO : 
   Make action take parameters from command line
-  Externalize configuration
   Implement Clean and QuickCheck Action
   Support multi action
   Convert InputShaker parameter to Monad
   Optimisation possible by saving the files to listen
-  Integrate with cabal for configuration    
   bug : ~Compile launche two fork the first time
   Clean module export
   Cabal Integration : 
-    Get config through cabal api
     Propose which composant (Library? Executable?) to build
   Trap ctrl+c
 
@@ -20,4 +17,7 @@ Done :
   Support Completion
   Use hlint on the project
   Configure cabal
+  Externalize configuration
+  Cabal Integration : 
+    Get config through cabal api
 
