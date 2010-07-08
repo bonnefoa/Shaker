@@ -4,16 +4,27 @@ module Shaker.Cabal
 import Distribution.Simple.Configure
 import Distribution.Simple.LocalBuildInfo
 import Distribution.PackageDescription
+import Distribution.Compiler
 import Shaker.Type
 import Shaker.Config
 import DynFlags
 
-readConf :: IO (LocalBuildInfo)
-readConf = getPersistBuildConfig "dist"
+
+data CabalInfo = CabalInfo {
+    sourceDir :: [String]
+    ,modules :: [String]
+    ,compileOption :: [String]
+    ,packageType :: PackageType
+  }
+ deriving (Show)
+
+data PackageType = ExecutableType | LibraryType
+ deriving (Show)
+ 
 
 cabalInput :: LocalBuildInfo -> ShakerInput 
-cabalInput lbi= ShakerInput {
-  compileInput = cabalCompileInput $ getCabalInformation lbi,
+cabalInput lbi = ShakerInput {
+  compileInput = cabalCompileInput $ getCabalLibInformation lbi,
   listenerInput = defaultListenerInput,
   pluginMap = defaultPluginMap,
   commandMap = defaultCommandMap
@@ -31,25 +42,35 @@ cabalCompileFlags cabInfo = \a-> a  {
     ,ghcLink = NoLink
   } 
 
-data CabalInfo = CabalInfo {
-    sourceDir :: [String]
-    ,compileOption :: [String]
-  }
- deriving (Show)
-
-defaultCabalInfo :: CabalInfo
-defaultCabalInfo = CabalInfo ["src"] ["-Wall"]
-
-getCabalInformation :: LocalBuildInfo -> CabalInfo
-getCabalInformation lbi = 
+getCabalLibInformation :: LocalBuildInfo -> CabalInfo
+getCabalLibInformation lbi = 
  case library (localPkgDescr lbi) of
       Nothing -> defaultCabalInfo
       Just lib -> let myLibBuildInfo = libBuildInfo lib in
           CabalInfo {
             sourceDir = hsSourceDirs myLibBuildInfo
             ,compileOption = getCompileOptions myLibBuildInfo
+            ,modules = map show $ exposedModules lib
+            ,packageType = LibraryType
           }
 
+
+getCabalExecutableInformation :: LocalBuildInfo -> [CabalInfo]
+getCabalExecutableInformation lbi = 
+ map parseToCabalInfo $ executables (localPkgDescr lbi) 
+
+parseToCabalInfo :: Executable -> CabalInfo
+parseToCabalInfo = undefined
+
 getCompileOptions :: BuildInfo -> [String]
-getCompileOptions myLibBuildInfo = snd . head $ options myLibBuildInfo
+getCompileOptions myLibBuildInfo = 
+  case lookup GHC (options myLibBuildInfo) of
+       Nothing -> []
+       Just res -> res 
+ 
+defaultCabalInfo :: CabalInfo
+defaultCabalInfo = CabalInfo ["src"] [] ["-Wall"] LibraryType
+
+readConf :: IO (LocalBuildInfo)
+readConf = getPersistBuildConfig "dist"
 
