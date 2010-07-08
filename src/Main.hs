@@ -21,6 +21,8 @@ myCompileFlags fl = fl {
 mainCabal :: IO()
 mainCabal = do
   inputState <- defaultInputState
-  cab <- defaultCabalInput
+  cab <- defaultCabalInput 
   initThread inputState cab
 
+
+    

@@ -11,6 +11,7 @@ TODO :
   Cabal Integration : 
     Get config through cabal api
     Propose which composant (Library? Executable?) to build
+  Trap ctrl+c
 
 Done : 
   FileListen should take a list of directory
