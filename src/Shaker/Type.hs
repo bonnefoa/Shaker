@@ -47,7 +47,9 @@ data ShakerInput = ShakerInput {
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
-  cfDynFlags :: (DynFlags->DynFlags) -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
+  cfSourceDirs :: [String] -- ^ Source of haskell files
+  ,cfCompileTarget :: String  -- ^ Destination of .o and .hi files
+  ,cfDynFlags :: (DynFlags->DynFlags) -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
   ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
 }
 
@@ -90,13 +92,10 @@ type CommandMap = M.Map String Action
 type Plugin = ShakerInput -> IO()
 
 
-
-
 data CabalInfo = CabalInfo {
     sourceDir :: [String] -- ^ Location of hs sources
     ,modules :: [String] -- ^ Exposed modules or main executable. It will be the target of the compilation.
     ,compileOption :: [String] -- ^ Options to pass to the compiler
---    ,packageType :: PackageType -- ^ Type of cabal information (Library or Executable)
     ,packagesToExpose :: [String] -- ^ List of package to expose 
   }
  deriving (Show)

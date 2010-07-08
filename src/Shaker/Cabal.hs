@@ -22,13 +22,16 @@ cabalInput lbi = defaultInput {
   where cabalInfo = localBuildInfoToCabalInfo lbi 
   
 cabalInfoToCompileInput :: CabalInfo -> CompileInput
-cabalInfoToCompileInput cabInf = CompileInput (cabalCompileFlags cabInf)  $ compileOption cabInf
+cabalInfoToCompileInput cabInf = defaultCompileInput {
+  cfSourceDirs = sourceDir cabInf
+  ,cfDynFlags = cabalCompileFlags cabInf
+  ,cfCommandLineFlags = compileOption cabInf
+}
 
 cabalInfoToListenerInput :: CabalInfo -> ListenerInput
 cabalInfoToListenerInput cabInfo = defaultListenerInput {
         fileListenInfo = map (\a -> FileListenInfo a [] [".*\\.hs$"]) (sourceDir  cabInfo)
  } 
-
 
 cabalCompileFlags :: CabalInfo -> (DynFlags -> DynFlags)
 cabalCompileFlags cabInfo = \a-> a  {

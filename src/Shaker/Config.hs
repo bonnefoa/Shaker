@@ -6,6 +6,7 @@ import Shaker.Type
 import DynFlags
 import qualified Data.Map as M
 import Shaker.Action.Compile
+import Shaker.Action.Clean
 import Shaker.Action.Standard
 import Control.Concurrent
 
@@ -20,7 +21,12 @@ defaultInput = ShakerInput {
 -- | Default compilation argument.
 -- Wall is activated by default
 defaultCompileInput :: CompileInput
-defaultCompileInput = CompileInput  defaultCompileFlags  ["-Wall"]
+defaultCompileInput = CompileInput {
+  cfSourceDirs= ["src/","testsuite/tests/"]
+  ,cfCompileTarget =  "target"  
+  ,cfDynFlags = defaultCompileFlags  
+  ,cfCommandLineFlags = ["-Wall"]
+}
 
 -- | default dynamics flags
 -- the sources are expected to be in src as described in <http://www.haskell.org/haskellwiki/structure_of_a_haskell_project>
@@ -28,13 +34,9 @@ defaultCompileInput = CompileInput  defaultCompileFlags  ["-Wall"]
 -- there is no main linkage by default to allow faster compilation feedback
 defaultCompileFlags :: (DynFlags -> DynFlags)
 defaultCompileFlags = \a-> a  {
-    importPaths = ["src/","testsuite/tests/"]
-    ,verbosity = 1
-    ,outputFile = Just "target/Main"
-    ,objectDir = Just "target"
-    ,hiDir = Just "target"
+    verbosity = 1
     ,ghcLink = NoLink
-  } 
+} 
 
 -- | The default Listener configuration
 -- Listened sources are all haskell sources in src/ and testsuite/
@@ -51,6 +53,7 @@ defaultPluginMap = M.fromList list
   where list = [
                 (Compile,runCompile),
                 (Help,runHelp),
+                (Clean,runClean),
                 (Quit,runExit)
               ]
 
@@ -60,6 +63,7 @@ defaultCommandMap = M.fromList list
             ("Compile",Compile),
             ("Help", Help),
             ("QuickCheck",QuickCheck),
+            ("Clean",Clean),
             ("q",Quit),
             ("Load",Load),
             ("Quit",Quit)

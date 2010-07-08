@@ -1,4 +1,6 @@
-module Shaker.Action.Compile
+module Shaker.Action.Compile(
+    runCompile
+  )
  where
 
 import GHC
@@ -15,11 +17,18 @@ runCompile shakerInput = do
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags
                        (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
-	               _ <- setSessionDynFlags $ procFlags newFlags
+	               _ <- setSessionDynFlags $ procFlags $ setSourceAndTarget sourceDir target newFlags
                        target <- mapM (`guessTarget` Nothing) targetFiles
                        setTargets target
         	       _ <- load LoadAllTargets
                        return ()
-        where (CompileInput procFlags strflags) = compileInput shakerInput
+        where (CompileInput sourceDir target procFlags strflags) = compileInput shakerInput
               (ListenerInput fli _) = listenerInput shakerInput
  
+setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags
+setSourceAndTarget sources target dflags = dflags{
+    importPaths = sources
+    ,objectDir = Just target
+    ,hiDir = Just target
+  }
+
