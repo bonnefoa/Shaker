@@ -1,4 +1,7 @@
-module Shaker.Cli
+module Shaker.Cli(
+  getInput
+  ,listActions
+)
  where
 
 import Shaker.Parser

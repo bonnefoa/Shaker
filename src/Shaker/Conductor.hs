@@ -1,6 +1,8 @@
 -- | Conductor is responsible to control the command-line listener, 
 -- the listener manager and the action to execute
-module Shaker.Conductor
+module Shaker.Conductor(
+ initThread
+)
   where
 
 import Shaker.Type
@@ -59,6 +61,4 @@ executeAction act shakerInput =
     case M.lookup act (pluginMap shakerInput) of
       Just action -> action shakerInput
       Nothing -> putStrLn $ "action "++ show act ++" is not registered"
-                                     
-
 

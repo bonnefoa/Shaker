@@ -1,4 +1,10 @@
-module Shaker.Io
+module Shaker.Io(
+  listModifiedAndCreatedFiles
+  ,getCurrentFpCl
+  ,recurseMultipleListFiles
+  ,listFiles
+  ,recurseListFiles 
+)
  where
  
 import Control.Monad

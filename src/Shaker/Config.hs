@@ -4,7 +4,7 @@ module Shaker.Config
 
 import Shaker.Type
 import DynFlags
-import qualified Data.Map as M
+import qualified Data.Map as M (fromList)
 import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Action.Standard

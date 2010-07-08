@@ -1,6 +1,7 @@
 module Shaker.RunTest
  where
 
+{-
 import Shaker.ListenerTest
 import Shaker.ParserTest
 import Shaker.RegexTest
@@ -10,7 +11,6 @@ import Control.Monad.Trans
 
 runAll :: IO()
 runAll = mapM_ liftIO testLists
-
 testLists :: [IO()]
 testLists =[ 
   quickCheck prop_listFiles, 
@@ -37,3 +37,4 @@ testLists =[
   quickCheck prop_getIncludedAll_all, 
   quickCheck prop_getIncludedAll_none
   ]
+  -}

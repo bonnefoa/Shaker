@@ -1,4 +1,6 @@
-module Shaker.Parser
+module Shaker.Parser(
+  parseCommand
+)
  where
 
 import Text.ParserCombinators.Parsec

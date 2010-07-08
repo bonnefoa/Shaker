@@ -1,15 +1,21 @@
-module Shaker.Cabal
+module Shaker.Cabal(
+  defaultCabalInput
+)
  where
 
-import Distribution.Simple.Configure
-import Distribution.Simple.LocalBuildInfo
-import Distribution.PackageDescription
-import Distribution.Compiler
-import Distribution.Package
+import Distribution.Simple.Configure (getPersistBuildConfig)
+import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
+import Distribution.PackageDescription(BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules)
+import Distribution.Compiler(CompilerFlavor(GHC))
+import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
 import Shaker.Type
 import Shaker.Config
-import DynFlags
-import Control.Monad
+import DynFlags(
+    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
+    ,PackageFlag (ExposePackage)
+    ,GhcLink (NoLink)
+  )
+import Control.Monad(liftM)
 
 defaultCabalInput :: IO(ShakerInput)
 defaultCabalInput = liftM cabalInput readConf 

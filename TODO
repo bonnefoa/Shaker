@@ -1,4 +1,5 @@
 TODO : 
+  Big refactoring : Better model for information representation, better separations!
   Make action take parameters from command line
   Implement Clean and QuickCheck Action
   Support multi action

@@ -5,35 +5,26 @@ import Test.QuickCheck
 import Shaker.Type
 import Shaker.Parser
 import Shaker.Config
-import Text.ParserCombinators.Parsec
-
-
-prop_parseTypeOneShot :: String -> Bool
-prop_parseTypeOneShot cont = checkRes res (== OneShot)
-  where res = parse typeDuration "test" (filter (/= '~') cont)
-
-prop_parseTypeContinuous :: Int -> Property
-prop_parseTypeContinuous num= num <1000 ==> checkRes res (== Continuous)
-  where res = parse typeDuration "test" (replicate num ' '++"~" )
-
+import Data.Map (toList)
+ 
 prop_parseDefaultAction :: String -> Bool
 prop_parseDefaultAction act = res == Command OneShot Help  
   where res = parseCommand defaultInput (act ++"x")
 
-prop_parseAction :: Action -> Bool
-prop_parseAction act = checkRes res (==act)  
-  where res = parse (typeAction defaultCommandMap) "test" (show act)
+prop_parseCommand :: CommandString -> Bool
+prop_parseCommand (CommandString str expCom) = parsed == expCom 
+  where parsed = parseCommand defaultInput str
 
-prop_parseOneShotCommand :: Action -> Bool
-prop_parseOneShotCommand act = checkRes res (== Command OneShot act)
-  where res = parse (typeCommand defaultCommandMap) "test" (show act)
+instance Arbitrary Duration where
+  arbitrary = elements [Continuous,OneShot]
 
-prop_parseContinuousCommand :: Action -> Bool
-prop_parseContinuousCommand act = checkRes res (== Command Continuous act)
-  where res = parse (typeCommand defaultCommandMap) "test" ('~':show act)
+data CommandString = CommandString String Command 
+ deriving (Show)
+instance Arbitrary CommandString where
+  arbitrary = do 
+    dur <- arbitrary 
+    elements $ map (\(a,b) -> CommandString (appendDur dur a) (Command dur b))  $ toList defaultCommandMap 
 
-checkRes :: (Either ParseError a) -> (a -> Bool) -> Bool
-checkRes (Left _) _ = False
-checkRes (Right val) predica = predica val
-
-
+appendDur :: Duration -> String -> String
+appendDur Continuous str = "~" ++ str
+appendDur _ str = str
