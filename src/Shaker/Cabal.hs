@@ -8,6 +8,7 @@ import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
 import Distribution.PackageDescription(BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules)
 import Distribution.Compiler(CompilerFlavor(GHC))
 import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
+import Shaker.Io(FileListenInfo(..))
 import Shaker.Type
 import Shaker.Config
 import DynFlags(
@@ -16,6 +17,16 @@ import DynFlags(
     ,GhcLink (NoLink)
   )
 import Control.Monad(liftM)
+
+
+data CabalInfo = CabalInfo {
+    sourceDir :: [String] -- ^ Location of hs sources
+    ,modules :: [String] -- ^ Exposed modules or main executable. It will be the target of the compilation.
+    ,compileOption :: [String] -- ^ Options to pass to the compiler
+    ,packagesToExpose :: [String] -- ^ List of package to expose 
+  }
+ deriving (Show)
+
 
 defaultCabalInput :: IO(ShakerInput)
 defaultCabalInput = liftM cabalInput readConf 

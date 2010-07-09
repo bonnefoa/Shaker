@@ -4,6 +4,8 @@ module Shaker.Io(
   ,recurseMultipleListFiles
   ,listFiles
   ,recurseListFiles 
+  ,FileInfo(FileInfo)
+  ,FileListenInfo(..)
 )
  where
  
@@ -11,8 +13,19 @@ import Control.Monad
 import System.Directory
 import Data.List
 import Shaker.Regex
-import Shaker.Type
+import System.Time
 
+-- | Represents directory to listen 
+data FileListenInfo = FileListenInfo{
+  dir :: FilePath     -- ^ location of the listened directory
+  ,ignore :: [String] -- ^ ignore patterns
+  ,include :: [String] -- ^include patterns
+  }
+  deriving (Show,Eq)
+
+-- |Agregate a FilePath with its modification time
+data FileInfo = FileInfo FilePath ClockTime 
+  deriving (Show,Eq)
 
 -- |Get the tuples of (newFiles,modifiedFiles) from given list of directory
 listModifiedAndCreatedFiles :: [FileListenInfo] -> [FileInfo] -> IO ([FileInfo],[FileInfo])

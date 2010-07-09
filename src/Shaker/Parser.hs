@@ -10,7 +10,7 @@ import qualified Data.Map as M
 -- | Parse the given string to a Command
 parseCommand :: ShakerInput -> String -> Command
 parseCommand shIn str = case (parse (typeCommand $ commandMap shIn) "parseCommand" str) of
-    Left err -> Command OneShot Help
+    Left _ -> Command OneShot Help
     Right val -> val
 
 -- | Parse to a Type
@@ -29,5 +29,6 @@ typeDuration :: GenParser Char st Duration
 typeDuration = skipMany (char ' ') >>
   option OneShot (char '~' >> return Continuous)
 
+parseMapAction :: CommandMap -> [GenParser Char st Action]
 parseMapAction cmMap= map (\(k,v) -> try (string k) >> return v) (M.toList cmMap)
 

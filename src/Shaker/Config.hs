@@ -3,6 +3,8 @@ module Shaker.Config
  where
 
 import Shaker.Type
+import Shaker.Io(FileListenInfo(..))
+import Shaker.Cli(InputState(..))
 import DynFlags
 import qualified Data.Map as M (fromList)
 import Shaker.Action.Compile
