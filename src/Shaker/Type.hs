@@ -5,6 +5,8 @@ import DynFlags(DynFlags)
 import Shaker.Io(FileListenInfo)
 import qualified Data.Map as M
 
+
+
 -- | Duration define the life span of an action
 data Duration = 
 	OneShot     -- ^Execute the action and give back control

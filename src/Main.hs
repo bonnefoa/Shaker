@@ -4,12 +4,13 @@ module Main
 import Shaker.Conductor
 import Shaker.Config
 import Shaker.Cabal
+import Control.Monad.Reader
 
 main :: IO()
 main = do
   inputState <- defaultInputState
   cab <- defaultCabalInput 
-  initThread inputState cab
+  runReaderT (initThread inputState) cab
 
 
     

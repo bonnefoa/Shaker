@@ -6,6 +6,7 @@ import Shaker.Io
 import Test.HUnit 
 import Shaker.Type
 
+{-
 testCompileFiles :: Test
 testCompileFiles = TestCase $
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \files ->
@@ -13,4 +14,4 @@ testCompileFiles = TestCase $
   case res of 
       Left mes -> assertFailure (show mes) 
       _ -> assertBool "" True
-
+-}

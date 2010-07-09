@@ -11,14 +11,20 @@ import Control.Concurrent
 import Shaker.Listener
 import Shaker.Cli
 import qualified Data.Map as M
+import Control.Monad.Reader
+import Control.Monad.Trans
  
+
+type Shaker  = ReaderT ShakerInput 
+
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
-initThread :: InputState -> ShakerInput -> IO()
-initThread inputState shakerInput = do
-  procId <- forkIO $ forever (getInput shakerInput inputState)   
-  mainThread inputState shakerInput 
-  killThread procId
+initThread :: InputState -> Shaker IO()
+initThread inputState = do
+  shakerInput <- ask
+  procId <- lift $ forkIO $ forever (getInput shakerInput inputState)   
+  lift$ mainThread inputState shakerInput 
+  lift $ killThread procId
  
 -- | The main thread. 
 -- Loop until a Quit action is called
