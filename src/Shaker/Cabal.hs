@@ -1,3 +1,5 @@
+-- | Allow to use cabal configuration (generated via the configure action of cabal).
+-- Source directories and compilation options will be reused by Shaker.
 module Shaker.Cabal(
   defaultCabalInput
 )
@@ -18,7 +20,6 @@ import DynFlags(
   )
 import Control.Monad(liftM)
 
-
 data CabalInfo = CabalInfo {
     sourceDir :: [String] -- ^ Location of hs sources
     ,modules :: [String] -- ^ Exposed modules or main executable. It will be the target of the compilation.
@@ -27,16 +28,28 @@ data CabalInfo = CabalInfo {
   }
  deriving (Show)
 
+-- * Default configuration
 
 defaultCabalInput :: IO(ShakerInput)
 defaultCabalInput = liftM cabalInput readConf 
+ 
+defaultCabalInfo :: CabalInfo
+defaultCabalInfo = CabalInfo ["src"] [] ["-Wall"] []
 
+readConf :: IO (LocalBuildInfo)
+readConf = getPersistBuildConfig "dist"
+
+-- | Convert a cabal localBuildInfo to a shakerInput
+-- It try to obtain all necessary information like source dirs, 
+-- library dependencies for the project compilation. 
 cabalInput :: LocalBuildInfo -> ShakerInput 
 cabalInput lbi = defaultInput { 
       compileInput = cabalInfoToCompileInput cabalInfo 
       ,listenerInput = cabalInfoToListenerInput cabalInfo
   }
   where cabalInfo = localBuildInfoToCabalInfo lbi 
+
+-- * CabalInfo converters
   
 cabalInfoToCompileInput :: CabalInfo -> CompileInput
 cabalInfoToCompileInput cabInf = defaultCompileInput {
@@ -61,6 +74,8 @@ cabalCompileFlags cabInfo = \a-> a  {
     ,packageFlags = map ExposePackage $ packagesToExpose cabInfo
   } 
 
+-- * Information extraction from cabal objects
+
 localBuildInfoToCabalInfo :: LocalBuildInfo -> CabalInfo
 localBuildInfoToCabalInfo lbi = 
  case library (localPkgDescr lbi) of
@@ -83,9 +98,6 @@ getCompileOptions myLibBuildInfo =
   case lookup GHC (options myLibBuildInfo) of
        Nothing -> []
        Just res -> res 
- 
-defaultCabalInfo :: CabalInfo
-defaultCabalInfo = CabalInfo ["src"] [] ["-Wall"] []
 
 getLibDependencies :: BuildInfo -> [String] 
 getLibDependencies bi = map getPackageName $ targetBuildDepends bi 
@@ -93,8 +105,6 @@ getLibDependencies bi = map getPackageName $ targetBuildDepends bi
 getPackageName :: Dependency -> String
 getPackageName (Dependency (PackageName pn) _) = pn
 
-readConf :: IO (LocalBuildInfo)
-readConf = getPersistBuildConfig "dist"
 
 
   
