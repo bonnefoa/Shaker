@@ -1,7 +1,8 @@
 module Shaker.Action.Load
  where
 
-import Language.Haskell.Interpreter
+{-
+  - import Language.Haskell.Interpreter
           
 runLoadFiles :: [FilePath] -> IO (Either InterpreterError () )
 runLoadFiles = runInterpreter . loadFiles 
@@ -12,4 +13,4 @@ loadFiles files =
   loadModules files >>
   getLoadedModules >>= liftIO . print
 
-
+-}

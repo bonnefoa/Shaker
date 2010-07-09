@@ -25,7 +25,7 @@ Executable shaker
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
-                 haskeline >= 0.6.0.0 ,
+                 haskeline >= 0.6.0.0 && < 0.6.2.2 ,
                  directory >= 1.0.1.0,
                  filepath >= 1.1,
                  ghc >= 6,
@@ -34,8 +34,7 @@ Executable shaker
                  mtl >= 1.0,
                  parsec >= 3.0,
                  regex-posix >= 0.94.1,
-                 old-time >= 1.0.0,
-                 hint >= 0.3.2.3
+                 old-time >= 1.0.0
 
 Library
   exposed-modules:Shaker.Config
@@ -56,6 +55,5 @@ Library
                  mtl >= 1.0,
                  parsec >= 3.0,
                  regex-posix >= 0.94.1,
-                 old-time >= 1.0.0,
-                 hint >= 0.3.2.3
+                 old-time >= 1.0.0
 
