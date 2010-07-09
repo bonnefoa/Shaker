@@ -23,19 +23,20 @@ initThread :: InputState -> Shaker IO()
 initThread inputState = do
   shakerInput <- ask
   procId <- lift $ forkIO $ forever (getInput shakerInput inputState)   
-  lift$ mainThread inputState shakerInput 
+  mainThread inputState 
   lift $ killThread procId
  
 -- | The main thread. 
 -- Loop until a Quit action is called
-mainThread :: InputState -> ShakerInput -> IO()
-mainThread st@(InputState inputMv tokenMv) shakerInput = do
-  _ <- tryPutMVar tokenMv 42
-  cmd <- takeMVar inputMv
-  executeCommand cmd shakerInput
+mainThread :: InputState -> Shaker IO()
+mainThread st@(InputState inputMv tokenMv) = do
+  shakerInput <- ask
+  _ <- lift $ tryPutMVar tokenMv 42
+  cmd <- lift $ takeMVar inputMv
+  lift $ executeCommand cmd  shakerInput
   case cmd of
        Command _ Quit -> return ()
-       _ ->  mainThread st shakerInput 
+       _ ->  mainThread st
 
 -- | Continuously execute the given action until a keyboard input is done
 listenManager :: IO() -> ShakerInput -> IO()
