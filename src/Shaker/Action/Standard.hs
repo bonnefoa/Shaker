@@ -18,7 +18,10 @@ runExit :: Plugin
 runExit = lift $ putStrLn "Exiting"
 
 runStartAction :: Plugin
-runStartAction = lift $ putStrLn ""
+runStartAction = lift $ 
+  putStrLn "---------- Begin action -------------------------"
 
 runEndAction :: Plugin
-runEndAction = lift $ putStrLn "End action"
+runEndAction = lift $ 
+  putStrLn "---------- End action ---------------------------"
+

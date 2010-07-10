@@ -52,7 +52,7 @@ defaultListenerInput = ListenerInput {
 
 -- | The default plugin map contains mapping for compile, help and exit action 
 defaultPluginMap :: PluginMap
-defaultPluginMap = M.fromList list
+defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEndAction)) list
   where list = [
                 (Compile,runCompile ),
                 (Help,runHelp),
