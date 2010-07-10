@@ -17,8 +17,8 @@ import Control.Monad.Reader
 -- Once the master thread is finished, all input threads are killed
 initThread :: InputState -> Shaker IO()
 initThread inputState = do
-  shakerInput <- ask
-  procId <- lift $ forkIO $ forever (runReaderT (getInput inputState) shakerInput )   
+  act <- asks $ runReaderT (getInput inputState) 
+  procId <- lift $ forkIO $ forever act
   mainThread inputState 
   lift $ killThread procId
  
@@ -34,31 +34,29 @@ mainThread st@(InputState inputMv tokenMv) = do
        _ ->  mainThread st
 
 -- | Continuously execute the given action until a keyboard input is done
-listenManager :: Shaker IO() -> ShakerInput -> Shaker IO()
-listenManager fun shakerInput = do
-  -- Setup keyboard listener
-  endToken <- lift $ newEmptyMVar 
-  procCharListener <- lift $ forkIO $ getChar >>= putMVar endToken
-  -- Setup source listener
-  listenState <- lift $ initialize listenInput
-  -- Run the action
+listenManager :: Shaker IO() -> Shaker IO()
+listenManager fun = do
   shIn <- ask 
-  procId <- lift $ forkIO $ forever $ threadExecutor listenState (runReaderT fun shIn)
-  _ <- lift $ readMVar endToken 
-  lift $ mapM_ killThread  $  [procId,procCharListener] ++ threadIds listenState
-  where listenInput = listenerInput shakerInput
+  lift $ action shIn 
+  where action shIn = do
+          -- Setup keyboard listener
+          endToken <- newEmptyMVar 
+          procCharListener <- forkIO $ getChar >>= putMVar endToken
+          -- Setup source listener
+          listenState <- initialize (listenerInput shIn)
+          -- Run the action
+          procId <-  forkIO $ forever $ threadExecutor listenState (runReaderT fun shIn)
+          _ <- readMVar endToken 
+          mapM_ killThread  $  [procId,procCharListener] ++ threadIds listenState
   
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ListenState -> IO() -> IO ThreadId
-threadExecutor listenState fun = 
-  takeMVar (modifiedFiles listenState) >> forkIO fun 
+threadExecutor listenState fun = takeMVar (modifiedFiles listenState) >> forkIO fun 
 
 -- | Execute Given Command in a new thread
 executeCommand :: Command -> Shaker IO()
 executeCommand (Command OneShot act) = executeAction act 
-executeCommand (Command Continuous act) = do
-  shIn <- ask 
-  listenManager ( executeAction act ) shIn
+executeCommand (Command Continuous act) = listenManager ( executeAction act ) >> return () 
 
 -- | Execute given action
 executeAction :: Action -> Shaker IO()
