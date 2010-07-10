@@ -72,9 +72,9 @@ defaultCommandMap = M.fromList list
             ("Quit",Quit)
           ]
 
-defaultInputState :: IO (InputState)
+defaultInputState :: IO InputState
 defaultInputState = do
   inputMv <- newEmptyMVar 
   tokenMv <- newEmptyMVar  
-  return $  InputState { input = inputMv, token =  tokenMv } 
+  return InputState { input = inputMv, token =  tokenMv } 
 

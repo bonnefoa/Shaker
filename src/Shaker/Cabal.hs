@@ -19,6 +19,7 @@ import DynFlags(
     ,GhcLink (NoLink)
   )
 import Control.Monad(liftM)
+import Data.Maybe
 
 data CabalInfo = CabalInfo {
     sourceDir :: [String] -- ^ Location of hs sources
@@ -30,13 +31,13 @@ data CabalInfo = CabalInfo {
 
 -- * Default configuration
 
-defaultCabalInput :: IO(ShakerInput)
+defaultCabalInput :: IO ShakerInput
 defaultCabalInput = liftM cabalInput readConf 
  
 defaultCabalInfo :: CabalInfo
 defaultCabalInfo = CabalInfo ["src"] [] ["-Wall"] []
 
-readConf :: IO (LocalBuildInfo)
+readConf :: IO LocalBuildInfo
 readConf = getPersistBuildConfig "dist"
 
 -- | Convert a cabal localBuildInfo to a shakerInput
@@ -63,8 +64,8 @@ cabalInfoToListenerInput cabInfo = defaultListenerInput {
         fileListenInfo = map (\a -> FileListenInfo a [] [".*\\.hs$"]) (sourceDir  cabInfo)
  } 
 
-cabalCompileFlags :: CabalInfo -> (DynFlags -> DynFlags)
-cabalCompileFlags cabInfo = \a-> a  {
+cabalCompileFlags :: CabalInfo -> DynFlags -> DynFlags
+cabalCompileFlags cabInfo dnFlags = dnFlags  {
     importPaths = sourceDir cabInfo
     ,outputFile = Just "target/Main"
     ,objectDir = Just "target"
@@ -95,9 +96,7 @@ libraryToCabalInfo lib =
 
 getCompileOptions :: BuildInfo -> [String]
 getCompileOptions myLibBuildInfo = 
-  case lookup GHC (options myLibBuildInfo) of
-       Nothing -> []
-       Just res -> res 
+  fromMaybe [] $ lookup GHC (options myLibBuildInfo) 
 
 getLibDependencies :: BuildInfo -> [String] 
 getLibDependencies bi = map getPackageName $ targetBuildDepends bi 

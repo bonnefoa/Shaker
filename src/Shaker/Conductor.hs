@@ -12,6 +12,7 @@ import Shaker.Listener
 import Shaker.Cli
 import qualified Data.Map as M
 import Control.Monad.Reader
+import Data.Maybe
  
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
@@ -62,7 +63,7 @@ executeCommand (Command Continuous act) = listenManager ( executeAction act ) >>
 executeAction :: Action -> Shaker IO()
 executeAction act = do
     thePluginMap <- asks pluginMap
-    case M.lookup act thePluginMap of
-      Just action -> action 
-      Nothing -> lift $ putStrLn $ "action "++ show act ++" is not registered"
+    fromMaybe 
+      (lift $ putStrLn $ "action "++ show act ++" is not registered")
+      (M.lookup act thePluginMap)
 

@@ -72,4 +72,4 @@ convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir = map (\a-> concat [absDir, "/",a]) 
 
 removeDotDirectory :: [String] -> [String]
-removeDotDirectory = filter (\a -> not $ isSuffixOf "." a ) 
+removeDotDirectory = filter (not . isSuffixOf "."  ) 

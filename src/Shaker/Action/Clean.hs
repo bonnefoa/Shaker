@@ -12,6 +12,5 @@ runClean = do
        lift$  action toClean 
     where action toClean = do
                    ex <- doesDirectoryExist toClean
-                   case ex of
-                     True -> removeDirectoryRecursive toClean
-                     False -> putStrLn "No target to remove" 
+                   if ex then removeDirectoryRecursive toClean  
+                         else putStrLn "No target to remove" 
