@@ -9,7 +9,7 @@ import Control.Monad.Reader
   
 testRunCompileProject :: Test
 testRunCompileProject = TestCase $ 
-  runReaderT (runCompile defaultInput) defaultInput >> 
+  runReaderT runCompile  defaultInput >> 
   getDirectoryContents "target/Shaker" >>= \cont ->
   doesFileExist "target/Shaker.Action.CompileTest.o" >>= \ex ->
   doesFileExist "target/Shaker.Action.CompileTest.hi" >>= \ex2 ->

@@ -63,6 +63,6 @@ executeCommand (Command Continuous act) shakerInput = listenManager ( executeAct
 executeAction :: Action -> ShakerInput -> IO()
 executeAction act shakerInput = 
     case M.lookup act (pluginMap shakerInput) of
-      Just action -> runReaderT (action shakerInput) shakerInput 
+      Just action -> runReaderT action  shakerInput 
       Nothing -> putStrLn $ "action "++ show act ++" is not registered"
 

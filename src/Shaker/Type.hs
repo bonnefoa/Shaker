@@ -56,6 +56,6 @@ type PluginMap = M.Map Action Plugin
 -- | Represents the mapping between the command-line input and the action
 type CommandMap = M.Map String Action 
 -- | Represents an action of shaker
-type Plugin = ShakerInput -> Shaker  IO()
+type Plugin = Shaker  IO()
 
 

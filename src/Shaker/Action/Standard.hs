@@ -4,18 +4,21 @@ module Shaker.Action.Standard
 import Shaker.Type
 import qualified Data.Map as M
 import Control.Monad.Trans
+import Control.Monad.Reader
 
 runHelp :: Plugin
-runHelp shakerInput = lift $ do 
+runHelp = do 
+  commands <- asks commandMap 
+  lift $ do   
   putStrLn "Following actions are available : "
-  print $ M.keys $ commandMap shakerInput
+  print $ M.keys commands
   putStrLn "use ~[actionName] for continuous launch"
 
 runExit :: Plugin
-runExit _ = lift $ putStrLn "Exiting"
+runExit = lift $ putStrLn "Exiting"
 
 runStartAction :: Plugin
-runStartAction _ = lift $ putStrLn ""
+runStartAction = lift $ putStrLn ""
 
 runEndAction :: Plugin
-runEndAction _ = lift $ putStrLn "End action"
+runEndAction = lift $ putStrLn "End action"
