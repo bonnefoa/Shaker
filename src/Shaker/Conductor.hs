@@ -13,13 +13,12 @@ import Shaker.Cli
 import qualified Data.Map as M
 import Control.Monad.Reader
  
-
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
 initThread :: InputState -> Shaker IO()
 initThread inputState = do
   shakerInput <- ask
-  procId <- lift $ forkIO $ forever (getInput shakerInput inputState)   
+  procId <- lift $ forkIO $ forever (runReaderT (getInput inputState) shakerInput )   
   mainThread inputState 
   lift $ killThread procId
  

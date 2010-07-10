@@ -12,7 +12,8 @@ import Control.Monad.Trans
 import System.Console.Haskeline
 import qualified Data.Map as M
 import Data.List
-
+import Control.Monad.Reader
+ 
 -- | The input mvar is used to push the parsed command
 type Input = MVar Command
 -- | Token is used to manage the token between action executor and command-line listener
@@ -24,11 +25,13 @@ data InputState = InputState {
 }
 
 -- | Listen to keyboard input and parse command
-getInput :: ShakerInput -> InputState -> IO()
-getInput shIn (InputState inputMv tokenMv) =runInputT (myDefaultSettings shIn) $ do
-        _ <- lift $ takeMVar tokenMv 
-        minput <- getInputLine "% "
-        case minput of 
+getInput :: InputState -> Shaker IO()
+getInput (InputState inputMv tokenMv) = do
+        shIn <- ask 
+        lift $ runInputT (myDefaultSettings shIn) $ do
+          _ <- lift $ takeMVar tokenMv 
+          minput <- getInputLine "% "
+          case minput of 
              Nothing -> return()
              Just str -> lift $ tryPutMVar inputMv (parseCommand shIn str) >> return() 
 

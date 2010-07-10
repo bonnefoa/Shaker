@@ -6,7 +6,6 @@ import Shaker.Io(FileListenInfo)
 import qualified Data.Map as M
 import Control.Monad.Reader
 
-
 type Shaker  = ReaderT ShakerInput 
 
 -- | Duration define the life span of an action
