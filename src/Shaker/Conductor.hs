@@ -27,26 +27,26 @@ initThread inputState = do
 -- Loop until a Quit action is called
 mainThread :: InputState -> Shaker IO()
 mainThread st@(InputState inputMv tokenMv) = do
-  shakerInput <- ask
   _ <- lift $ tryPutMVar tokenMv 42
   cmd <- lift $ takeMVar inputMv
-  lift $ executeCommand cmd  shakerInput
+  executeCommand cmd  
   case cmd of
        Command _ Quit -> return ()
        _ ->  mainThread st
 
 -- | Continuously execute the given action until a keyboard input is done
-listenManager :: IO() -> ShakerInput -> IO()
+listenManager :: Shaker IO() -> ShakerInput -> Shaker IO()
 listenManager fun shakerInput = do
   -- Setup keyboard listener
-  endToken <- newEmptyMVar 
-  procCharListener <- forkIO $ getChar >>= putMVar endToken
+  endToken <- lift $ newEmptyMVar 
+  procCharListener <- lift $ forkIO $ getChar >>= putMVar endToken
   -- Setup source listener
-  listenState <- initialize listenInput
+  listenState <- lift $ initialize listenInput
   -- Run the action
-  procId <- forkIO $ forever $ threadExecutor listenState fun
-  _ <- readMVar endToken 
-  mapM_ killThread  $  [procId,procCharListener] ++ threadIds listenState
+  shIn <- ask 
+  procId <- lift $ forkIO $ forever $ threadExecutor listenState (runReaderT fun shIn)
+  _ <- lift $ readMVar endToken 
+  lift $ mapM_ killThread  $  [procId,procCharListener] ++ threadIds listenState
   where listenInput = listenerInput shakerInput
   
 -- | Execute the given action when the modified MVar is filled
@@ -55,14 +55,17 @@ threadExecutor listenState fun =
   takeMVar (modifiedFiles listenState) >> forkIO fun 
 
 -- | Execute Given Command in a new thread
-executeCommand :: Command -> ShakerInput -> IO()
-executeCommand (Command OneShot act) shakerInput = executeAction act shakerInput 
-executeCommand (Command Continuous act) shakerInput = listenManager ( executeAction act shakerInput) shakerInput
+executeCommand :: Command -> Shaker IO()
+executeCommand (Command OneShot act) = executeAction act 
+executeCommand (Command Continuous act) = do
+  shIn <- ask 
+  listenManager ( executeAction act ) shIn
 
 -- | Execute given action
-executeAction :: Action -> ShakerInput -> IO()
-executeAction act shakerInput = 
-    case M.lookup act (pluginMap shakerInput) of
-      Just action -> runReaderT action shakerInput 
-      Nothing -> putStrLn $ "action "++ show act ++" is not registered"
+executeAction :: Action -> Shaker IO()
+executeAction act = do
+    thePluginMap <- asks pluginMap
+    case M.lookup act thePluginMap of
+      Just action -> action 
+      Nothing -> lift $ putStrLn $ "action "++ show act ++" is not registered"
 
