@@ -4,8 +4,10 @@ module Shaker.Type
 import DynFlags(DynFlags)
 import Shaker.Io(FileListenInfo)
 import qualified Data.Map as M
+import Control.Monad.Reader
 
 
+type Shaker  = ReaderT ShakerInput 
 
 -- | Duration define the life span of an action
 data Duration = 
@@ -54,6 +56,6 @@ type PluginMap = M.Map Action Plugin
 -- | Represents the mapping between the command-line input and the action
 type CommandMap = M.Map String Action 
 -- | Represents an action of shaker
-type Plugin = ShakerInput -> IO()
+type Plugin = ShakerInput -> Shaker  IO()
 
 

@@ -5,10 +5,11 @@ import Shaker.Action.Compile
 import Test.HUnit
 import System.Directory
 import Shaker.Config 
+import Control.Monad.Reader
   
 testRunCompileProject :: Test
 testRunCompileProject = TestCase $ 
-  runCompile defaultInput >> 
+  runReaderT (runCompile defaultInput) defaultInput >> 
   getDirectoryContents "target/Shaker" >>= \cont ->
   doesFileExist "target/Shaker.Action.CompileTest.o" >>= \ex ->
   doesFileExist "target/Shaker.Action.CompileTest.hi" >>= \ex2 ->

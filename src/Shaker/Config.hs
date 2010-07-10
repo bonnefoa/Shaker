@@ -11,6 +11,7 @@ import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Action.Standard
 import Control.Concurrent
+import Control.Monad.Trans
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
@@ -53,7 +54,7 @@ defaultListenerInput = ListenerInput {
 defaultPluginMap :: PluginMap
 defaultPluginMap = M.fromList list
   where list = [
-                (Compile,runCompile),
+                (Compile,runCompile ),
                 (Help,runHelp),
                 (Clean,runClean),
                 (Quit,runExit)

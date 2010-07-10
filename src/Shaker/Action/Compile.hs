@@ -8,12 +8,13 @@ import DynFlags
 import GHC.Paths
 import Shaker.Io
 import Shaker.Type
+import Control.Monad.Trans 
 
 -- |Run haskell compilation on given file input 
 runCompile :: Plugin
 runCompile shakerInput = do
-        targetFiles <-  recurseMultipleListFiles fli
-        defaultErrorHandler defaultDynFlags $ 
+        targetFiles <-  lift $ recurseMultipleListFiles fli
+        lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags
                        (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
@@ -25,6 +26,8 @@ runCompile shakerInput = do
         where (CompileInput sourceDir target procFlags strflags) = compileInput shakerInput
               (ListenerInput fli _) = listenerInput shakerInput
  
+
+
 setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags
 setSourceAndTarget sources target dflags = dflags{
     importPaths = sources

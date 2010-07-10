@@ -12,10 +12,7 @@ import Shaker.Listener
 import Shaker.Cli
 import qualified Data.Map as M
 import Control.Monad.Reader
-import Control.Monad.Trans
  
-
-type Shaker  = ReaderT ShakerInput 
 
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
@@ -66,6 +63,6 @@ executeCommand (Command Continuous act) shakerInput = listenManager ( executeAct
 executeAction :: Action -> ShakerInput -> IO()
 executeAction act shakerInput = 
     case M.lookup act (pluginMap shakerInput) of
-      Just action -> action shakerInput
+      Just action -> runReaderT (action shakerInput) shakerInput 
       Nothing -> putStrLn $ "action "++ show act ++" is not registered"
 
