@@ -103,9 +103,6 @@ getLibDependencies bi = map getPackageName $ targetBuildDepends bi
 
 getPackageName :: Dependency -> String
 getPackageName (Dependency (PackageName pn) _) = pn
-
-
-
   
 {-
 executableToCabalInfo  :: Executable -> CabalInfo

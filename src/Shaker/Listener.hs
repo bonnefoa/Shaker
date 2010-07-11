@@ -31,7 +31,7 @@ data ListenState = ListenState {
 initialize :: ListenerInput -> IO ListenState
 initialize lstInput = do
   mC <- newMVar [] 
-  mM <- newMVar [] 
+  mM <- newEmptyMVar
   mJ <- newEmptyMVar 
   idLst <- forkIO $ forever $ listen mC mM mJ
   idSch <- forkIO $ forever $ schedule lstInput mJ
