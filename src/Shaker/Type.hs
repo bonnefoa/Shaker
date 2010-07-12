@@ -25,7 +25,7 @@ data Action =
   deriving (Show,Eq,Ord)
 
 -- | Command agregate a duration with an action
-data Command = Command Duration Action
+data Command = Command Duration [Action]
   deriving (Show,Eq)
 
 -- | Represents the global configuration of the system

@@ -31,7 +31,7 @@ mainThread st@(InputState inputMv tokenMv) = do
   cmd <- lift $ takeMVar inputMv
   executeCommand cmd  
   case cmd of
-       Command _ Quit -> return ()
+       Command _ [Quit] -> return ()
        _ ->  mainThread st
 
 -- | Continuously execute the given action until a keyboard input is done
@@ -60,10 +60,12 @@ executeCommand (Command OneShot act) = executeAction act
 executeCommand (Command Continuous act) = listenManager ( executeAction act ) >> return () 
 
 -- | Execute given action
-executeAction :: Action -> Shaker IO()
-executeAction act = do
+executeAction :: [Action] -> Shaker IO()
+executeAction acts = do
     thePluginMap <- asks pluginMap
-    fromMaybe 
-      (lift $ putStrLn $ "action "++ show act ++" is not registered")
-      (M.lookup act thePluginMap)
+    foldl1 $ 
+        (\act -> fromMaybe 
+                         (lift $ putStrLn $ "action "++ show act ++" is not registered")
+                         (M.lookup act thePluginMap)
+        ) acts
 
