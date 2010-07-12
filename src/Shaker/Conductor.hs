@@ -62,10 +62,5 @@ executeCommand (Command Continuous act) = listenManager ( executeAction act ) >>
 -- | Execute given action
 executeAction :: [Action] -> Shaker IO()
 executeAction acts = do
-    thePluginMap <- asks pluginMap
-    foldl1 $ 
-        (\act -> fromMaybe 
-                         (lift $ putStrLn $ "action "++ show act ++" is not registered")
-                         (M.lookup act thePluginMap)
-        ) acts
-
+   thePluginMap <- asks pluginMap
+   sequence_ $ catMaybes $  map (flip M.lookup thePluginMap) acts 

@@ -6,7 +6,6 @@ import Shaker.Type
 import Shaker.Parser
 import Shaker.Config
 import Data.Map (toList)
-import Data.List (foldl)
  
 prop_parseDefaultAction :: String -> Bool
 prop_parseDefaultAction act = res == Command OneShot [Help]
@@ -36,7 +35,7 @@ instance Arbitrary ActionString where
 instance Arbitrary CommandString where
   arbitrary = do 
     dur <- elements [Continuous,OneShot]
-    actionStrings <- arbitrary
+    actionStrings <- listOf1 arbitrary
     return $ CommandString {
         comStr = getStringFromDurationAndAction dur actionStrings
         ,command = Command dur (map cfAction actionStrings) 
@@ -44,6 +43,6 @@ instance Arbitrary CommandString where
 
 getStringFromDurationAndAction :: Duration -> [ActionString] -> String
 getStringFromDurationAndAction dur acts  =
-     foldl (\a b-> a ++ (cfActionStr b) ) (seed dur) acts
+     foldl (\a b-> a ++ " " ++ (cfActionStr b) ++ " " ) (seed dur) acts
      where seed Continuous = "~"
            seed _ = ""

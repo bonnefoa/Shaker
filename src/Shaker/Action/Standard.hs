@@ -6,7 +6,7 @@ import qualified Data.Map as M
 import Control.Monad.Trans
 import Control.Monad.Reader
 
-runHelp :: Plugin
+runHelp ::  Plugin
 runHelp = do 
   commands <- asks commandMap 
   lift $ do   
@@ -24,4 +24,6 @@ runStartAction = lift $
 runEndAction :: Plugin
 runEndAction = lift $ 
   putStrLn "---------- End action ---------------------------"
+
+
 

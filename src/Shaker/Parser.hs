@@ -9,7 +9,8 @@ import qualified Data.Map as M
 
 -- | Parse the given string to a Command
 parseCommand :: ShakerInput -> String -> Command
-parseCommand shIn str = case (parse (typeCommand $ commandMap shIn) "parseCommand" str) of
+parseCommand shIn str = 
+  case (parse (typeCommand $ commandMap shIn) "parseCommand" str) of
     Left _ -> Command OneShot [Help]
     Right val -> val
 
@@ -21,12 +22,13 @@ typeCommand cmMap = typeDuration >>= \dur ->
 
 
 typeMultipleAction :: CommandMap -> GenParser Char st [Action]
-typeMultipleAction cmMap = many (typeAction cmMap)
+typeMultipleAction cmMap = many (typeAction cmMap) 
 
 -- | Parse to an action
 typeAction :: CommandMap -> GenParser Char st Action
-typeAction cmMap =  skipMany (char ' ') >>
-  choice (parseMapAction cmMap)
+typeAction cmMap = skipMany (char ' ') >>
+  choice (parseMapAction cmMap)  >>= \res ->
+  skipMany (char ' ') >> return (res)
 
 -- | Parse the continuous tag (~)
 typeDuration :: GenParser Char st Duration
