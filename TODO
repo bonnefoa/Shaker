@@ -1,9 +1,7 @@
 TODO : 
   Big refactoring : Better model for information representation, better separations!
   Make action take parameters from command line
-  Implement Clean and QuickCheck Action
-  Support multi action
-  Convert InputShaker parameter to Monad
+  Implement QuickCheck Action
   Optimisation possible by saving the files to listen
   bug : ~Compile launche two fork the first time
   Clean module export
@@ -13,6 +11,9 @@ TODO :
   Correct import module (only import necessary functions)
 
 Done : 
+  Convert InputShaker parameter to Monad
+  Support multi action
+  Implement Clean
   FileListen should take a list of directory
   A more flexible action plugin system
   Enhanced command-line interface (use haskell-line?)
