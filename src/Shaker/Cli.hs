@@ -60,11 +60,14 @@ listActions :: Monad m => ShakerInput -> String -> m [Completion]
 listActions shIn = \str -> return $ autocompleteFunction (commandMap shIn) str
 
 autocompleteFunction :: CommandMap  -> String -> [Completion]
+autocompleteFunction cmdMap [] = map simpleCompletion $ M.keys cmdMap
 autocompleteFunction cmdMap cliInput = map simpleCompletion $  compleListProp
   where inpWords = words cliInput
         lastWord = last inpWords 
         listProp = filter (lastWord `isPrefixOf`) $ M.keys cmdMap
-        commonPref = concat (tail inpWords)
-        compleListProp = map  (\a -> commonPref ++ a) listProp
+        commonPref = unwords (init inpWords)
+        compleListProp = trimList $ map  (\a -> commonPref ++ " " ++ a) listProp
 
+trimList :: [String] -> [String]
+trimList = map (dropWhile (== ' '))
 
