@@ -26,14 +26,17 @@ data InputState = InputState {
 
 -- | Listen to keyboard input and parse command
 getInput :: InputState -> Shaker IO()
-getInput (InputState inputMv tokenMv) = do
+getInput inSt = do
         shIn <- ask 
-        lift $ runInputT (myDefaultSettings shIn) $ do
-          _ <- lift $ takeMVar tokenMv 
-          minput <- getInputLine "% "
-          case minput of 
-             Nothing -> return()
-             Just str -> lift $ tryPutMVar inputMv (parseCommand shIn str) >> return() 
+        lift $ runInputT (myDefaultSettings shIn) $ processInput shIn inSt
+
+processInput :: ShakerInput ->  InputState -> InputT IO()
+processInput shIn (InputState inputMv tokenMv) = do
+  _ <- lift $ takeMVar tokenMv 
+  minput <- getInputLine "% "
+  case minput of 
+     Nothing -> return()
+     Just str -> lift $ tryPutMVar inputMv (parseCommand shIn str) >> return() 
 
 myDefaultSettings :: MonadIO m => ShakerInput-> Settings m
 myDefaultSettings shIn = Settings {
@@ -45,9 +48,26 @@ myDefaultSettings shIn = Settings {
 completeAction :: Monad m => ShakerInput -> CompletionFunc m
 completeAction shIn = completeWord (Just '\\') "\"'~" (listActions shIn)
 
+{-
 listActions :: Monad m => ShakerInput -> String -> m [Completion]
-listActions shIn = fun 
-  where fun str = return $ filtered str
-        cmdMap = commandMap shIn 
+listActions shIn = \str ->  return $ filtered str
+  where cmdMap = commandMap shIn
         filtered cliInput = map simpleCompletion $ filter (cliInput `isPrefixOf`) $ M.keys cmdMap
+-}
+
+
+listActions :: Monad m => ShakerInput -> String -> m [Completion]
+listActions shIn = \str -> return $ autocompleteFunction (commandMap shIn) str
+
+autocompleteFunction :: CommandMap  -> String -> [Completion]
+autocompleteFunction cmdMap [] = map simpleCompletion $ M.keys cmdMap
+autocompleteFunction cmdMap cliInput = map simpleCompletion $  compleListProp
+  where inpWords = words cliInput
+        lastWord = last inpWords 
+        listProp = filter (lastWord `isPrefixOf`) $ M.keys cmdMap
+        commonPref = unwords (init inpWords)
+        compleListProp = trimList $ map  (\a -> commonPref ++ " " ++ a) listProp
+
+trimList :: [String] -> [String]
+trimList = map (dropWhile (== ' '))
 
