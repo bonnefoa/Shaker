@@ -6,6 +6,7 @@ import Name (nameOccName)
 import Var (varName)
 import Data.List
 import Data.Maybe
+import           Data.Dynamic                           (fromDynamic)
 import GHC
 import DynFlags 
 import GHC.Paths
@@ -13,6 +14,8 @@ import Shaker.Io
 import Shaker.Type
 import Control.Monad.Trans 
 import Control.Monad.Reader
+import Unsafe.Coerce
+
 
 runQuickcheck :: Plugin
 runQuickcheck = do
@@ -28,6 +31,28 @@ runQuickcheck = do
                        setTargets target
         	       _ <- load LoadAllTargets
                        return()
+
+runTest = do 
+  func <- getTestFunc
+  return()
+
+
+--getTestFunc :: IO()
+getTestFunc = 
+            defaultErrorHandler defaultDynFlags $ do
+            runGhc (Just libdir) $ do
+            dflags <- getSessionDynFlags
+            (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc ["-itestsuite/tests","-isrc/","-package ghc"])
+            _ <- setSessionDynFlags newFlags
+            target <- guessTarget "Shaker.RunTest" Nothing
+            setTargets [target]
+            r <- load LoadAllTargets
+            m <- findModule (mkModuleName "Shaker.RunTest") Nothing
+            setContext [] [m]
+            dynCompileExpr("runAll")
+
+            --compileExpr ("runAll")
+            --(unsafeCoerce value) 
 
 example :: IO[String]
 example = defaultErrorHandler defaultDynFlags $ do
