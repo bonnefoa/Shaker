@@ -6,15 +6,18 @@ module Shaker.Cabal(
  where
 
 import Distribution.Simple.Configure (getPersistBuildConfig)
-import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
-import Distribution.PackageDescription(BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules)
+import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr, compiler)
+import Distribution.Simple.Compiler(extensionsToFlags )
+
+import Distribution.PackageDescription(BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules, extensions)
 import Distribution.Compiler(CompilerFlavor(GHC))
 import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
 import Shaker.Io(FileListenInfo(..))
+import Language.Haskell.Extension
 import Shaker.Type
 import Shaker.Config
 import DynFlags(
-    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
+    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths,flags
     ,PackageFlag (ExposePackage)
     ,GhcLink (NoLink)
   )
@@ -26,6 +29,8 @@ data CabalInfo = CabalInfo {
     ,modules :: [String] -- ^ Exposed modules or main executable. It will be the target of the compilation.
     ,compileOption :: [String] -- ^ Options to pass to the compiler
     ,packagesToExpose :: [String] -- ^ List of package to expose 
+    ,compileExtensions :: [Extension]
+    ,localBuildInfo :: LocalBuildInfo 
   }
  deriving (Show)
 
@@ -35,7 +40,7 @@ defaultCabalInput :: IO ShakerInput
 defaultCabalInput = liftM cabalInput readConf 
  
 defaultCabalInfo :: CabalInfo
-defaultCabalInfo = CabalInfo ["src"] [] ["-Wall"] []
+defaultCabalInfo = CabalInfo { sourceDir = ["src"], compileOption = ["-Wall"] }
 
 readConf :: IO LocalBuildInfo
 readConf = getPersistBuildConfig "dist"
@@ -73,6 +78,7 @@ cabalCompileFlags cabInfo dnFlags = dnFlags  {
     ,verbosity = 1  
     ,ghcLink = NoLink
     ,packageFlags = map ExposePackage $ packagesToExpose cabInfo
+--    ,flags = flags dnFlags ++ ( extensionsToFlags (compiler $ localBuildInfo cabInfo) (compileExtensions cabInfo) )
   } 
 
 -- * Information extraction from cabal objects
@@ -81,7 +87,7 @@ localBuildInfoToCabalInfo :: LocalBuildInfo -> CabalInfo
 localBuildInfoToCabalInfo lbi = 
  case library (localPkgDescr lbi) of
       Nothing -> defaultCabalInfo
-      Just lib -> libraryToCabalInfo lib
+      Just lib -> (libraryToCabalInfo lib) {localBuildInfo = lbi}
 
 libraryToCabalInfo  :: Library -> CabalInfo
 libraryToCabalInfo lib = 
@@ -90,6 +96,7 @@ libraryToCabalInfo lib =
      ,compileOption = getCompileOptions localBuildInfo 
      ,modules = map show $ exposedModules lib
      ,packagesToExpose = getLibDependencies localBuildInfo
+     ,compileExtensions = extensions localBuildInfo 
   }
   where localBuildInfo = libBuildInfo lib
 
