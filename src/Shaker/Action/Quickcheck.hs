@@ -2,6 +2,7 @@ module Shaker.Action.Quickcheck
  where
 
 import GHC
+import Outputable
 import DynFlags 
 import GHC.Paths
 import Shaker.Io
@@ -42,6 +43,7 @@ example = defaultErrorHandler defaultDynFlags $ do
     target <- guessTarget "Shaker.CliTest" Nothing
     setTargets [target]
     load LoadAllTargets
+<<<<<<< quickcheck
     modSum <- getModSummary $ mkModuleName "Shaker.CliTest"
     p <- parseModule modSum
     t <- typecheckModule p
@@ -52,6 +54,15 @@ example = defaultErrorHandler defaultDynFlags $ do
     g <- getModuleGraph
     mapM showModule g     
     return $ (parsedSource d,"/n-----/n",  typecheckedSource d)
+=======
+
+    -- modSum <- getModSummary $ mkModuleName "Shaker.CliTest"
+    loadedModules <- getModuleGraph
+
+    showModule $ head g     
+  
+    -- getModuleInfo -> modInfoTyThings -> AnId => identifiant de la fonction
+>>>>>>> local
 
 setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags
 setSourceAndTarget sources target dflags = dflags{

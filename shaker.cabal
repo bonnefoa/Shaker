@@ -25,8 +25,8 @@ Executable shaker
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
-                 haskeline >= 0.6.0.0 && < 0.6.2.2 ,
-                 directory >= 1.0.1.0,
+                 haskeline >= 0.6.0.0 
+                 ,directory >= 1.0.1.0,
                  filepath >= 1.1,
                  ghc >= 6,
                  ghc-paths >= 0.1,
