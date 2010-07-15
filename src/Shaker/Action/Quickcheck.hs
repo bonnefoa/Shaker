@@ -1,16 +1,20 @@
 module Shaker.Action.Quickcheck
  where
 
+import OccName (occNameString)
+import Name (nameOccName)
+import Var (varName)
+import Data.List
+import Data.Maybe
 import GHC
-import Outputable
 import DynFlags 
 import GHC.Paths
 import Shaker.Io
 import Shaker.Type
 import Control.Monad.Trans 
 import Control.Monad.Reader
-{-
-runQuickcheck :: Shaker IO String
+
+runQuickcheck :: Plugin
 runQuickcheck = do
         (CompileInput sourceDir targetInput procFlags strflags) <-  asks compileInput 
         (ListenerInput fli _) <- asks listenerInput 
@@ -23,33 +27,39 @@ runQuickcheck = do
                        target <- mapM (`guessTarget` Nothing) targetFiles
                        setTargets target
         	       _ <- load LoadAllTargets
-                       modSum <- getModSummary $ mkModuleName "B"
-                       p <- parseModule modSum
-                       t <- typecheckModule p
-                       d <- desugarModule t
-                       l <- loadModule d
-                       n <- getNamesInScope
-                       c <- return $ coreModule d
-                       g <- getModuleGraph
-                       mapM showModule g     
-                       print $ showSDoc ( ppr (parsedSource d,"/n-----/n",  typecheckedSource d)        res )
--}
+                       return()
 
+example :: IO[String]
 example = defaultErrorHandler defaultDynFlags $ do
     runGhc (Just libdir) $ do
     dflags <- getSessionDynFlags
     (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc ["-itestsuite/tests","-isrc/","-package ghc"])
-    setSessionDynFlags newFlags
+    _ <- setSessionDynFlags newFlags
     target <- guessTarget "Shaker.CliTest" Nothing
     setTargets [target]
-    load LoadAllTargets
+    _ <- load LoadAllTargets
+    modulesList <- getModuleGraph
+    tyThingsList <- getTyThingsFromModuleSummary modulesList
+--    return $ showPpr gra
+    return $ getQuickcheckFunction tyThingsList
+ 
+getTyThingsFromModuleSummary :: (GhcMonad  m) => [ModSummary] -> m [TyThing]
+getTyThingsFromModuleSummary modSummaries = do
+        modulesInfo <- mapM getModuleInfo modules
+        return $ concat $ map modInfoTyThings $ catMaybes modulesInfo
+   where modules = map ms_mod modSummaries
+         
 
-    -- modSum <- getModSummary $ mkModuleName "Shaker.CliTest"
-    loadedModules <- getModuleGraph
+getQuickcheckFunction :: [TyThing] -> [String]
+getQuickcheckFunction tyMap = filter ("prop_" `isPrefixOf`) nameList
+   where idList = catMaybes $ map tyThingToId tyMap
+         varList = map varName idList
+         occList = map nameOccName varList
+         nameList = map occNameString occList
 
-    showModule $ head g     
-  
-    -- getModuleInfo -> modInfoTyThings -> AnId => identifiant de la fonction
+tyThingToId :: TyThing -> Maybe Id
+tyThingToId (AnId tyId) = Just tyId
+tyThingToId _ = Nothing
 
 setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags
 setSourceAndTarget sources target dflags = dflags{
