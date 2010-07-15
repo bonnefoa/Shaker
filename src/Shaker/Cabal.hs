@@ -61,7 +61,7 @@ cabalInfoToCompileInput cabInf = defaultCompileInput {
 
 cabalInfoToListenerInput :: CabalInfo -> ListenerInput
 cabalInfoToListenerInput cabInfo = defaultListenerInput {
-        fileListenInfo = map (\a -> FileListenInfo a [] [".*\\.hs$"]) (sourceDir  cabInfo)
+        fileListenInfo = map (\a -> FileListenInfo a [".*Setup\\.hs$"] [".*\\.hs$"]) (sourceDir  cabInfo)
  } 
 
 cabalCompileFlags :: CabalInfo -> DynFlags -> DynFlags

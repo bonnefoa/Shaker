@@ -6,13 +6,14 @@ import Data.List
 
 processListWithRegexp :: [String] -> [String] -> [String] -> [String]
 processListWithRegexp list [] [] = list
+processListWithRegexp list ignore [] = nub $ list \\ getExcluded list ignore 
 processListWithRegexp list [] include = nub $ getIncluded list include
 processListWithRegexp list ignore include = 
-  nub $ getExcluded list ignore ++ getIncluded list include
+  nub $ getIncluded list include \\ getExcluded list ignore 
 
 getExcluded :: [String] -> [String] -> [String]
 getExcluded list patterns = filter funExclude list
- where funExclude el = not $ any (el =~) patterns
+ where funExclude el = any (el =~) patterns
 
 getIncluded :: [String] -> [String] -> [String]
 getIncluded list patterns = filter funInclude list

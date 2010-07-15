@@ -32,7 +32,7 @@ prop_listFilesWithIgnore :: FileListenInfo -> Property
 prop_listFilesWithIgnore fli = abstractTestListFiles fli{ignore= ["\\.$"], include=[]} (\a b-> length a == length b + 2)
 
 prop_listFilesWithIncludeAll :: FileListenInfo -> Property
-prop_listFilesWithIncludeAll fli = abstractTestListFiles fli{include=[".*"]} (\a b->length a== length b)
+prop_listFilesWithIncludeAll fli = abstractTestListFiles fli{include=[".*"]} (\a b->length a >= length b)
 
 testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
 testModifiedFiles fli proc predicat= monadicIO action
