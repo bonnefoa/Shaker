@@ -51,7 +51,7 @@ readConf = getPersistBuildConfig "dist"
 -- library dependencies for the project compilation. 
 cabalInput :: LocalBuildInfo -> ShakerInput 
 cabalInput lbi = defaultInput { 
-      compileInput = cabalInfoToCompileInput cabalInfo 
+      compileInputs = [cabalInfoToCompileInput cabalInfo]
       ,listenerInput = cabalInfoToListenerInput cabalInfo
   }
   where cabalInfo = localBuildInfoToCabalInfo lbi 

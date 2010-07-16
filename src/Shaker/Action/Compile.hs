@@ -13,8 +13,10 @@ import Control.Monad.Reader
 
 -- |Run haskell compilation on given file input 
 runCompile :: Plugin
-runCompile = do
-        (CompileInput sourceDir targetInput procFlags strflags inputTargetFiles) <-  asks compileInput 
+runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
+
+runSingleCompileInput :: CompileInput -> Shaker IO()
+runSingleCompileInput (CompileInput sourceDir targetInput procFlags strflags inputTargetFiles) = do
         targetFiles <- checkTargetFiles inputTargetFiles 
         lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
