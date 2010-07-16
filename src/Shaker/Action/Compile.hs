@@ -14,9 +14,8 @@ import Control.Monad.Reader
 -- |Run haskell compilation on given file input 
 runCompile :: Plugin
 runCompile = do
-        (CompileInput sourceDir targetInput procFlags strflags) <-  asks compileInput 
-        (ListenerInput fli _) <- asks listenerInput 
-        targetFiles <-  lift $ recurseMultipleListFiles fli
+        (CompileInput sourceDir targetInput procFlags strflags inputTargetFiles) <-  asks compileInput 
+        targetFiles <- checkTargetFiles inputTargetFiles 
         lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags
@@ -27,7 +26,12 @@ runCompile = do
         	       _ <- load LoadAllTargets
                        return ()
  
-
+-- | Fill the target files to all files in listenerInput if empty
+checkTargetFiles :: [String] -> Shaker IO([String])
+checkTargetFiles [] = do 
+        (ListenerInput fli _) <- asks listenerInput 
+        lift $ recurseMultipleListFiles fli
+checkTargetFiles l = return l
 
 setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags
 setSourceAndTarget sources target dflags = dflags{

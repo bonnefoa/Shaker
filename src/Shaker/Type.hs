@@ -42,6 +42,7 @@ data CompileInput = CompileInput{
   ,cfCompileTarget :: String  -- ^ Destination of .o and .hi files
   ,cfDynFlags :: (DynFlags->DynFlags) -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
   ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
+  ,cfTargetFiles :: [String] -- ^ List of files or list of modules to compile
 }
 
 -- | Configuration of the continuous listener

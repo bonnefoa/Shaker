@@ -7,7 +7,7 @@ module Shaker.Cabal(
 
 import Distribution.Simple.Configure (getPersistBuildConfig)
 import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
-
+import Distribution.ModuleName
 import Distribution.PackageDescription(BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules, extensions)
 import Distribution.Compiler(CompilerFlavor(GHC))
 import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
@@ -37,7 +37,7 @@ defaultCabalInput = liftM cabalInput readConf
  
 defaultCabalInfo :: CabalInfo
 defaultCabalInfo = CabalInfo {
-  sourceDir = ["src"]
+  sourceDir = ["."]
   ,compileOption = ["-Wall"] 
   ,modules =[]
   ,packagesToExpose = []
@@ -61,13 +61,14 @@ cabalInput lbi = defaultInput {
 cabalInfoToCompileInput :: CabalInfo -> CompileInput
 cabalInfoToCompileInput cabInf = defaultCompileInput {
   cfSourceDirs = sourceDir cabInf
+  ,cfTargetFiles = modules cabInf
   ,cfDynFlags = cabalCompileFlags cabInf
   ,cfCommandLineFlags = compileOption cabInf
 }
 
 cabalInfoToListenerInput :: CabalInfo -> ListenerInput
 cabalInfoToListenerInput cabInfo = defaultListenerInput {
-        fileListenInfo = map (\a -> FileListenInfo a [".*Setup\\.hs$"] [".*\\.hs$"]) (sourceDir  cabInfo)
+        fileListenInfo = map (\a -> FileListenInfo a [".*Setup\\.hs$"] defaultHaskellPatterns) (sourceDir  cabInfo)
  } 
 
 cabalCompileFlags :: CabalInfo -> DynFlags -> DynFlags
@@ -96,11 +97,16 @@ libraryToCabalInfo lib =
   CabalInfo {
      sourceDir = hsSourceDirs libraryBuildInfo 
      ,compileOption = getCompileOptions libraryBuildInfo 
-     ,modules = map show $ exposedModules lib
+     ,modules = map convertModuleNameToString $ exposedModules lib
      ,packagesToExpose = getLibDependencies libraryBuildInfo
   }
   where libraryBuildInfo = libBuildInfo lib
 
+convertModuleNameToString :: ModuleName -> String
+convertModuleNameToString modName  
+  | null modArr = ""
+  | otherwise =  foldr1 (\w s -> w ++ '.':s)  modArr
+  where modArr = components modName 
 
 getCompileOptions :: BuildInfo -> [String]
 getCompileOptions myLibBuildInfo = ghcOptions ++ ghcExtensions 

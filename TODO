@@ -3,7 +3,6 @@ TODO :
   Make action take parameters from command line
   Implement QuickCheck Action
   Optimisation possible by saving the files to listen
-  bug : ~Compile launche two fork the first time
   Clean module export
   Cabal Integration : 
     Propose which composant (Library? Executable?) to build
@@ -11,6 +10,7 @@ TODO :
   Correct import module (only import necessary functions)
 
 Done : 
+  bug : ~Compile launche two fork the first time
   Convert InputShaker parameter to Monad
   Support multi action
   Implement Clean

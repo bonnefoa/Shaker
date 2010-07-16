@@ -11,7 +11,6 @@ import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Action.Standard
 import Control.Concurrent
-import Control.Monad.Trans
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
@@ -29,6 +28,7 @@ defaultCompileInput = CompileInput {
   ,cfCompileTarget =  "target"  
   ,cfDynFlags = defaultCompileFlags  
   ,cfCommandLineFlags = ["-Wall"]
+  ,cfTargetFiles = []
 }
 
 -- | default dynamics flags
@@ -46,9 +46,12 @@ defaultCompileFlags = \a-> a  {
 -- The default delay is 2 sec
 defaultListenerInput :: ListenerInput                                   
 defaultListenerInput = ListenerInput {
-    fileListenInfo= [FileListenInfo "src/" [] [".*\\.hs$"], FileListenInfo "testsuite/" [] [".*\\.hs$"] ]
+    fileListenInfo= [FileListenInfo "src/" [] defaultHaskellPatterns, FileListenInfo "testsuite/" [] defaultHaskellPatterns ]
     ,delay = 2000000
     }
+
+defaultHaskellPatterns :: [String]
+defaultHaskellPatterns = [".*\\.hs$"]
 
 -- | The default plugin map contains mapping for compile, help and exit action 
 defaultPluginMap :: PluginMap
