@@ -16,7 +16,8 @@ runCompile :: Plugin
 runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
 
 runSingleCompileInput :: CompileInput -> Shaker IO()
-runSingleCompileInput (CompileInput sourceDir targetInput procFlags strflags inputTargetFiles) = do
+runSingleCompileInput (CompileInput sourceDir desc targetInput procFlags strflags inputTargetFiles) = do
+        lift $ putStrLn $ concat ["--------- ", desc," ---------"]
         targetFiles <- checkTargetFiles inputTargetFiles 
         lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do

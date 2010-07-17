@@ -25,6 +25,7 @@ defaultInput = ShakerInput {
 defaultCompileInput :: CompileInput
 defaultCompileInput = CompileInput {
   cfSourceDirs= ["src/","testsuite/tests/"]
+  ,cfDescription = "Default Compilation"
   ,cfCompileTarget =  "target"  
   ,cfDynFlags = defaultCompileFlags  
   ,cfCommandLineFlags = ["-Wall"]
