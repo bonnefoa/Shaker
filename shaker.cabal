@@ -21,7 +21,7 @@ description:
 Executable shaker
   Main-Is: Main.hs
   ghc-options: -Wall
-  hs-source-dirs: src
+  hs-source-dirs: testsuite/tests src
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
