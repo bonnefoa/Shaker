@@ -25,5 +25,7 @@ runEndAction :: Plugin
 runEndAction = lift $ 
   putStrLn "---------- End action ---------------------------"
 
-
+runList :: Plugin
+runList =  lift $ 
+  putStrLn "List of artifacts " 
 

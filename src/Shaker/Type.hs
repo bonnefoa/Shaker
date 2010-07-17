@@ -20,6 +20,7 @@ data Action =
 	| Compile -- ^ Compile sources with ghc
 	| QuickCheck -- ^ Execute quickcheck properties
 	| Help -- ^ Display the help
+	| List -- ^ Display buildable artefacts (cabal executables or library)
 	| Quit -- ^ Exit shaker
 	| Clean -- ^ Delete generated 
   deriving (Show,Eq,Ord)

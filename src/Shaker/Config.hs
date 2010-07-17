@@ -60,6 +60,7 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
                 (Compile,runCompile ),
                 (Help,runHelp),
                 (Clean,runClean),
+                (List,runList),
                 (Quit,runExit)
               ]
 
@@ -68,6 +69,7 @@ defaultCommandMap = M.fromList list
   where list = [
             ("Compile",Compile),
             ("Help", Help),
+            ("List", List),
             ("QuickCheck",QuickCheck),
             ("Clean",Clean),
             ("q",Quit),

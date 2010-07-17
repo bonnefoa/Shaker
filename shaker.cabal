@@ -40,7 +40,7 @@ Library
   exposed-modules:Shaker.Config
                   Shaker.Conductor
                   Shaker.Type
-                  Shaker.Cabal
+                  Shaker.Cabal.CabalInput
   ghc-options: -Wall
   hs-source-dirs: src testsuite/tests
   build-depends: base >= 4.1,
