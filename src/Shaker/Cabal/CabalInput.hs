@@ -8,7 +8,7 @@ module Shaker.Cabal.CabalInput(
 import Shaker.Cabal.CabalInfo
 import Distribution.Simple.Configure (getPersistBuildConfig)
 import Distribution.Simple.LocalBuildInfo (LocalBuildInfo)
-import Shaker.Io(FileListenInfo(..))
+import Shaker.Io(FileListenInfo(..),defaultHaskellPatterns,defaultExclude)
 import Shaker.Type
 import Shaker.Config
 import DynFlags(
@@ -27,17 +27,6 @@ defaultCabalInput = readConf >>=
 readConf :: IO LocalBuildInfo
 readConf = getPersistBuildConfig "dist"
 
--- | Convert a cabal localBuildInfo to a shakerInput
--- It try to obtain all necessary information like source dirs, 
--- library dependencies for the project compilation. 
-{-
-cabalInput :: LocalBuildInfo -> ShakerInput 
-cabalInput lbi = defaultInput { 
-      compileInputs = map cabalInfoToCompileInput cabalInfoList
-      ,listenerInput = cabalInfoListToListenerInput cabalInfoList
-  }
-  where cabalInfoList = localBuildInfoToCabalInfoList lbi 
--}
 -- * CabalInfo converters
 cabalInfosToShakerInput :: [CabalInfo] -> ShakerInput
 cabalInfosToShakerInput cabalInfoList = defaultInput { 
@@ -56,7 +45,7 @@ cabalInfoToCompileInput cabInf = defaultCompileInput {
 
 cabalInfoListToListenerInput :: [CabalInfo] -> ListenerInput
 cabalInfoListToListenerInput  cabInfoList = defaultListenerInput {
-        fileListenInfo = map (\a -> FileListenInfo a [".*Setup\\.hs$"] defaultHaskellPatterns) concatSources
+        fileListenInfo = map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
  } 
  where concatSources = concat $ map sourceDir cabInfoList
 

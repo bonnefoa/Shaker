@@ -6,6 +6,8 @@ module Shaker.Io(
   ,recurseListFiles 
   ,FileInfo(FileInfo)
   ,FileListenInfo(..)
+  ,defaultHaskellPatterns
+  ,defaultExclude
 )
  where
  
@@ -73,3 +75,9 @@ convertToFullPath absDir = map (\a-> concat [absDir, "/",a])
 
 removeDotDirectory :: [String] -> [String]
 removeDotDirectory = filter (not . isSuffixOf "."  ) 
+
+defaultHaskellPatterns :: [String]
+defaultHaskellPatterns = [".*\\.hs$"]
+
+defaultExclude :: [String]
+defaultExclude =  [".*Setup\\.hs$"]

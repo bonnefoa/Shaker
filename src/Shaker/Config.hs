@@ -3,14 +3,12 @@ module Shaker.Config
  where
 
 import Shaker.Type
-import Shaker.Io(FileListenInfo(..))
+import Shaker.PluginConfig
+import Shaker.Io(FileListenInfo(..),defaultHaskellPatterns)
 import Shaker.Cli(InputState(..))
 import DynFlags
-import qualified Data.Map as M (fromList)
-import Shaker.Action.Compile
-import Shaker.Action.Clean
-import Shaker.Action.Standard
 import Control.Concurrent
+
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
@@ -50,33 +48,6 @@ defaultListenerInput = ListenerInput {
     fileListenInfo= [FileListenInfo "src/" [] defaultHaskellPatterns, FileListenInfo "testsuite/" [] defaultHaskellPatterns ]
     ,delay = 2000000
     }
-
-defaultHaskellPatterns :: [String]
-defaultHaskellPatterns = [".*\\.hs$"]
-
--- | The default plugin map contains mapping for compile, help and exit action 
-defaultPluginMap :: PluginMap
-defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEndAction)) list
-  where list = [
-                (Compile,runCompile ),
-                (Help,runHelp),
-                (Clean,runClean),
-                (List,runList),
-                (Quit,runExit)
-              ]
-
-defaultCommandMap :: CommandMap 
-defaultCommandMap = M.fromList list
-  where list = [
-            ("Compile",Compile),
-            ("Help", Help),
-            ("List", List),
-            ("QuickCheck",QuickCheck),
-            ("Clean",Clean),
-            ("q",Quit),
-            ("Load",Load),
-            ("Quit",Quit)
-          ]
 
 defaultInputState :: IO InputState
 defaultInputState = do

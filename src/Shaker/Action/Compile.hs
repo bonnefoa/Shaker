@@ -1,5 +1,6 @@
 module Shaker.Action.Compile(
     runCompile
+    ,runFullCompile
   )
  where
 
@@ -29,6 +30,11 @@ runSingleCompileInput (CompileInput sourceDir desc targetInput procFlags strflag
         	       _ <- load LoadAllTargets
                        return ()
  
+runFullCompile :: Plugin
+runFullCompile = setCompileInputForAllHsSources >>= \a -> 
+  runSingleCompileInput a >> 
+  return () 
+
 -- | Fill the target files to all files in listenerInput if empty
 checkTargetFiles :: [String] -> Shaker IO([String])
 checkTargetFiles [] = do 
@@ -42,4 +48,11 @@ setSourceAndTarget sources target dflags = dflags{
     ,objectDir = Just target
     ,hiDir = Just target
   }
+
+setCompileInputForAllHsSources :: Shaker IO (CompileInput)
+setCompileInputForAllHsSources = do 
+  (cpIn:_) <- asks compileInputs
+  filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) (cfSourceDirs $ cpIn)
+  return  $ cpIn {cfTargetFiles = filePaths }
+
 

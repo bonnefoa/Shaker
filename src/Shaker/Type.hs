@@ -18,6 +18,7 @@ data Duration =
 data Action = 
 	Load -- ^Load sources with hint
 	| Compile -- ^ Compile sources with ghc
+	| FullCompile -- ^ Compile all hs sources with ghc
 	| QuickCheck -- ^ Execute quickcheck properties
 	| Help -- ^ Display the help
 	| List -- ^ Display buildable artefacts (cabal executables or library)

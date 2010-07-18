@@ -12,5 +12,4 @@ main = do
   cab <- defaultCabalInput 
   runReaderT (initThread inputState) cab
 
-
     

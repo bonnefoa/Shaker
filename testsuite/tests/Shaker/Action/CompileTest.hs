@@ -23,6 +23,4 @@ testInputShaker = defaultInput {
      }]
 }
 
---testRunCompileProjectWithNoSourceDir :: Test
---testRunCompileProjectWithNoSourceDir = TestCase $ 
   
