@@ -5,6 +5,7 @@ import Test.QuickCheck
 import Shaker.Type
 import Shaker.Parser
 import Shaker.Config
+import Shaker.PluginConfig
 import Data.Map (toList)
  
 prop_parseDefaultAction :: String -> Bool

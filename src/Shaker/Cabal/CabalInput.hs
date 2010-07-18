@@ -2,6 +2,9 @@
 -- Source directories and compilation options will be reused by Shaker.
 module Shaker.Cabal.CabalInput(
   defaultCabalInput
+  ,localBuildInfoToCabalInfoList
+  ,readConf
+  ,cabalInfosToShakerInput 
 )
  where
 
