@@ -53,6 +53,6 @@ setCompileInputForAllHsSources :: Shaker IO (CompileInput)
 setCompileInputForAllHsSources = do 
   (cpIn:_) <- asks compileInputs
   filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) (cfSourceDirs $ cpIn)
-  return  $ cpIn {cfTargetFiles = filePaths }
+  return  $ cpIn {cfTargetFiles = filePaths, cfDescription ="Full compilation"  }
 
 
