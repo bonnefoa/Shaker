@@ -1,7 +1,6 @@
 module Shaker.IoTest
  where
 
-import Shaker.Type
 import Shaker.Io
 import System.Time
 import Data.List
@@ -70,4 +69,16 @@ testListHsFiles = TestCase $
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \res ->
   assertBool ("Should only contains hs files " ++ show res) $
     all (".hs" `isSuffixOf`) res
+
+testIsFileContainingMain :: Test
+testIsFileContainingMain = TestCase $ do
+  res <- isFileContainingMain "src/Main.hs" 
+  assertBool ("File Main.hs should contain main methods") res
+
+testIsFileNotContainingMain :: Test
+testIsFileNotContainingMain = TestCase $ do
+  res <- isFileContainingMain "src/Shaker/Config.hs"
+  assertBool ("File Config.hs should not contain main methods") $ not res
+
+
 
