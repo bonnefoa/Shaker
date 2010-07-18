@@ -4,6 +4,7 @@ module Shaker.Action.Compile(
   )
  where
 
+import Data.List 
 import GHC
 import DynFlags 
 import GHC.Paths
@@ -53,6 +54,7 @@ setCompileInputForAllHsSources :: Shaker IO (CompileInput)
 setCompileInputForAllHsSources = do 
   (cpIn:_) <- asks compileInputs
   filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) (cfSourceDirs $ cpIn)
-  return  $ cpIn {cfTargetFiles = filePaths, cfDescription ="Full compilation"  }
+  toExcludeFiles <- lift $ filterM (isFileContainingMain) filePaths
+  return  $ cpIn {cfTargetFiles = filePaths \\ toExcludeFiles , cfDescription ="Full compilation"  }
 
 

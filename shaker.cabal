@@ -35,6 +35,7 @@ Executable shaker
                  parsec >= 3.0,
                  regex-posix >= 0.94.1,
                  old-time >= 1.0.0
+                 ,bytestring >= 0.9.1.5
 
 Library
   exposed-modules:Shaker.Config
@@ -54,6 +55,7 @@ Library
                  haskell98 >= 1.0,
                  mtl >= 1.0,
                  parsec >= 3.0,
-                 regex-posix >= 0.94.1,
-                 old-time >= 1.0.0
+                 regex-posix >= 0.94.1
+                 ,bytestring >= 0.9.1.5
+                 ,old-time >= 1.0.0
 
