@@ -40,13 +40,17 @@ data ShakerInput = ShakerInput {
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
-  cfSourceDirs :: [String] -- ^ Source of haskell files
+  cfSourceDirs :: [String] -- ^ Source directory of haskell files
   ,cfDescription :: String -- ^ Desctipition of the compile input (executable or library if comming from cabal)
   ,cfCompileTarget :: String  -- ^ Destination of .o and .hi files
   ,cfDynFlags :: (DynFlags->DynFlags) -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
   ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
   ,cfTargetFiles :: [String] -- ^ List of files or list of modules to compile
 }
+
+instance Show CompileInput 
+ where show (CompileInput src desc _ _ commandLine target) = 
+         concat ["CompileInput |source : ",show src," |desc : ",desc," |cmdLine : ",show commandLine," |targetfiles : ", show target]
 
 -- | Configuration of the continuous listener
 data ListenerInput = ListenerInput {

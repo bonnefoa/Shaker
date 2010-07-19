@@ -19,8 +19,10 @@ runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
 
 runSingleCompileInput :: CompileInput -> Shaker IO()
 runSingleCompileInput (CompileInput sourceDir desc targetInput procFlags strflags inputTargetFiles) = do
+        lift $ putStrLn "-------------------------------------"
         lift $ putStrLn $ concat ["   --------- ", desc," ---------"]
         targetFiles <- checkTargetFiles inputTargetFiles 
+        lift $ putStrLn $ concat ["   --------- ", "Compiling target : "++ show targetFiles," ---------"]
         lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags

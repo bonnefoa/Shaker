@@ -47,7 +47,7 @@ localBuildInfoToCabalInfoList lbi = listArtifactToCabalInfo (library pkgDescript
   
 listArtifactToCabalInfo :: Maybe Library -> [Executable] -> [CabalInfo]
 listArtifactToCabalInfo Nothing execs =  map executableToCabalInfo  execs
-listArtifactToCabalInfo (Just lib) execs =libraryToCabalInfo lib :map executableToCabalInfo  execs 
+listArtifactToCabalInfo (Just lib) execs =libraryToCabalInfo lib : map executableToCabalInfo  execs 
 
 -- | Extract cabalInfo from an executable
 executableToCabalInfo :: Executable -> CabalInfo
@@ -56,7 +56,7 @@ executableToCabalInfo executable =
     sourceDir = mySourceDir
     ,cabalInfoDescripition = "Executable : " ++ exeName executable
     ,compileOption = getCompileOptions myExeBuildInfo
-    ,modules = map (</> (modulePath executable) ) mySourceDir
+    ,modules = map (</> (modulePath executable)) mySourceDir
     ,packagesToExpose = getLibDependencies myExeBuildInfo
   }
   where myExeBuildInfo = buildInfo executable
@@ -94,7 +94,6 @@ getLibDependencies bi = map getPackageName $ targetBuildDepends bi
 getPackageName :: Dependency -> String
 getPackageName (Dependency (PackageName pn) _) = pn
 
-
 -- | Check and filter all invalid main definission
 checkCababInfoListForExecutables :: [CabalInfo] -> IO ([CabalInfo])
 checkCababInfoListForExecutables = mapM checkCababInfoForExecutables 
@@ -106,6 +105,4 @@ checkCababInfoForExecutables cabInf
     return cabInf {modules = newModules}
  | otherwise = return cabInf
  where oldModules = modules cabInf
-
-
 
