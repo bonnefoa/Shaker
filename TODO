@@ -9,7 +9,7 @@ TODO :
   Trap ctrl+c
   Correct import module (only import necessary functions)
   If no source dir is specified, an error is throwed
-  Exclude main methods from fullCompile 
+  Create action command
 
 Done : 
   bug : ~Compile launche two fork the first time
@@ -25,4 +25,5 @@ Done :
   Externalize configuration
   Cabal Integration : 
     Get config through cabal api
+  Exclude main methods from fullCompile 
 

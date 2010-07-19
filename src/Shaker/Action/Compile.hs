@@ -19,7 +19,7 @@ runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
 
 runSingleCompileInput :: CompileInput -> Shaker IO()
 runSingleCompileInput (CompileInput sourceDir desc targetInput procFlags strflags inputTargetFiles) = do
-        lift $ putStrLn $ concat ["--------- ", desc," ---------"]
+        lift $ putStrLn $ concat ["   --------- ", desc," ---------"]
         targetFiles <- checkTargetFiles inputTargetFiles 
         lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
@@ -56,5 +56,4 @@ setCompileInputForAllHsSources = do
   filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) (cfSourceDirs $ cpIn)
   toExcludeFiles <- lift $ filterM (isFileContainingMain) filePaths
   return  $ cpIn {cfTargetFiles = filePaths \\ toExcludeFiles , cfDescription ="Full compilation"  }
-
 
