@@ -2,9 +2,9 @@
 -- Source directories and compilation options will be reused by Shaker.
 module Shaker.Cabal.CabalInput(
   defaultCabalInput
-  ,localBuildInfoToCabalInfoList
+--  ,localBuildInfoToCabalInfoList
   ,readConf
-  ,cabalInfosToShakerInput 
+--  ,cabalInfosToShakerInput 
 )
  where
 
@@ -23,13 +23,14 @@ import DynFlags(
 -- * Default configuration
 
 defaultCabalInput :: IO ShakerInput
-defaultCabalInput = readConf >>= 
-  checkCababInfoListForExecutables . localBuildInfoToCabalInfoList  >>=
-  return . cabalInfosToShakerInput 
+defaultCabalInput = readConf >>= \lbi ->
+--  checkCababInfoListForExecutables . localBuildInfoToCabalInfoList  >>=
+  return $ localBuildInfoToShakerInput lbi
 
 readConf :: IO LocalBuildInfo
 readConf = getPersistBuildConfig "dist"
 
+{-
 -- * CabalInfo converters
 cabalInfosToShakerInput :: [CabalInfo] -> ShakerInput
 cabalInfosToShakerInput cabalInfoList = defaultInput { 
@@ -37,6 +38,7 @@ cabalInfosToShakerInput cabalInfoList = defaultInput {
       ,listenerInput = cabalInfoListToListenerInput cabalInfoList
   }
 
+{-
 cabalInfoToCompileInput :: CabalInfo -> CompileInput
 cabalInfoToCompileInput cabInf = defaultCompileInput {
   cfSourceDirs = sourceDir cabInf
@@ -45,7 +47,7 @@ cabalInfoToCompileInput cabInf = defaultCompileInput {
   ,cfDynFlags = cabalCompileFlags cabInf
   ,cfCommandLineFlags = compileOption cabInf
 }
-
+-}
 cabalInfoListToListenerInput :: [CabalInfo] -> ListenerInput
 cabalInfoListToListenerInput  cabInfoList = defaultListenerInput {
         fileListenInfo = map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
@@ -62,4 +64,4 @@ cabalCompileFlags cabInfo dnFlags = dnFlags  {
     ,ghcLink = NoLink
     ,packageFlags = map ExposePackage $ packagesToExpose cabInfo
   } 
-
+-}
