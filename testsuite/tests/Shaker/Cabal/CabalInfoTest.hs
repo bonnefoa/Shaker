@@ -1,17 +1,24 @@
 module Shaker.Cabal.CabalInfoTest
  where 
 
+import Control.Monad.Reader
 import System.Directory
 import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Type
+import Shaker.Io
 import Test.HUnit
-import Control.Monad.Reader
 import Control.Exception
-import Shaker.Cabal.CabalInput
+import Shaker.Cabal.CabalInfo
+import GHC(DynFlags(DynFlags))
+import DynFlags(
+    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
+    ,PackageFlag (ExposePackage)
+    ,GhcLink (NoLink)
+  )
 
-testParseExecutable :: Test
-testParseExecutable = TestCase $ do
+testParseCabalConfig :: Test
+testParseCabalConfig = TestCase $ do
  runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
   shIn <- defaultCabalInput
   let cplInps@(cplLib:cplExe:[]) = compileInputs shIn
@@ -19,8 +26,13 @@ testParseExecutable = TestCase $ do
   cfSourceDirs cplLib == ["src"] @? "source dir should be src, got " ++ (show $ cfSourceDirs cplLib)
   cfCommandLineFlags cplLib == ["-Wall"] @? "command line flags should be -Wall, got " ++ (show $ cfCommandLineFlags cplLib)
   cfTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++(show $ cfTargetFiles cplLib)
+  cfTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++(show $ cfTargetFiles cplExe)
+  let dFlags = cfDynFlags cplExe DynFlags{}
+  importPaths dFlags == ["src"] @? "importPaths should be src, got "++(show $ importPaths dFlags)
+  packageFlags dFlags == [ExposePackage "ghc"] @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
+  let (ListenerInput (flLib:[]) _) = listenerInput shIn
+  dir flLib == "src" @? "Expected : src, got " ++ (show $ flLib)
 
-{-
 testCompileWithLocalSource :: Test
 testCompileWithLocalSource = TestCase $ do
     runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
@@ -39,12 +51,11 @@ testProjectCabalContentWithLocalSource = TestCase $ do
     length cplInps == 1 @? "Should have one compile input, got "++ (show $ length cplInps)
     let targs = cfTargetFiles $ cplInp
     targs == ["./noHsSource.hs"] @? "Expected [\"./noHsSource.hs\"] got " ++ show cplInp
--}
 
 runTestOnDirectory :: FilePath -> Assertion -> Assertion
-runTestOnDirectory dir fun = do
+runTestOnDirectory fp fun = do
   oldDir <- getCurrentDirectory 
-  setCurrentDirectory dir
+  setCurrentDirectory fp
   res <- finally fun (setCurrentDirectory oldDir)
   return res
 
