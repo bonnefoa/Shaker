@@ -73,10 +73,10 @@ recurseListFiles fli@(FileListenInfo inputDir _ _) = do
   curListFiles <-  listFiles fli
   return $ curListFiles ++ concat sub
 
-isFileContainingMain :: FilePath -> IO(Bool)
-isFileContainingMain fp = isFileContaining fp ((L.pack "main") `L.isPrefixOf`)
+isFileContainingMain :: FilePath -> IO Bool
+isFileContainingMain fp = isFileContaining fp (L.pack "main" `L.isPrefixOf`)
 
-isFileContaining :: FilePath -> (L.ByteString -> Bool) -> IO (Bool)
+isFileContaining :: FilePath -> (L.ByteString -> Bool) -> IO Bool
 isFileContaining fp pat = do
    byStr <- L.readFile fp
    return $ any pat $ L.lines byStr

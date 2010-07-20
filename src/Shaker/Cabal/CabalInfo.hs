@@ -23,9 +23,6 @@ import Distribution.Compiler(CompilerFlavor(GHC))
 import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
 import Data.Maybe
 import Data.List(nub)
-import Control.Monad
-import System.Directory (doesFileExist)
-import Data.List (isSuffixOf)
 
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
@@ -47,7 +44,7 @@ compileInputsToListenerInput :: [CompileInput] -> ListenerInput
 compileInputsToListenerInput cplInputs = defaultListenerInput {
         fileListenInfo = nub $ map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
  } 
- where concatSources = concat $ map cfSourceDirs cplInputs
+ where concatSources = concatMap cfSourceDirs cplInputs
        
 -- * Converter to CompileInput
 
@@ -59,7 +56,7 @@ localBuildInfoToCompileInputs lbi = executableAndLibToCompileInput (library pkgD
 
 
 -- | Dispatch the processing depending of the library content
-executableAndLibToCompileInput :: (Maybe Library) -> [Executable] -> [CompileInput]
+executableAndLibToCompileInput :: Maybe Library -> [Executable] -> [CompileInput]
 executableAndLibToCompileInput Nothing exes = 
   map executableToCompileInput exes
 executableAndLibToCompileInput (Just lib) exes = 
@@ -72,7 +69,7 @@ executableToCompileInput executable = defaultCompileInput {
   cfSourceDirs = mySourceDir
   ,cfDescription = "Executable : " ++ exeName executable
   ,cfCommandLineFlags = getCompileOptions bldInfo
-  ,cfTargetFiles = map (</> (modulePath executable) ) mySourceDir
+  ,cfTargetFiles = map (</> modulePath executable ) mySourceDir
   ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
   }
   where bldInfo = buildInfo executable
@@ -102,7 +99,7 @@ toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
   ,hiDir = Just "target"
   ,verbosity = 1
   ,ghcLink = NoLink
-  ,packageFlags = map ExposePackage $ packagesToExpose 
+  ,packageFlags = map ExposePackage packagesToExpose 
   } 
 
 -- * Helper methods

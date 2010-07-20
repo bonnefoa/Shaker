@@ -39,7 +39,7 @@ prop_completeMultipleWords acts = (not . null) acts ==> monadicIO $ checkRes cli
 
 prop_partialMultipleWords :: [Action] -> ActionInt -> Property
 prop_partialMultipleWords acts (ActionInt act num) = (not . null) acts ==> monadicIO $ checkRes cliInput expected
-  where cliInput = strActs ++ " " ++ (take num strAct)
+  where cliInput = strActs ++ " " ++ take num strAct
         strAct = show act 
         strActs =unwords $ map show acts 
         expected = unwords [strActs,strAct] 

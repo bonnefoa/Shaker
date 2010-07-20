@@ -57,11 +57,11 @@ listActions shIn = \str ->  return $ filtered str
 
 
 listActions :: Monad m => ShakerInput -> String -> m [Completion]
-listActions shIn = \str -> return $ autocompleteFunction (commandMap shIn) str
+listActions shIn str = return $ autocompleteFunction (commandMap shIn) str
 
 autocompleteFunction :: CommandMap  -> String -> [Completion]
 autocompleteFunction cmdMap [] = map simpleCompletion $ M.keys cmdMap
-autocompleteFunction cmdMap cliInput = map simpleCompletion $  compleListProp
+autocompleteFunction cmdMap cliInput = map simpleCompletion  compleListProp
   where inpWords = words cliInput
         lastWord = last inpWords 
         listProp = filter (lastWord `isPrefixOf`) $ M.keys cmdMap

@@ -8,9 +8,9 @@ import Control.Monad.Reader
 
 runClean :: Plugin 
 runClean = do
-       toClean <- asks $ (map cfCompileTarget) . compileInputs
+       toClean <- asks $ map cfCompileTarget . compileInputs
        lift$  mapM_ action toClean 
     where action toClean = do
                    ex <- doesDirectoryExist toClean
                    if ex then removeDirectoryRecursive toClean  
-                         else putStrLn "No target to remove" 
+                         else putStrLn "" 
