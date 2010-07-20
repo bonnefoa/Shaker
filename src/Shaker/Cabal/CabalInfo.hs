@@ -3,11 +3,17 @@
 module Shaker.Cabal.CabalInfo
  where
 
+import Shaker.Type
 import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
 import Distribution.ModuleName
 import Distribution.PackageDescription(
   BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules, extensions, 
   Executable,buildInfo, modulePath, executables, exeName
+  )
+import DynFlags(
+    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
+    ,PackageFlag (ExposePackage)
+    ,GhcLink (NoLink)
   )
 import System.FilePath          ( (</>))
 import Distribution.Compiler(CompilerFlavor(GHC))
@@ -48,6 +54,32 @@ localBuildInfoToCabalInfoList lbi = listArtifactToCabalInfo (library pkgDescript
 listArtifactToCabalInfo :: Maybe Library -> [Executable] -> [CabalInfo]
 listArtifactToCabalInfo Nothing execs =  map executableToCabalInfo  execs
 listArtifactToCabalInfo (Just lib) execs =libraryToCabalInfo lib : map executableToCabalInfo  execs 
+
+executableToShakerInput :: Executable -> ShakerInput 
+executableToShakerInput executable = 
+  ShakerInput { 
+     compileInputs = [cplInput]
+  }
+  where myExeBuildInfo = buildInfo executable
+        mySourceDir = hsSourceDirs myExeBuildInfo
+        cplInput = CompileInput {
+          cfSourceDirs = mySourceDir
+          ,cfDescription = "Executable : " ++ exeName executable
+          ,cfTargetFiles = map (</> (modulePath executable)) mySourceDir
+--          ,cfDynFlags = 
+          ,cfCommandLineFlags = getCompileOptions myExeBuildInfo
+        }
+
+toDynFlags :: [String] -> [String] -> DynFlags -> DynFlags
+toDynFlags sourceDirs packages dnFlags = dnFlags  {
+    importPaths = sourceDirs
+    ,outputFile = Just "target/Main"
+    ,objectDir = Just "target"
+    ,hiDir = Just "target"
+    ,verbosity = 1  
+    ,ghcLink = NoLink
+    ,packageFlags = map ExposePackage $ packages
+  } 
 
 -- | Extract cabalInfo from an executable
 executableToCabalInfo :: Executable -> CabalInfo
