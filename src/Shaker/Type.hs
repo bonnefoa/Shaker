@@ -16,12 +16,10 @@ data Duration =
 
 -- | Action represents the differents actions realisable by shaker
 data Action = 
-	Load -- ^Load sources with hint
-	| Compile -- ^ Compile sources with ghc
+	Compile -- ^ Compile sources with ghc
 	| FullCompile -- ^ Compile all hs sources with ghc
 	| QuickCheck -- ^ Execute quickcheck properties
 	| Help -- ^ Display the help
-	| List -- ^ Display buildable artefacts (cabal executables or library)
 	| Quit -- ^ Exit shaker
 	| Clean -- ^ Delete generated 
   deriving (Show,Eq,Ord)
