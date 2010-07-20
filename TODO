@@ -8,9 +8,8 @@ TODO :
     Propose which composant (Library? Executable?) to build
   Trap ctrl+c
   Correct import module (only import necessary functions)
-  If no source dir is specified, an error is throwed
   Create action command
-  
+  Use a monad writer for cabal information extraction
 
 Done : 
   bug : ~Compile launche two fork the first time
@@ -27,4 +26,5 @@ Done :
   Cabal Integration : 
     Get config through cabal api
   Exclude main methods from fullCompile 
+  If no source dir is specified, an error is throwed
 
