@@ -19,15 +19,17 @@ import DynFlags(
     ,GhcLink (NoLink)
   )
 import System.FilePath          ( (</>))
+import System.Directory (doesFileExist)
 import Distribution.Compiler(CompilerFlavor(GHC))
 import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
 import Data.Maybe
-import Data.List(nub)
+import Data.List(nub,isSuffixOf)
+import Control.Monad 
 
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
-defaultCabalInput = readConf >>= \lbi ->
-  return $ localBuildInfoToShakerInput lbi
+defaultCabalInput = readConf >>=
+ checkInvalidMain . localBuildInfoToShakerInput
 
 readConf :: IO LocalBuildInfo
 readConf = getPersistBuildConfig "dist"
@@ -122,17 +124,16 @@ convertModuleNameToString modName
    where modArr = components modName 
 
 
-{-
 -- | Check and filter all invalid main definission
-checkCababInfoListForExecutables :: [CompileInput] -> IO ([CabalInfo])
-checkCababInfoListForExecutables = mapM checkCababInfoForExecutables
+checkInvalidMain :: ShakerInput -> IO ShakerInput 
+checkInvalidMain shIn = mapM checkInvalidMain' (compileInputs shIn) >>= \newCplInp ->
+  return $ shIn {compileInputs = newCplInp  }
 
-checkCababInfoForExecutables :: CabalInfo -> IO (CabalInfo)
-checkCababInfoForExecutables cabInf
- | any (".hs" `isSuffixOf`) oldModules = do
-    newModules <- filterM doesFileExist oldModules
-    return cabInf {modules = newModules}
- | otherwise = return cabInf
-  where oldModules = modules cabInf
--}
+checkInvalidMain' :: CompileInput -> IO (CompileInput)
+checkInvalidMain' cplInput
+ | any (".hs" `isSuffixOf`) oldTargets = do
+    newTargets <- filterM doesFileExist oldTargets
+    return cplInput {cfTargetFiles = newTargets}
+ | otherwise = return cplInput
+  where oldTargets = cfTargetFiles cplInput
 
