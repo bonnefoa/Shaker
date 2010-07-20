@@ -52,10 +52,10 @@ setSourceAndTarget sources target dflags = dflags{
     ,hiDir = Just target
   }
 
-setCompileInputForAllHsSources :: Shaker IO (CompileInput)
+setCompileInputForAllHsSources :: Shaker IO CompileInput
 setCompileInputForAllHsSources = do 
   (cpIn:_) <- asks compileInputs
-  filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) (cfSourceDirs $ cpIn)
-  toExcludeFiles <- lift $ filterM (isFileContainingMain) filePaths
+  filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) (cfSourceDirs cpIn)
+  toExcludeFiles <- lift $ filterM isFileContainingMain filePaths
   return  $ cpIn {cfTargetFiles = filePaths \\ toExcludeFiles , cfDescription ="Full compilation"  }
 

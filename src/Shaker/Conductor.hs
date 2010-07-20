@@ -63,4 +63,4 @@ executeCommand (Command Continuous act) = listenManager ( executeAction act ) >>
 executeAction :: [Action] -> Shaker IO()
 executeAction acts = do
    thePluginMap <- asks pluginMap
-   sequence_ $ catMaybes $  map (flip M.lookup thePluginMap) acts 
+   sequence_ $ mapMaybe (`M.lookup` thePluginMap) acts 

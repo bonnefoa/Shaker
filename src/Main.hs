@@ -3,7 +3,7 @@ module Main
 
 import Shaker.Conductor
 import Shaker.Config
-import Shaker.Cabal.CabalInput
+import Shaker.Cabal.CabalInfo
 import Control.Monad.Reader
 
 main :: IO()

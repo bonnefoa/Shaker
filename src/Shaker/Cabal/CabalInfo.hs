@@ -3,106 +3,121 @@
 module Shaker.Cabal.CabalInfo
  where
 
+import Shaker.Io(FileListenInfo(..),defaultHaskellPatterns,defaultExclude)
+import Shaker.Type
+import Shaker.Config
+import Distribution.Simple.Configure (getPersistBuildConfig)
 import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
 import Distribution.ModuleName
 import Distribution.PackageDescription(
   BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules, extensions, 
   Executable,buildInfo, modulePath, executables, exeName
   )
+import DynFlags(
+    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
+    ,PackageFlag (ExposePackage)
+    ,GhcLink (NoLink)
+  )
 import System.FilePath          ( (</>))
 import Distribution.Compiler(CompilerFlavor(GHC))
 import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
 import Data.Maybe
-import Control.Monad
-import System.Directory (doesFileExist)
-import Data.List (isSuffixOf)
- 
-data CabalInfo = CabalInfo {
-    sourceDir :: [String] -- ^ Location of hs sources
-    ,cabalInfoDescripition :: String -- ^ Description of the artefact
-    ,modules :: [String] -- ^ Exposed modules or main executable. It will be the target of the compilation.
-    ,compileOption :: [String] -- ^ Options to pass to the compiler
-    ,packagesToExpose :: [String] -- ^ List of package to expose 
+import Data.List(nub)
+
+-- | Read the build information from cabal and output a shakerInput from it
+defaultCabalInput :: IO ShakerInput
+defaultCabalInput = readConf >>= \lbi ->
+  return $ localBuildInfoToShakerInput lbi
+
+readConf :: IO LocalBuildInfo
+readConf = getPersistBuildConfig "dist"
+
+-- | Extract useful information from localBuildInfo to a ShakerInput
+localBuildInfoToShakerInput :: LocalBuildInfo -> ShakerInput
+localBuildInfoToShakerInput lbi = defaultInput {
+    compileInputs = cplInputs
+    ,listenerInput = compileInputsToListenerInput cplInputs
   }
- deriving (Show)
+  where cplInputs = localBuildInfoToCompileInputs lbi
 
--- * Default configuration
- 
-defaultCabalInfo :: CabalInfo
-defaultCabalInfo = CabalInfo {
-  sourceDir = ["."]
-  ,cabalInfoDescripition = "Default cabalInfo"
-  ,compileOption = ["-Wall"] 
-  ,modules =[]
-  ,packagesToExpose = []
-  }
+compileInputsToListenerInput :: [CompileInput] -> ListenerInput
+compileInputsToListenerInput cplInputs = defaultListenerInput {
+        fileListenInfo = nub $ map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
+ } 
+ where concatSources = concatMap cfSourceDirs cplInputs
+       
+-- * Converter to CompileInput
 
--- * Information extraction from cabal objects
-
--- | Try to get a library description from the localbuild info
--- and convert it to a CabalInfo
-localBuildInfoToCabalInfoList :: LocalBuildInfo -> [CabalInfo]
-localBuildInfoToCabalInfoList lbi = listArtifactToCabalInfo (library pkgDescription) (executables pkgDescription)
+-- | Extract informations : Convert executable and library to 
+-- compile inputs
+localBuildInfoToCompileInputs :: LocalBuildInfo -> [CompileInput]
+localBuildInfoToCompileInputs lbi = executableAndLibToCompileInput (library pkgDescription) (executables pkgDescription)
  where pkgDescription = localPkgDescr lbi
-  
-listArtifactToCabalInfo :: Maybe Library -> [Executable] -> [CabalInfo]
-listArtifactToCabalInfo Nothing execs =  map executableToCabalInfo  execs
-listArtifactToCabalInfo (Just lib) execs =libraryToCabalInfo lib : map executableToCabalInfo  execs 
 
--- | Extract cabalInfo from an executable
-executableToCabalInfo :: Executable -> CabalInfo
-executableToCabalInfo executable = 
-  CabalInfo {
-    sourceDir = mySourceDir
-    ,cabalInfoDescripition = "Executable : " ++ exeName executable
-    ,compileOption = getCompileOptions myExeBuildInfo
-    ,modules = map (</> (modulePath executable)) mySourceDir
-    ,packagesToExpose = getLibDependencies myExeBuildInfo
-  }
-  where myExeBuildInfo = buildInfo executable
-        mySourceDir = hsSourceDirs myExeBuildInfo
 
--- | Extract cabalInfo from a library
-libraryToCabalInfo  :: Library -> CabalInfo
-libraryToCabalInfo lib = 
-  CabalInfo {
-     sourceDir = hsSourceDirs libraryBuildInfo 
-     ,cabalInfoDescripition = "Library : " ++ show myModules
-     ,compileOption = getCompileOptions libraryBuildInfo 
-     ,modules = myModules
-     ,packagesToExpose = getLibDependencies libraryBuildInfo
+-- | Dispatch the processing depending of the library content
+executableAndLibToCompileInput :: Maybe Library -> [Executable] -> [CompileInput]
+executableAndLibToCompileInput Nothing exes = 
+  map executableToCompileInput exes
+executableAndLibToCompileInput (Just lib) exes = 
+  libraryToCompileInput lib : map executableToCompileInput exes
+
+-- | Convert a cabal executable to a compileInput
+-- The target of compilation will the main file
+executableToCompileInput :: Executable -> CompileInput
+executableToCompileInput executable = defaultCompileInput { 
+  cfSourceDirs = mySourceDir
+  ,cfDescription = "Executable : " ++ exeName executable
+  ,cfCommandLineFlags = getCompileOptions bldInfo
+  ,cfTargetFiles = map (</> modulePath executable ) mySourceDir
+  ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
   }
-  where libraryBuildInfo = libBuildInfo lib
-        myModules = map convertModuleNameToString $ exposedModules lib
+  where bldInfo = buildInfo executable
+        mySourceDir = hsSourceDirs bldInfo
+
+-- | Convert a cabal library to a compileInput
+-- The target of compilation will be all exposed modules
+libraryToCompileInput :: Library -> CompileInput
+libraryToCompileInput lib = defaultCompileInput {
+  cfSourceDirs = mySourceDir
+  ,cfDescription = "Library : " ++ show myModules
+  ,cfCommandLineFlags = getCompileOptions bldInfo
+  ,cfTargetFiles = myModules
+  ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
+ }
+ where bldInfo = libBuildInfo lib
+       myModules = map convertModuleNameToString $ exposedModules lib
+       mySourceDir = hsSourceDirs bldInfo
+
+-- | Create a dynFlags for ghc from a source directory and 
+-- a liste of packages
+toDynFlags :: [String] -> [String] -> DynFlags -> DynFlags
+toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
+  importPaths = sourceDirs
+  ,outputFile = Just "target/Main"
+  ,objectDir = Just "target"
+  ,hiDir = Just "target"
+  ,verbosity = 1
+  ,ghcLink = NoLink
+  ,packageFlags = map ExposePackage packagesToExpose 
+  } 
 
 -- * Helper methods
 
-convertModuleNameToString :: ModuleName -> String
-convertModuleNameToString modName  
-  | null modArr = ""
-  | otherwise =  foldr1 (\w s -> w ++ '.':s)  modArr
-  where modArr = components modName 
-
 getCompileOptions :: BuildInfo -> [String]
-getCompileOptions myLibBuildInfo = ghcOptions ++ ghcExtensions 
-  where ghcOptions = fromMaybe [] $ lookup GHC (options myLibBuildInfo)
-        ghcExtensions = map (\a -> "-X"++ show a) (extensions myLibBuildInfo)
+getCompileOptions myLibBuildInfo = ghcOptions ++ ghcExtensions
+ where ghcOptions = fromMaybe [] $ lookup GHC (options myLibBuildInfo)
+       ghcExtensions = map (\a -> "-X"++ show a) (extensions myLibBuildInfo)
 
-getLibDependencies :: BuildInfo -> [String] 
+getLibDependencies :: BuildInfo -> [String]
 getLibDependencies bi = map getPackageName $ targetBuildDepends bi 
 
 getPackageName :: Dependency -> String
 getPackageName (Dependency (PackageName pn) _) = pn
 
--- | Check and filter all invalid main definission
-checkCababInfoListForExecutables :: [CabalInfo] -> IO ([CabalInfo])
-checkCababInfoListForExecutables = mapM checkCababInfoForExecutables 
-
-checkCababInfoForExecutables :: CabalInfo -> IO (CabalInfo)
-checkCababInfoForExecutables cabInf 
- | any (".hs" `isSuffixOf`) oldModules = do 
-    newModules <- filterM doesFileExist oldModules  
-    return cabInf {modules = newModules}
- | otherwise = return cabInf
- where oldModules = modules cabInf
+convertModuleNameToString :: ModuleName -> String
+convertModuleNameToString modName
+ | null modArr = ""
+ | otherwise = foldr1 (\w s -> w ++ '.':s) modArr
+   where modArr = components modName 
 

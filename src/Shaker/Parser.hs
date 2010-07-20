@@ -31,7 +31,7 @@ typeMultipleAction cmMap = many (typeAction cmMap) >>= \res ->
 typeAction :: CommandMap -> GenParser Char st Action
 typeAction cmMap = skipMany (char ' ') >>
   choice (parseMapAction cmMap)  >>= \res ->
-  skipMany (char ' ') >> return (res)
+  skipMany (char ' ') >> return res
 
 -- | Parse the continuous tag (~)
 typeDuration :: GenParser Char st Duration
