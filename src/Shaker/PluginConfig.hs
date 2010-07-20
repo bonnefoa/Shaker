@@ -1,3 +1,4 @@
+-- | Register available actions and how they will be called
 module Shaker.PluginConfig
  where
 
@@ -15,7 +16,6 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
                 (FullCompile,runFullCompile ),
                 (Help,runHelp),
                 (Clean,runClean),
-                (List,runList),
                 (Quit,runExit)
               ]
 
@@ -25,8 +25,7 @@ defaultCommandMap = M.fromList list
             ("Compile",Compile),
             ("FullCompile",FullCompile),
             ("Help", Help),
-            ("List", List),
-            ("QuickCheck",QuickCheck),
+--            ("QuickCheck",QuickCheck),
             ("Clean",Clean),
             ("q",Quit),
             ("Load",Load),

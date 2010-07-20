@@ -1,3 +1,4 @@
+-- | Clean action is responsible to delete directory containing temporary .o and .hi files 
 module Shaker.Action.Clean
  where
 
