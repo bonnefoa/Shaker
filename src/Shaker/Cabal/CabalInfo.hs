@@ -121,3 +121,18 @@ convertModuleNameToString modName
  | otherwise = foldr1 (\w s -> w ++ '.':s) modArr
    where modArr = components modName 
 
+
+{-
+-- | Check and filter all invalid main definission
+checkCababInfoListForExecutables :: [CompileInput] -> IO ([CabalInfo])
+checkCababInfoListForExecutables = mapM checkCababInfoForExecutables
+
+checkCababInfoForExecutables :: CabalInfo -> IO (CabalInfo)
+checkCababInfoForExecutables cabInf
+ | any (".hs" `isSuffixOf`) oldModules = do
+    newModules <- filterM doesFileExist oldModules
+    return cabInf {modules = newModules}
+ | otherwise = return cabInf
+  where oldModules = modules cabInf
+-}
+

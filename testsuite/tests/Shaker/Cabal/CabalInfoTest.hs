@@ -32,6 +32,12 @@ testParseCabalConfig = TestCase $ runTestOnDirectory "testsuite/tests/resources/
   let (ListenerInput (flLib:[]) _) = listenerInput shIn
   dir flLib == "src" @? "Expected : src, got " ++ show  flLib
 
+testInvalidMainShouldBeExcluded :: Test
+testInvalidMainShouldBeExcluded = TestCase $ runTestOnDirectory "testsuite/tests/resources/invalidMain" $ do
+ shIn <- defaultCabalInput
+ let (cplExe:[]) = compileInputs shIn
+ cfTargetFiles cplExe == ["src/Main.hs"] @? "since tests/Main.hs is invalid, should have only src/Main.hs, got " ++ show (cfTargetFiles cplExe)
+
 testCompileWithLocalSource :: Test
 testCompileWithLocalSource = TestCase $ runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
  shIn <- defaultCabalInput
