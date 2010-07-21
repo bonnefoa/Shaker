@@ -20,11 +20,11 @@ description:
   .
   /Usage/
   .
-  The cabal configuration file should be generated beforehand. If you change your cabal configuration, you need to recreate the configuration file. 
+  The cabal configuration file should be generated beforehand with /runhaskell Setup.hs configure/. If you change your cabal configuration, you need to recreate the configuration file. 
   .
   /Execution/
   .
-  In the root of your project, launch shaker. An interactive prompt will allow you to execute differents action.
+  In the root of your haskell project, launch shaker. An interactive prompt will allow you to execute differents action.
   .
   /Action execution/
   .
