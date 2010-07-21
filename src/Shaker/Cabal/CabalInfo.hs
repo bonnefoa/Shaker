@@ -137,3 +137,5 @@ checkInvalidMain' cplInput
  | otherwise = return cplInput
   where oldTargets = cfTargetFiles cplInput
 
+
+

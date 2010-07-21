@@ -1,7 +1,7 @@
 name: shaker
 version: 0.1.0
 cabal-version: >= 1.8
-build-type: Simple
+build-type: Custom
 license: BSD3
 license-file: LICENSE
 copyright: Copyright (c) 2010 Anthonin Bonnefoy
@@ -9,6 +9,7 @@ author: Anthonin Bonnefoy
 maintainer: anthonin.bonnefoy@gmail.com
 homepage: http://github.com/bonnefoa/Shaker
 bug-reports: http://github.com/bonnefoa/Shaker/issues 
+extra-source-files: README.textile TODO testsuite/*
 Stability:alpha
 Tested-With:GHC == 6.12.1
 category: Development
@@ -56,9 +57,9 @@ description:
   [@% ~Clean Compile@] Switch to continuous mode and will clean and compile the project when sources are modified.
 
 Executable shaker
-  Main-Is: Main.hs
+  Main-Is: Shaker.hs
   ghc-options: -Wall
-  hs-source-dirs: src testsuite/tests 
+  hs-source-dirs: src 
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
@@ -73,4 +74,30 @@ Executable shaker
                  regex-posix >= 0.94.1,
                  old-time >= 1.0.0
                  ,bytestring >= 0.9.1.5
+
+flag test
+  description: Build test program.
+  default:     False
+
+Executable test
+  hs-source-dirs:  src, testsuite/tests 
+  main-is:         RunTest.hs
+  build-depends: base >= 4.1,
+                 Cabal >= 1.8.0.2,
+                 containers >= 0.3,
+                 haskeline >= 0.6.0.0 
+                 ,directory >= 1.0.1.0,
+                 filepath >= 1.1,
+                 ghc >= 6,
+                 ghc-paths >= 0.1,
+                 haskell98 >= 1.0,
+                 mtl >= 1.0,
+                 parsec >= 3.0,
+                 regex-posix >= 0.94.1,
+                 old-time >= 1.0.0
+                 ,bytestring >= 0.9.1.5
+                 ,HUnit >= 1.2.2.1
+                 ,QuickCheck >= 2.1.1.1
+  if !flag(test)
+    buildable:     False
 

@@ -1,6 +1,5 @@
-module Shaker.RunTest
+module Main
  where
-
 import Shaker.Cabal.CabalInfoTest
 import Shaker.Action.CompileTest
 import Shaker.CliTest
@@ -12,8 +11,10 @@ import Test.QuickCheck
 import Test.HUnit
 import Control.Monad.Trans
 
-runAll :: IO()
-runAll = mapM_ liftIO propLists
+main :: IO()
+main = do 
+  mapM_ liftIO propLists
+  mapM_ liftIO testLists
 
 propLists :: [IO()]
 propLists =[ 
