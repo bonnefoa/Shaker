@@ -10,6 +10,7 @@ TODO :
   Correct import module (only import necessary functions)
   Create action command
   Use a monad writer for cabal information extraction
+  Extract extra-source-dirs
 
 Done : 
   bug : ~Compile launche two fork the first time

@@ -42,7 +42,8 @@ runFullCompile = setCompileInputForAllHsSources >>= \a ->
 checkTargetFiles :: [String] -> Shaker IO([String])
 checkTargetFiles [] = do 
         (ListenerInput fli _) <- asks listenerInput 
-        lift $ recurseMultipleListFiles fli
+        files <- lift $ recurseMultipleListFiles fli
+        lift $ filterM (\a -> not `liftM` isFileContainingMain a) files
 checkTargetFiles l = return l
 
 setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags

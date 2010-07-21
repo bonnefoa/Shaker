@@ -11,7 +11,7 @@ import Shaker.Properties()
 import System.Console.Haskeline.Completion
 
 instance Arbitrary Action where
-  arbitrary = elements [Compile,QuickCheck,Quit,Help]
+  arbitrary = elements [Compile,Quit,Help]
 
 data ActionInt = ActionInt Action Int
   deriving (Show)

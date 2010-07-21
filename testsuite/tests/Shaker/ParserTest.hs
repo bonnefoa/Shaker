@@ -10,7 +10,7 @@ import Data.Map (toList)
  
 prop_parseDefaultAction :: String -> Bool
 prop_parseDefaultAction act = res == Command OneShot [Help]
-  where res = parseCommand defaultInput (act ++"x")
+  where res = parseCommand defaultInput ('x' :act )
 
 prop_parseCommand :: CommandString -> Bool
 prop_parseCommand (CommandString str expCom) = parsed == expCom 

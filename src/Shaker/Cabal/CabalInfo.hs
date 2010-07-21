@@ -129,7 +129,7 @@ checkInvalidMain :: ShakerInput -> IO ShakerInput
 checkInvalidMain shIn = mapM checkInvalidMain' (compileInputs shIn) >>= \newCplInp ->
   return $ shIn {compileInputs = newCplInp  }
 
-checkInvalidMain' :: CompileInput -> IO (CompileInput)
+checkInvalidMain' :: CompileInput -> IO CompileInput
 checkInvalidMain' cplInput
  | any (".hs" `isSuffixOf`) oldTargets = do
     newTargets <- filterM doesFileExist oldTargets

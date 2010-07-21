@@ -47,6 +47,7 @@ testCompileWithLocalSource = TestCase $ runTestOnDirectory "testsuite/tests/reso
  ex2 <- doesFileExist "target/Main.o" 
  ex && not ex2 @? "file main should exist and be cleaned"
 
+
 testProjectCabalContentWithLocalSource :: Test
 testProjectCabalContentWithLocalSource = TestCase $
     runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
