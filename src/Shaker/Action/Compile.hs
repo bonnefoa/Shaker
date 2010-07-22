@@ -1,8 +1,10 @@
 module Shaker.Action.Compile(
     runCompile
+    ,runFullCompile
   )
  where
 
+import Data.List 
 import GHC
 import DynFlags 
 import GHC.Paths
@@ -13,10 +15,13 @@ import Control.Monad.Reader
 
 -- |Run haskell compilation on given file input 
 runCompile :: Plugin
-runCompile = do
-        (CompileInput sourceDir targetInput procFlags strflags) <-  asks compileInput 
-        (ListenerInput fli _) <- asks listenerInput 
-        targetFiles <-  lift $ recurseMultipleListFiles fli
+runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
+
+runSingleCompileInput :: CompileInput -> Shaker IO()
+runSingleCompileInput (CompileInput sourceDir desc targetInput procFlags strflags inputTargetFiles) = do
+        lift $ putStrLn $ concat ["   --------- ", desc," ---------"]
+        targetFiles <- checkTargetFiles inputTargetFiles 
+        lift $ putStrLn $ concat ["   --------- ", "Compiling target : "++ show targetFiles," ---------"]
         lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ do
                        dflags <- getSessionDynFlags
@@ -27,7 +32,18 @@ runCompile = do
         	       _ <- load LoadAllTargets
                        return ()
  
+runFullCompile :: Plugin
+runFullCompile = setCompileInputForAllHsSources >>= \a -> 
+  runSingleCompileInput a >> 
+  return () 
 
+-- | Fill the target files to all files in listenerInput if empty
+checkTargetFiles :: [String] -> Shaker IO([String])
+checkTargetFiles [] = do 
+        (ListenerInput fli _) <- asks listenerInput 
+        files <- lift $ recurseMultipleListFiles fli
+        lift $ filterM (\a -> not `liftM` isFileContainingMain a) files
+checkTargetFiles l = return l
 
 setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags
 setSourceAndTarget sources target dflags = dflags{
@@ -35,4 +51,13 @@ setSourceAndTarget sources target dflags = dflags{
     ,objectDir = Just target
     ,hiDir = Just target
   }
+
+setCompileInputForAllHsSources :: Shaker IO CompileInput
+setCompileInputForAllHsSources = do 
+  cplInps@(cpIn:_) <- asks compileInputs
+  let srcDirs = nub $ concatMap cfSourceDirs cplInps
+  filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) srcDirs 
+  newTargets <-  lift $ filterM (\a -> not `liftM` isFileContainingMain a) filePaths  
+  newTargetsWithoutMain <- checkTargetFiles newTargets
+  return  $ cpIn {cfTargetFiles = newTargetsWithoutMain, cfDescription ="Full compilation"  }
 

@@ -1,0 +1,11 @@
+Name:     invalidMain
+Version:  0.0.1
+cabal-version: >= 1.8
+build-type: Simple
+
+Executable invalidMain
+  Main-Is: Main.hs
+  ghc-options: -Wall
+  hs-source-dirs: src tests
+  build-depends: ghc >= 6
+

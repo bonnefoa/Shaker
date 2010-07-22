@@ -3,7 +3,7 @@ module Main
 
 import Shaker.Conductor
 import Shaker.Config
-import Shaker.Cabal
+import Shaker.Cabal.CabalInfo
 import Control.Monad.Reader
 
 main :: IO()
@@ -11,6 +11,5 @@ main = do
   inputState <- defaultInputState
   cab <- defaultCabalInput 
   runReaderT (initThread inputState) cab
-
 
     

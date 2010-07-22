@@ -22,13 +22,16 @@ typeCommand cmMap = typeDuration >>= \dur ->
 
 
 typeMultipleAction :: CommandMap -> GenParser Char st [Action]
-typeMultipleAction cmMap = many (typeAction cmMap) 
+typeMultipleAction cmMap = many (typeAction cmMap) >>= \res ->
+  case res of 
+       [] -> return [Help]
+       _ -> return res
 
 -- | Parse to an action
 typeAction :: CommandMap -> GenParser Char st Action
 typeAction cmMap = skipMany (char ' ') >>
   choice (parseMapAction cmMap)  >>= \res ->
-  skipMany (char ' ') >> return (res)
+  skipMany (char ' ') >> return res
 
 -- | Parse the continuous tag (~)
 typeDuration :: GenParser Char st Duration
@@ -36,5 +39,5 @@ typeDuration = skipMany (char ' ') >>
   option OneShot (char '~' >> return Continuous)
 
 parseMapAction :: CommandMap -> [GenParser Char st Action]
-parseMapAction cmMap= map (\(k,v) -> try (string k) >> return v) (M.toList cmMap)
+parseMapAction cmMap = map (\(k,v) -> try (string k) >> return v) (M.toList cmMap)
 

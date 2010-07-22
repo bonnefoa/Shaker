@@ -1,0 +1,8 @@
+Name:                   noHsSource
+Version:                0.0.1
+cabal-version: >= 1.8
+build-type: Simple
+
+Executable noHsSource
+        Main-Is:        noHsSource.hs
+

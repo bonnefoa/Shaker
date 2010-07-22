@@ -1,3 +1,7 @@
+-- | Command line manager
+-- This manager will listen to the standard input as soon as the MVar token is filled.
+-- Then, it will fill another MVar (input) with the parsed command.
+-- Autocompletion is supported throught haskeline configuration.
 module Shaker.Cli(
   getInput
   ,listActions
@@ -30,6 +34,7 @@ getInput inSt = do
         shIn <- ask 
         lift $ runInputT (myDefaultSettings shIn) $ processInput shIn inSt
 
+-- | Execute the entered command 
 processInput :: ShakerInput ->  InputState -> InputT IO()
 processInput shIn (InputState inputMv tokenMv) = do
   _ <- lift $ takeMVar tokenMv 
@@ -38,6 +43,9 @@ processInput shIn (InputState inputMv tokenMv) = do
      Nothing -> return()
      Just str -> lift $ tryPutMVar inputMv (parseCommand shIn str) >> return() 
 
+-- * Auto-completion management 
+
+-- | Settings for haskeline
 myDefaultSettings :: MonadIO m => ShakerInput-> Settings m
 myDefaultSettings shIn = Settings {
   complete = completeAction shIn,
@@ -48,20 +56,12 @@ myDefaultSettings shIn = Settings {
 completeAction :: Monad m => ShakerInput -> CompletionFunc m
 completeAction shIn = completeWord (Just '\\') "\"'~" (listActions shIn)
 
-{-
 listActions :: Monad m => ShakerInput -> String -> m [Completion]
-listActions shIn = \str ->  return $ filtered str
-  where cmdMap = commandMap shIn
-        filtered cliInput = map simpleCompletion $ filter (cliInput `isPrefixOf`) $ M.keys cmdMap
--}
-
-
-listActions :: Monad m => ShakerInput -> String -> m [Completion]
-listActions shIn = \str -> return $ autocompleteFunction (commandMap shIn) str
+listActions shIn str = return $ autocompleteFunction (commandMap shIn) str
 
 autocompleteFunction :: CommandMap  -> String -> [Completion]
 autocompleteFunction cmdMap [] = map simpleCompletion $ M.keys cmdMap
-autocompleteFunction cmdMap cliInput = map simpleCompletion $  compleListProp
+autocompleteFunction cmdMap cliInput = map simpleCompletion  compleListProp
   where inpWords = words cliInput
         lastWord = last inpWords 
         listProp = filter (lastWord `isPrefixOf`) $ M.keys cmdMap

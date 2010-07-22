@@ -1,7 +1,6 @@
 module Shaker.IoTest
  where
 
-import Shaker.Type
 import Shaker.Io
 import System.Time
 import Data.List
@@ -32,7 +31,7 @@ prop_listFilesWithIgnore :: FileListenInfo -> Property
 prop_listFilesWithIgnore fli = abstractTestListFiles fli{ignore= ["\\.$"], include=[]} (\a b-> length a == length b + 2)
 
 prop_listFilesWithIncludeAll :: FileListenInfo -> Property
-prop_listFilesWithIncludeAll fli = abstractTestListFiles fli{include=[".*"]} (\a b->length a== length b)
+prop_listFilesWithIncludeAll fli = abstractTestListFiles fli{include=[".*"]} (\a b->length a >= length b)
 
 testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
 testModifiedFiles fli proc predicat= monadicIO action
@@ -70,4 +69,16 @@ testListHsFiles = TestCase $
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \res ->
   assertBool ("Should only contains hs files " ++ show res) $
     all (".hs" `isSuffixOf`) res
+
+testIsFileContainingMain :: Test
+testIsFileContainingMain = TestCase $ do
+  res <- isFileContainingMain "src/Shaker.hs" 
+  assertBool "File Shaker.hs should contain main methods" res
+
+testIsFileNotContainingMain :: Test
+testIsFileNotContainingMain = TestCase $ do
+  res <- isFileContainingMain "src/Shaker/Config.hs"
+  assertBool "File Config.hs should not contain main methods" $ not res
+
+
 

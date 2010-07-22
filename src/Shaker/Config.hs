@@ -3,19 +3,16 @@ module Shaker.Config
  where
 
 import Shaker.Type
-import Shaker.Io(FileListenInfo(..))
+import Shaker.PluginConfig
+import Shaker.Io(FileListenInfo(..),defaultHaskellPatterns)
 import Shaker.Cli(InputState(..))
 import DynFlags
-import qualified Data.Map as M (fromList)
-import Shaker.Action.Compile
-import Shaker.Action.Clean
-import Shaker.Action.Standard
 import Control.Concurrent
-import Control.Monad.Trans
+
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
-  compileInput = defaultCompileInput,
+  compileInputs = [defaultCompileInput],
   listenerInput = defaultListenerInput,
   pluginMap = defaultPluginMap,
   commandMap = defaultCommandMap
@@ -26,9 +23,11 @@ defaultInput = ShakerInput {
 defaultCompileInput :: CompileInput
 defaultCompileInput = CompileInput {
   cfSourceDirs= ["src/","testsuite/tests/"]
+  ,cfDescription = "Default Compilation"
   ,cfCompileTarget =  "target"  
   ,cfDynFlags = defaultCompileFlags  
   ,cfCommandLineFlags = ["-Wall"]
+  ,cfTargetFiles = []
 }
 
 -- | default dynamics flags
@@ -46,31 +45,9 @@ defaultCompileFlags = \a-> a  {
 -- The default delay is 2 sec
 defaultListenerInput :: ListenerInput                                   
 defaultListenerInput = ListenerInput {
-    fileListenInfo= [FileListenInfo "src/" [] [".*\\.hs$"], FileListenInfo "testsuite/" [] [".*\\.hs$"] ]
+    fileListenInfo= [FileListenInfo "src/" [] defaultHaskellPatterns, FileListenInfo "testsuite/" [] defaultHaskellPatterns ]
     ,delay = 2000000
     }
-
--- | The default plugin map contains mapping for compile, help and exit action 
-defaultPluginMap :: PluginMap
-defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEndAction)) list
-  where list = [
-                (Compile,runCompile ),
-                (Help,runHelp),
-                (Clean,runClean),
-                (Quit,runExit)
-              ]
-
-defaultCommandMap :: CommandMap 
-defaultCommandMap = M.fromList list
-  where list = [
-            ("Compile",Compile),
-            ("Help", Help),
-            ("QuickCheck",QuickCheck),
-            ("Clean",Clean),
-            ("q",Quit),
-            ("Load",Load),
-            ("Quit",Quit)
-          ]
 
 defaultInputState :: IO InputState
 defaultInputState = do

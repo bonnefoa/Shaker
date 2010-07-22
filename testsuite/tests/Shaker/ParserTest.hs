@@ -5,11 +5,12 @@ import Test.QuickCheck
 import Shaker.Type
 import Shaker.Parser
 import Shaker.Config
+import Shaker.PluginConfig
 import Data.Map (toList)
  
 prop_parseDefaultAction :: String -> Bool
 prop_parseDefaultAction act = res == Command OneShot [Help]
-  where res = parseCommand defaultInput (act ++"x")
+  where res = parseCommand defaultInput ('x' :act )
 
 prop_parseCommand :: CommandString -> Bool
 prop_parseCommand (CommandString str expCom) = parsed == expCom 
@@ -29,20 +30,19 @@ data ActionString = ActionString {
 } deriving (Show)
 
 instance Arbitrary ActionString where
-  arbitrary = do 
-    elements $ map (\(a,b) -> ActionString a b) (toList defaultCommandMap)
+  arbitrary = elements $ map (uncurry ActionString) (toList defaultCommandMap)
 
 instance Arbitrary CommandString where
   arbitrary = do 
     dur <- elements [Continuous,OneShot]
     actionStrings <- listOf1 arbitrary
-    return $ CommandString {
+    return CommandString {
         comStr = getStringFromDurationAndAction dur actionStrings
         ,command = Command dur (map cfAction actionStrings) 
     }
 
 getStringFromDurationAndAction :: Duration -> [ActionString] -> String
 getStringFromDurationAndAction dur acts  =
-     foldl (\a b-> a ++ " " ++ (cfActionStr b) ++ " " ) (seed dur) acts
+     foldl (\a b-> a ++ " " ++ cfActionStr b ++ " " ) (seed dur) acts
      where seed Continuous = "~"
            seed _ = ""

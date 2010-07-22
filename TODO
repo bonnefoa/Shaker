@@ -3,14 +3,16 @@ TODO :
   Make action take parameters from command line
   Implement QuickCheck Action
   Optimisation possible by saving the files to listen
-  bug : ~Compile launche two fork the first time
   Clean module export
   Cabal Integration : 
     Propose which composant (Library? Executable?) to build
   Trap ctrl+c
   Correct import module (only import necessary functions)
+  Create action command
+  Use a monad writer for cabal information extraction
 
 Done : 
+  bug : ~Compile launche two fork the first time
   Convert InputShaker parameter to Monad
   Support multi action
   Implement Clean
@@ -23,4 +25,7 @@ Done :
   Externalize configuration
   Cabal Integration : 
     Get config through cabal api
+  Exclude main methods from fullCompile 
+  If no source dir is specified, an error is throwed
+  correct fullcompile. Concat source dir from all artifacts (currently only use the first)
 

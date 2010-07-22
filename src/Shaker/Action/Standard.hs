@@ -25,5 +25,3 @@ runEndAction :: Plugin
 runEndAction = lift $ 
   putStrLn "---------- End action ---------------------------"
 
-
-

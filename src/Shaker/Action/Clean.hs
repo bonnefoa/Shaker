@@ -1,3 +1,4 @@
+-- | Clean action is responsible to delete directory containing temporary .o and .hi files 
 module Shaker.Action.Clean
  where
 
@@ -8,9 +9,9 @@ import Control.Monad.Reader
 
 runClean :: Plugin 
 runClean = do
-       toClean <- asks $ cfCompileTarget . compileInput 
-       lift$  action toClean 
+       toClean <- asks $ map cfCompileTarget . compileInputs
+       lift$  mapM_ action toClean 
     where action toClean = do
                    ex <- doesDirectoryExist toClean
                    if ex then removeDirectoryRecursive toClean  
-                         else putStrLn "No target to remove" 
+                         else putStrLn "" 
