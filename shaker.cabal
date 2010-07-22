@@ -1,5 +1,5 @@
 name: shaker
-version: 0.1.0
+version: 0.1
 cabal-version: >= 1.8
 build-type: Custom
 license: BSD3
@@ -65,15 +65,15 @@ extra-source-files: README.textile TODO testsuite/tests/resources/invalidMain/di
     testsuite/tests/resources/noSourceConfig/noHsSource.hs
     testsuite/tests/resources/noSourceConfig/noHsSource.cabal
     testsuite/tests/resources/noSourceConfig/dist/setup-config
+
 source-repository head
   type:     git
   location: http://github.com/bonnefoa/Shaker 
 
 source-repository this
   type:     git
-  location: http://github.com/bonnefoa/Shaker 
+  location: http://github.com/bonnefoa/Shaker/tree/0.1
   tag:      0.1
-
 
 Executable shaker
   Main-Is: Shaker.hs
