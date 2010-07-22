@@ -16,7 +16,7 @@ synopsis: simple and interactive command-line build tool
 description: 
   Shaker is a build tool which allow to compile an haskell project with some features like continuous action similar to SBT.
   .
-  For now, all configuration are made via cabal. Shaker will read cabal configuration to discover source directories, compilation options and targets to compile.
+  For the moment, all configuration are made via cabal. Shaker will read cabal configuration to discover source directories, compilation options and targets to compile.
   .
   /Usage/
   .
@@ -65,6 +65,15 @@ extra-source-files: README.textile TODO testsuite/tests/resources/invalidMain/di
     testsuite/tests/resources/noSourceConfig/noHsSource.hs
     testsuite/tests/resources/noSourceConfig/noHsSource.cabal
     testsuite/tests/resources/noSourceConfig/dist/setup-config
+source-repository head
+  type:     git
+  location: http://github.com/bonnefoa/Shaker 
+
+source-repository this
+  type:     git
+  location: http://github.com/bonnefoa/Shaker 
+  tag:      0.1
+
 
 Executable shaker
   Main-Is: Shaker.hs
@@ -85,7 +94,7 @@ Executable shaker
     Shaker.Cabal.CabalInfo
     Shaker.Type
     Shaker.Listener
-  build-depends: base >= 4.1,
+  build-depends: base >= 4.1 && < 5 ,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
                  haskeline >= 0.6.0.0 
