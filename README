@@ -1,0 +1,7 @@
+Shaker is a build tool which allow to compile and launch test on haskell project with some features like continuous action similar to SBT.
+
+The package is uploaded in hackage - http://hackage.haskell.org/package/shaker
+
+To install shaker, either use cabal install - cabal update && cabal install shaker 
+Or build shaker from sources - runhaskell Setup.hs configure && runhaskell Setup.hs install
+
