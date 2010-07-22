@@ -9,7 +9,7 @@ author: Anthonin Bonnefoy
 maintainer: anthonin.bonnefoy@gmail.com
 homepage: http://github.com/bonnefoa/Shaker
 bug-reports: http://github.com/bonnefoa/Shaker/issues 
-extra-source-files: README.textile TODO testsuite/*
+extra-source-files: README.textile TODO 
 Stability:alpha
 Tested-With:GHC == 6.12.1
 category: Development
@@ -55,11 +55,37 @@ description:
   [@% ~Compile@] Switch to continuous mode and will compile the project when sources are modified.
   .
   [@% ~Clean Compile@] Switch to continuous mode and will clean and compile the project when sources are modified.
+  extra-source-files: ./testsuite/tests/resources/invalidMain/dist/setup-config
+    ./testsuite/tests/resources/invalidMain/src/Main.hs
+    ./testsuite/tests/resources/invalidMain/tests/Dummy.hs
+    ./testsuite/tests/resources/invalidMain/invalidMain.cabal
+    ./testsuite/tests/resources/cabalTest/dist/setup-config
+    ./testsuite/tests/resources/cabalTest/src/cabalTest.cabal
+    ./testsuite/tests/resources/cabalTest/src/Main.hs
+    ./testsuite/tests/resources/cabalTest/src/CabalTest.hs
+    ./testsuite/tests/resources/noSourceConfig/noHsSource.hs
+    ./testsuite/tests/resources/noSourceConfig/noHsSource.cabal
+    ./testsuite/tests/resources/noSourceConfig/dist/setup-config
 
 Executable shaker
   Main-Is: Shaker.hs
   ghc-options: -Wall
   hs-source-dirs: src 
+  other-modules: 
+    Shaker.Parser
+    Shaker.Action.Clean
+    Shaker.Action.Standard
+    Shaker.Action.Quickcheck
+    Shaker.Action.Compile
+    Shaker.Conductor
+    Shaker.Config
+    Shaker.PluginConfig
+    Shaker.Regex
+    Shaker.Cli
+    Shaker.Io
+    Shaker.Cabal.CabalInfo
+    Shaker.Type
+    Shaker.Listener
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
@@ -82,6 +108,16 @@ flag test
 Executable test
   hs-source-dirs:  src, testsuite/tests 
   main-is:         RunTest.hs
+  other-modules: 
+    Shaker.RegexTest
+    Shaker.Properties
+    Shaker.Action.CompileTest
+    Shaker.IoTest
+    Shaker.CliTest
+    Shaker.ParserTest
+    Shaker.Cabal.CabalInfoTest
+    Shaker.ListenerTest
+    Shaker.ConductorTest
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
@@ -100,4 +136,3 @@ Executable test
                  ,QuickCheck >= 2.1.1.1
   if !flag(test)
     buildable:     False
-
