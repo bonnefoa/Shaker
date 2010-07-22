@@ -1,7 +1,7 @@
 -- | Allow to use cabal configuration (generated via the configure action of cabal).
 -- Source directories and compilation options will be reused by Shaker.
 module Shaker.Cabal.CabalInfo
- where
+   where
 
 import Shaker.Io(FileListenInfo(..),defaultHaskellPatterns,defaultExclude)
 import Shaker.Type
@@ -136,6 +136,4 @@ checkInvalidMain' cplInput
     return cplInput {cfTargetFiles = newTargets}
  | otherwise = return cplInput
   where oldTargets = cfTargetFiles cplInput
-
-
 

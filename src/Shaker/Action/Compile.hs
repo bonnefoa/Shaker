@@ -19,7 +19,6 @@ runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
 
 runSingleCompileInput :: CompileInput -> Shaker IO()
 runSingleCompileInput (CompileInput sourceDir desc targetInput procFlags strflags inputTargetFiles) = do
-        lift $ putStrLn "-------------------------------------"
         lift $ putStrLn $ concat ["   --------- ", desc," ---------"]
         targetFiles <- checkTargetFiles inputTargetFiles 
         lift $ putStrLn $ concat ["   --------- ", "Compiling target : "++ show targetFiles," ---------"]
@@ -55,8 +54,10 @@ setSourceAndTarget sources target dflags = dflags{
 
 setCompileInputForAllHsSources :: Shaker IO CompileInput
 setCompileInputForAllHsSources = do 
-  (cpIn:_) <- asks compileInputs
-  filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) (cfSourceDirs cpIn)
-  toExcludeFiles <- lift $ filterM isFileContainingMain filePaths
-  return  $ cpIn {cfTargetFiles = filePaths \\ toExcludeFiles , cfDescription ="Full compilation"  }
+  cplInps@(cpIn:_) <- asks compileInputs
+  let srcDirs = nub $ concatMap cfSourceDirs cplInps
+  filePaths <- lift $ recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) srcDirs 
+  newTargets <-  lift $ filterM (\a -> not `liftM` isFileContainingMain a) filePaths  
+  newTargetsWithoutMain <- checkTargetFiles newTargets
+  return  $ cpIn {cfTargetFiles = newTargetsWithoutMain, cfDescription ="Full compilation"  }
 
