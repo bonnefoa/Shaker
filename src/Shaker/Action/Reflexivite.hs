@@ -12,11 +12,12 @@ import Shaker.Type
 import Shaker.Action.Compile
 import Shaker.SourceHelper
 import Control.Monad.Reader
+import Outputable
 
 -- ^ Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
   cfModuleName :: String -- ^ Complete name of the module 
-  ,cfTestFunctionName :: [String] -- ^ Hunit test function names
+  ,cfHunitName :: [String] -- ^ Hunit test function names
   ,cfPropName :: [String] -- ^ QuickCheck test function names
  }
  deriving Show
@@ -29,6 +30,9 @@ runReflexivite = do
   modMaps <- lift $ runGhc (Just libdir) $ do 
             _ <- ghcCompile cplInp targetFiles 
             modSummaries <- getModuleGraph
+            parsedModules <- mapM parseModule modSummaries
+            typeCheckedModules <- mapM typecheckModule parsedModules
+            desugarModules <- mapM desugarModule typeCheckedModules 
             mapM getModuleMapping modSummaries 
   return modMaps
 
@@ -37,7 +41,8 @@ getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping
 getModuleMapping  modSum = do 
   mayModuleInfo <- getModuleInfo $  ms_mod modSum
   props <- return $ getQuickcheckFunction mayModuleInfo
-  return $ ModuleMapping modName [] props
+  hunits <- return $ getHunitFunctions mayModuleInfo
+  return $ ModuleMapping modName hunits props
   where modName = (moduleNameString . moduleName . ms_mod) modSum        
        
 getQuickcheckFunction :: Maybe ModuleInfo -> [String]
@@ -48,6 +53,15 @@ getQuickcheckFunction (Just modInfo) = filter ("prop_" `isPrefixOf`) nameList
          varList = map varName idList
          occList = map nameOccName varList
          nameList = map occNameString occList
+
+getHunitFunctions :: Maybe ModuleInfo -> [String]
+getHunitFunctions Nothing = [] 
+getHunitFunctions (Just modInfo) = map showPpr tyConList
+   where tyMap = modInfoTyThings modInfo 
+         tyConList = catMaybes $ map tyThingToTyCon tyMap
+
+--tyThingToTyCon :: TyThing -> Maybe TyCon
+tyThingToTyCon a = Just a
 
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId

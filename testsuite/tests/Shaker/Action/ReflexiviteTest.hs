@@ -17,11 +17,14 @@ testRunReflexivite = TestCase $ do
   let (Just regexpModMap)  = find (\(ModuleMapping nm _ _) -> nm == "Shaker.RegexTest" ) modMapLst
   any (== "prop_filterListAll") (cfPropName regexpModMap) @? "Should contain regexp module with quickechck properties prop_filterListAll, got "
     ++ show (cfPropName regexpModMap)
-  
+  let (Just reflexiviteModMap)  = find (\(ModuleMapping nm _ _) -> nm == "Shaker.Action.ReflexiviteTest" ) modMapLst
+  any (== "testRunReflexivite") (cfHunitName reflexiviteModMap) @? "Should contain reflexivite test module with hunit test testRunReflexivite, got "
+    ++ show (cfHunitName reflexiviteModMap)
+    
 testInputShaker :: ShakerInput
 testInputShaker = defaultInput {
   compileInputs = [defaultCompileInput {
        cfCommandLineFlags = ["-package ghc"]
      }]
 }
-  
+
