@@ -53,7 +53,6 @@ getFunctionWithPredicate predicat (Just modInfo) = filter predicat nameList
    where idList = catMaybes $ map tyThingToId $ modInfoTyThings modInfo
          nameList = map (occNameString . nameOccName . varName) idList 
 
-
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
