@@ -1,4 +1,4 @@
-module Shaker.Action.Reflexivite
+module Shaker.Reflexivite
  where
 
 import OccName (occNameString)

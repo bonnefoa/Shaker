@@ -1,7 +1,7 @@
-module Shaker.Action.ReflexiviteTest
+module Shaker.ReflexiviteTest
  where
 
-import Shaker.Action.Reflexivite
+import Shaker.Reflexivite
 import Test.HUnit
 import Data.List
 import Shaker.Config 
