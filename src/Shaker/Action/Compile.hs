@@ -1,6 +1,7 @@
 module Shaker.Action.Compile(
     runCompile
     ,runFullCompile
+    ,ghcCompile
   )
  where
 
@@ -18,19 +19,23 @@ runCompile :: Plugin
 runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
 
 runSingleCompileInput :: CompileInput -> Shaker IO()
-runSingleCompileInput (CompileInput sourceDir desc targetInput procFlags strflags inputTargetFiles) = do
-        lift $ putStrLn $ concat ["   --------- ", desc," ---------"]
-        targetFiles <- checkTargetFiles inputTargetFiles 
+runSingleCompileInput cplInp = do
+        lift $ putStrLn $ concat ["   --------- ", cfDescription cplInp," ---------"]
+        targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
         lift $ putStrLn $ concat ["   --------- ", "Compiling target : "++ show targetFiles," ---------"]
-        lift $ defaultErrorHandler defaultDynFlags $ 
-                       runGhc (Just libdir) $ do
-                       dflags <- getSessionDynFlags
-                       (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
-	               _ <- setSessionDynFlags $ procFlags $ setSourceAndTarget sourceDir targetInput newFlags
-                       target <- mapM (`guessTarget` Nothing) targetFiles
-                       setTargets target
-        	       _ <- load LoadAllTargets
-                       return ()
+        suc <- lift $ defaultErrorHandler defaultDynFlags $ 
+                       runGhc (Just libdir) $ ghcCompile cplInp targetFiles
+        return ()
+
+ghcCompile :: GhcMonad m => CompileInput -> [String] -> m SuccessFlag
+ghcCompile (CompileInput sourceDir _ targetInput procFlags strflags _) targetFiles  = do   
+     dflags <- getSessionDynFlags
+     (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
+     _ <- setSessionDynFlags $ procFlags $ setSourceAndTarget sourceDir targetInput newFlags
+     target <- mapM (`guessTarget` Nothing) targetFiles
+     setTargets target
+     load LoadAllTargets
+
  
 runFullCompile :: Plugin
 runFullCompile = setCompileInputForAllHsSources >>= \a -> 

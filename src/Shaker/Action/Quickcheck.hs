@@ -17,9 +17,10 @@ import Control.Monad.Reader
 import Unsafe.Coerce
 
 
+{-
 runQuickcheck :: Plugin
 runQuickcheck = do
-        (CompileInput sourceDir targetInput procFlags strflags) <-  asks compileInput 
+        (CompileInput sourceDir targetInput procFlags strflags) <-  asks compileInputs
         (ListenerInput fli _) <- asks listenerInput 
         targetFiles <-  lift $ recurseMultipleListFiles fli
         lift $ defaultErrorHandler defaultDynFlags $ 
@@ -31,7 +32,7 @@ runQuickcheck = do
                        setTargets target
         	       _ <- load LoadAllTargets
                        return()
-
+-}
 runTest = do 
   func <- getTestFunc
   return()

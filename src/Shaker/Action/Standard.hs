@@ -13,7 +13,7 @@ runHelp = do
   putStrLn "Following actions are available : "
   print $ M.keys commands
   putStrLn "use ~[actionName] for continuous launch"
-
+ 
 runExit :: Plugin
 runExit = lift $ putStrLn "Exiting"
 
