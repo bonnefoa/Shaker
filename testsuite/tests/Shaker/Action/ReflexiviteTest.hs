@@ -11,7 +11,7 @@ testGetModuleNames ::Test
 testGetModuleNames = TestCase $ do
   modMapLst <- runReaderT runReflexivite testInputShaker 
   length modMapLst > 1 @? "Should have more than one module, got : "++ show (length modMapLst)
-  any ( \(ModuleMapping nm _) -> nm == "Shaker.Action.ReflexiviteTest") modMapLst @? 
+  any ( \(ModuleMapping nm _ _) -> nm == "Shaker.Action.ReflexiviteTest") modMapLst @? 
     "Should have module Shaker.Action.ReflexiviteTest, got " ++ show modMapLst
 
 testInputShaker :: ShakerInput

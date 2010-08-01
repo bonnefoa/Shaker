@@ -8,45 +8,33 @@ import Data.List
 import Data.Maybe
 import GHC
 import GHC.Paths
-import Shaker.Type
+import Shaker.Type 
 import Shaker.Action.Compile
 import Shaker.SourceHelper
 import Control.Monad.Reader
 
-data ModuleMapping = ModuleMapping String [String]
-  deriving Show
+-- ^ Mapping between module name (to import) and test to execute
+data ModuleMapping = ModuleMapping {
+  cfModuleName :: String -- ^ Complete name of the module 
+  ,cfTestFunctionName :: [String] -- ^ Hunit test function names
+  ,cfPropName :: [String] -- ^ QuickCheck test function names
+ }
+ deriving Show
 
+-- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]
 runReflexivite = do
   cplInp <- getCompileInputForAllHsSources 
   targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
   modMaps <- lift $ runGhc (Just libdir) $ do 
             _ <- ghcCompile cplInp targetFiles 
-            getModuleMappingList
+            modSummaries <- getModuleGraph
+            return $ map getModuleMapping modSummaries 
   return modMaps
-  
-{-
-example :: IO [String]
-example = defaultErrorHandler defaultDynFlags $ do
-    runGhc (Just libdir) $ do
-    dflags <- getSessionDynFlags
-    (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc ["-itestsuite/tests","-isrc/","-package ghc"])
-    _ <- setSessionDynFlags newFlags
-    target <- guessTarget "Shaker.CliTest" Nothing
-    setTargets [target]
-    _ <- load LoadAllTargets
-    modulesList <- getModuleGraph
-    tyThingsList <- getTyThingsFromModuleSummary modulesList
-    return $ getQuickcheckFunction tyThingsList
- -}
 
-getModuleMappingList :: (GhcMonad m) => m [ModuleMapping] 
-getModuleMappingList = do
-  modSummaries <- getModuleGraph
-  return $ map getModuleMapping modSummaries 
-
+-- | Collect module name and tests name for the given module
 getModuleMapping :: ModSummary -> ModuleMapping
-getModuleMapping  modSum = ModuleMapping modName [] 
+getModuleMapping  modSum = ModuleMapping modName [] []
  where modName = (moduleNameString . moduleName . ms_mod) modSum
 
 getTyThingsFromModuleSummary :: (GhcMonad  m) => [ModSummary] -> m [TyThing]
