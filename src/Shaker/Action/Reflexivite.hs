@@ -12,7 +12,6 @@ import Shaker.Type
 import Shaker.Action.Compile
 import Shaker.SourceHelper
 import Control.Monad.Reader
-import Outputable
 
 -- ^ Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
@@ -30,9 +29,6 @@ runReflexivite = do
   modMaps <- lift $ runGhc (Just libdir) $ do 
             _ <- ghcCompile cplInp targetFiles 
             modSummaries <- getModuleGraph
-            parsedModules <- mapM parseModule modSummaries
-            typeCheckedModules <- mapM typecheckModule parsedModules
-            desugarModules <- mapM desugarModule typeCheckedModules 
             mapM getModuleMapping modSummaries 
   return modMaps
 
@@ -46,22 +42,17 @@ getModuleMapping  modSum = do
   where modName = (moduleNameString . moduleName . ms_mod) modSum        
        
 getQuickcheckFunction :: Maybe ModuleInfo -> [String]
-getQuickcheckFunction Nothing = []
-getQuickcheckFunction (Just modInfo) = filter ("prop_" `isPrefixOf`) nameList
-   where tyMap = modInfoTyThings modInfo 
-         idList = catMaybes $ map tyThingToId tyMap
-         varList = map varName idList
-         occList = map nameOccName varList
-         nameList = map occNameString occList
+getQuickcheckFunction = getFunctionWithPredicate ("prop_" `isPrefixOf`) 
 
 getHunitFunctions :: Maybe ModuleInfo -> [String]
-getHunitFunctions Nothing = [] 
-getHunitFunctions (Just modInfo) = map showPpr tyConList
-   where tyMap = modInfoTyThings modInfo 
-         tyConList = catMaybes $ map tyThingToTyCon tyMap
+getHunitFunctions = getFunctionWithPredicate ("test" `isPrefixOf`) 
 
---tyThingToTyCon :: TyThing -> Maybe TyCon
-tyThingToTyCon a = Just a
+getFunctionWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
+getFunctionWithPredicate _ Nothing = []
+getFunctionWithPredicate predicat (Just modInfo) = filter predicat nameList
+   where idList = catMaybes $ map tyThingToId $ modInfoTyThings modInfo
+         nameList = map (occNameString . nameOccName . varName) idList 
+
 
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
