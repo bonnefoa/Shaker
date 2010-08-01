@@ -7,17 +7,24 @@ import Var (varName)
 import Data.List
 import Data.Maybe
 import GHC
-import DynFlags 
 import GHC.Paths
 import Shaker.Type
 import Shaker.Action.Compile
+import Shaker.SourceHelper
+import Control.Monad.Reader
 
-getReflexiviteInfo :: Shaker IO [ModuleInfo] 
-getReflexiviteInfo = do
+data ModuleMapping = ModuleMapping String [String]
+  deriving Show
+
+runReflexivite :: Shaker IO [ModuleMapping]
+runReflexivite = do
+  cplInp <- getCompileInputForAllHsSources 
   targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
-  cplInp <- asks 
-  ghcCompile cplInp targetFiles  
-
+  modMaps <- lift $ runGhc (Just libdir) $ do 
+            _ <- ghcCompile cplInp targetFiles 
+            getModuleMappingList
+  return modMaps
+  
 {-
 example :: IO [String]
 example = defaultErrorHandler defaultDynFlags $ do
@@ -32,6 +39,15 @@ example = defaultErrorHandler defaultDynFlags $ do
     tyThingsList <- getTyThingsFromModuleSummary modulesList
     return $ getQuickcheckFunction tyThingsList
  -}
+
+getModuleMappingList :: (GhcMonad m) => m [ModuleMapping] 
+getModuleMappingList = do
+  modSummaries <- getModuleGraph
+  return $ map getModuleMapping modSummaries 
+
+getModuleMapping :: ModSummary -> ModuleMapping
+getModuleMapping  modSum = ModuleMapping modName [] 
+ where modName = (moduleNameString . moduleName . ms_mod) modSum
 
 getTyThingsFromModuleSummary :: (GhcMonad  m) => [ModSummary] -> m [TyThing]
 getTyThingsFromModuleSummary modSummaries = do
