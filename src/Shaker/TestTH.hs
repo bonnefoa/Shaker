@@ -3,22 +3,23 @@
 module Shaker.TestTH
  where
 
+import Shaker.Reflexivite
 import Language.Haskell.TH
-import Language.Haskell.Exts.Parser
-import Language.Haskell.Exts.Syntax
-import Text.Regex.Posix
-import Maybe
-import Language.Haskell.Exts.Extension
-import Language.Haskell.Extract 
-
+import Control.Monad.Reader
+import Shaker.Cabal.CabalInfo
 
 importModules :: ExpQ
 importModules = undefined
 
 listProperties :: ExpQ 
-listProperties = undefined
+listProperties = do
+  modMaps <- runIO $ defaultCabalInput >>= runReaderT runReflexivite 
+  return $ ListE $ concat $ map getQuickCheckProperty modMaps
  
+getQuickCheckProperty :: ModuleMapping -> [Exp]
+getQuickCheckProperty modMap = map (\pName -> 
+  AppE (VarE (mkName "quickCheck") ) (VarE (mkName pName) ) ) $ cfPropName modMap
+
 listHunit :: ExpQ 
 listHunit = undefined
-
 
