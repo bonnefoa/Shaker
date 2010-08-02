@@ -13,7 +13,7 @@ module Shaker.Io(
 )
  where
  
-import qualified Data.ByteString.Lazy.Char8 as L 
+import qualified Data.ByteString.Char8 as L 
 import Control.Monad
 import System.Directory
 import Data.List
@@ -73,6 +73,9 @@ recurseListFiles fli@(FileListenInfo inputDir _ _) = do
   curListFiles <-  listFiles fli
   return $ curListFiles ++ concat sub
 
+isFileContainingTH :: FilePath -> IO Bool
+isFileContainingTH fp = isFileContaining fp (L.pack "$(" `L.isInfixOf`)
+
 isFileContainingMain :: FilePath -> IO Bool
 isFileContainingMain fp = isFileContaining fp (L.pack "main" `L.isPrefixOf`)
 
@@ -80,7 +83,6 @@ isFileContaining :: FilePath -> (L.ByteString -> Bool) -> IO Bool
 isFileContaining fp pat = do
    byStr <- L.readFile fp
    return $ any pat $ L.lines byStr
-
 
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir = map (\a-> concat [absDir, "/",a]) 

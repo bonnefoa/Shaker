@@ -1,1 +1,1 @@
-ghci -package ghc -isrc/ -itestsuite/tests -fth
+ghci -package ghc -isrc/ -itestsuite/tests 

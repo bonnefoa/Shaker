@@ -26,8 +26,9 @@ runReflexivite :: Shaker IO [ModuleMapping]
 runReflexivite = do
   cplInp <- getCompileInputForAllHsSources 
   targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
+  targetFilesWoTH <- lift $ removeFileWithTemplateHaskell targetFiles
   modMaps <- lift $ runGhc (Just libdir) $ do 
-            _ <- ghcCompile cplInp targetFiles 
+            _ <- ghcCompile cplInp targetFilesWoTH
             modSummaries <- getModuleGraph
             mapM getModuleMapping modSummaries 
   return modMaps

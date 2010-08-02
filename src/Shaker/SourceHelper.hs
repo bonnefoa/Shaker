@@ -18,7 +18,6 @@ checkTargetFiles [] = do
         lift $ filterM (\a -> not `liftM` isFileContainingMain a) files
 checkTargetFiles l = return l
 
-
 ghcCompile :: GhcMonad m => CompileInput -> [String] -> m SuccessFlag
 ghcCompile (CompileInput sourceDir _ targetInput procFlags strflags _) targetFiles  = do   
      dflags <- getSessionDynFlags
@@ -27,6 +26,11 @@ ghcCompile (CompileInput sourceDir _ targetInput procFlags strflags _) targetFil
      target <- mapM (`guessTarget` Nothing) targetFiles
      setTargets target
      load LoadAllTargets
+
+removeFileWithTemplateHaskell :: [String] -> IO [String]
+removeFileWithTemplateHaskell targetFiles = do 
+  newTargets <-  filterM (\a -> not `liftM` isFileContainingMain a) $ targetFiles
+  return  newTargets 
 
 getCompileInputForAllHsSources :: Shaker IO CompileInput
 getCompileInputForAllHsSources = do 

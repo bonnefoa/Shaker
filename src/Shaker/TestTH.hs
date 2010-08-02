@@ -13,11 +13,14 @@ importModules = undefined
 
 listProperties :: ExpQ 
 listProperties = do
-  modMaps <- runIO $ defaultCabalInput >>= runReaderT runReflexivite 
-  return $ ListE $ concat $ map getQuickCheckProperty modMaps
- 
-getQuickCheckProperty :: ModuleMapping -> [Exp]
-getQuickCheckProperty modMap = map (\pName -> 
+  modMaps <- runIO $ defaultCabalInput >>= runReaderT runReflexivite
+  return $ ListE $ getQuickCheckProperty modMaps
+
+getQuickCheckProperty :: [ModuleMapping] -> [Exp]
+getQuickCheckProperty = concat . (map getQuickCheckProperty')
+
+getQuickCheckProperty' :: ModuleMapping -> [Exp]
+getQuickCheckProperty' modMap = map (\pName -> 
   AppE (VarE (mkName "quickCheck") ) (VarE (mkName pName) ) ) $ cfPropName modMap
 
 listHunit :: ExpQ 
