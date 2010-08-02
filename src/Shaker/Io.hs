@@ -64,6 +64,7 @@ recurseMultipleListFiles :: [FileListenInfo] -> IO [FilePath]
 recurseMultipleListFiles flis = liftM concat $ mapM recurseListFiles flis
 
 -- | Recursively list all files
+-- All non matching files are excluded
 recurseListFiles :: FileListenInfo -> IO [FilePath]
 recurseListFiles fli@(FileListenInfo inputDir _ _) = do
   curDir <- canonicalizePath inputDir

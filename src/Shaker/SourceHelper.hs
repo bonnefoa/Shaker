@@ -20,7 +20,8 @@ ghcCompile :: GhcMonad m => CompileInput -> [String] -> m SuccessFlag
 ghcCompile cpIn@(CompileInput _ _ _ procFlags strflags _) targetFiles  = do   
      dflags <- getSessionDynFlags
      (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
-     _ <- setSessionDynFlags $ procFlags $ runReader (setSourceAndCompileTarget newFlags) cpIn 
+     let chgdFlags = runReader (setSourceAndCompileTarget newFlags) cpIn 
+     _ <- setSessionDynFlags $ procFlags $ chgdFlags
      target <- mapM (`guessTarget` Nothing) targetFiles
      setTargets target
      load LoadAllTargets
