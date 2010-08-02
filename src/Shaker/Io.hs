@@ -8,6 +8,7 @@ module Shaker.Io(
   ,FileListenInfo(..)
   ,isFileContaining
   ,isFileContainingMain
+  ,isFileContainingTH
   ,defaultHaskellPatterns
   ,defaultExclude
 )

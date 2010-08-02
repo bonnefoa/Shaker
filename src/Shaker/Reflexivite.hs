@@ -25,10 +25,12 @@ data ModuleMapping = ModuleMapping {
 runReflexivite :: Shaker IO [ModuleMapping]
 runReflexivite = do
   cplInp <- getCompileInputForAllHsSources 
-  targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
-  targetFilesWoTH <- lift $ removeFileWithTemplateHaskell targetFiles
+  -- TODO : refactor this 
+  -- targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
+  let targetFiles = cfTargetFiles cplInp
+  targetFilesWoTH <- lift $ removeFileWithTemplateHaskell cplInp
   modMaps <- lift $ runGhc (Just libdir) $ do 
-            _ <- ghcCompile cplInp targetFilesWoTH
+            _ <- ghcCompile cplInp 
             modSummaries <- getModuleGraph
             mapM getModuleMapping modSummaries 
   return modMaps

@@ -20,10 +20,10 @@ runCompile = asks compileInputs >>=  mapM runSingleCompileInput >> return ()
 runSingleCompileInput :: CompileInput -> Shaker IO()
 runSingleCompileInput cplInp = do
         lift $ putStrLn $ concat ["   --------- ", cfDescription cplInp," ---------"]
-        targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
+        targetFiles <- lift $ fillTargetIfEmpty cplInp >>= removeFileWithMain
         lift $ putStrLn $ concat ["   --------- ", "Compiling target : "++ show targetFiles," ---------"]
         _ <- lift $ defaultErrorHandler defaultDynFlags $ 
-                       runGhc (Just libdir) $ ghcCompile cplInp targetFiles
+                       runGhc (Just libdir) $ ghcCompile cplInp 
         return ()
 
  
