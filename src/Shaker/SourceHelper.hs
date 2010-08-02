@@ -41,7 +41,7 @@ getCompileInputForAllHsSources = do
   newTargetsWithoutMain <- checkTargetFiles newTargets
   return  $ cpIn {cfTargetFiles = newTargetsWithoutMain, cfDescription ="Full compilation"  }
 
-setSourceAndTarget :: [String] -> String ->DynFlags -> DynFlags
+setSourceAndTarget :: [String] -> String -> DynFlags -> DynFlags
 setSourceAndTarget sources target dflags = dflags{
     importPaths = sources
     ,objectDir = Just target

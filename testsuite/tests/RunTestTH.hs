@@ -13,7 +13,8 @@ runAll = do
   mapM_ liftIO testLists
 
 propLists :: [IO()]
-propLists = $(listProperties)
+propLists = []
+--propLists = $(listProperties)
   --  putStrLn "prop_completeWord ">> quickCheck prop_completeWord,
   
 
