@@ -3,8 +3,6 @@ module Shaker.SourceHelper
 
 import Data.List 
 import GHC
-import DynFlags 
-import GHC.Paths
 import Shaker.Io
 import Shaker.Type
 import Control.Monad.Trans 
@@ -19,10 +17,10 @@ checkTargetFiles [] = do
 checkTargetFiles l = return l
 
 ghcCompile :: GhcMonad m => CompileInput -> [String] -> m SuccessFlag
-ghcCompile (CompileInput sourceDir _ targetInput procFlags strflags _) targetFiles  = do   
+ghcCompile cpIn@(CompileInput _ _ _ procFlags strflags _) targetFiles  = do   
      dflags <- getSessionDynFlags
      (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
-     _ <- setSessionDynFlags $ procFlags $ setSourceAndTarget sourceDir targetInput newFlags
+     _ <- setSessionDynFlags $ procFlags $ runReader (setSourceAndCompileTarget newFlags) cpIn 
      target <- mapM (`guessTarget` Nothing) targetFiles
      setTargets target
      load LoadAllTargets
@@ -41,10 +39,13 @@ getCompileInputForAllHsSources = do
   newTargetsWithoutMain <- checkTargetFiles newTargets
   return  $ cpIn {cfTargetFiles = newTargetsWithoutMain, cfDescription ="Full compilation"  }
 
-setSourceAndTarget :: [String] -> String -> DynFlags -> DynFlags
-setSourceAndTarget sources target dflags = dflags{
+setSourceAndCompileTarget :: DynFlags -> CompileM DynFlags 
+setSourceAndCompileTarget dflags = do 
+  sources <- asks cfSourceDirs
+  compileTarget <- asks cfCompileTarget
+  return dflags{
     importPaths = sources
-    ,objectDir = Just target
-    ,hiDir = Just target
+    ,objectDir = Just compileTarget
+    ,hiDir = Just compileTarget
   }
 

@@ -7,6 +7,7 @@ import qualified Data.Map as M
 import Control.Monad.Reader
 
 type Shaker  = ReaderT ShakerInput 
+type CompileM = Reader CompileInput
 
 -- | Duration define the life span of an action
 data Duration = 

@@ -6,11 +6,9 @@ module Shaker.Action.Compile(
  where
 
 import Shaker.SourceHelper
-import Data.List 
 import GHC
 import DynFlags 
 import GHC.Paths
-import Shaker.Io
 import Shaker.Type
 import Control.Monad.Trans 
 import Control.Monad.Reader
@@ -24,7 +22,7 @@ runSingleCompileInput cplInp = do
         lift $ putStrLn $ concat ["   --------- ", cfDescription cplInp," ---------"]
         targetFiles <- checkTargetFiles $ cfTargetFiles cplInp
         lift $ putStrLn $ concat ["   --------- ", "Compiling target : "++ show targetFiles," ---------"]
-        suc <- lift $ defaultErrorHandler defaultDynFlags $ 
+        _ <- lift $ defaultErrorHandler defaultDynFlags $ 
                        runGhc (Just libdir) $ ghcCompile cplInp targetFiles
         return ()
 
