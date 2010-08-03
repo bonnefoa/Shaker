@@ -20,7 +20,8 @@ runFullCompile :: Plugin
 runFullCompile = do
   cpIn <- mergeCompileInputsSources 
   cfFlList <- lift $ constructCompileFileList cpIn
-  lift $ runSingleCompileInput $ ( removeFileWithMain cfFlList . setAllHsFilesAsTargets cfFlList ) cpIn
+  let newInp = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain)  cfFlList
+  lift $ runSingleCompileInput newInp
 
 runSingleCompileInput :: CompileInput -> IO()
 runSingleCompileInput cplInp = do

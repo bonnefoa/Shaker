@@ -27,7 +27,7 @@ runReflexivite = do
   cpIn <- mergeCompileInputsSources
   cfFlList <- lift $ constructCompileFileList cpIn
   modMaps <- lift $ runGhc (Just libdir) $ do 
-            _ <- ghcCompile $ (removeFileWithTemplateHaskell cfFlList . removeFileWithMain cfFlList . setAllHsFilesAsTargets cfFlList) cpIn
+            _ <- ghcCompile $ runReader (removeFileWithTemplateHaskell cpIn >>= removeFileWithMain >>= setAllHsFilesAsTargets ) cfFlList
             modSummaries <- getModuleGraph
             mapM getModuleMapping modSummaries 
   return modMaps

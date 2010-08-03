@@ -8,6 +8,15 @@ import Shaker.Type
 import Control.Monad.Trans 
 import Control.Monad.Reader
 
+type CompileR = Reader [CompileFile]
+
+{-
+data CompileState = CompileState {
+  csCpIn:: CompileInput
+ ,csCpFl :: [CompileFile] 
+}
+-}
+
 data CompileFile = CompileFile {
   cfFp :: FilePath 
   ,cfHasMain :: Bool 
@@ -35,15 +44,16 @@ mergeCompileInputsSources = do
   return $  cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"  } 
 
 -- | Fill the target files to all files in listenerInput if empty
-fillTargetIfEmpty :: [CompileFile] -> CompileInput -> CompileInput
-fillTargetIfEmpty cpFlList cpIn 
-  | null targetFiles = setAllHsFilesAsTargets cpFlList cpIn
-  | otherwise = cpIn
-  where targetFiles = cfTargetFiles cpIn
+fillTargetIfEmpty ::CompileInput -> CompileR CompileInput
+fillTargetIfEmpty cpIn = do
+  if null (cfTargetFiles cpIn) 
+     then setAllHsFilesAsTargets cpIn
+     else return cpIn
 
-setAllHsFilesAsTargets :: [CompileFile] -> CompileInput -> CompileInput
-setAllHsFilesAsTargets cpFlList cpIn = 
-  cpIn {cfTargetFiles = map cfFp cpFlList}
+setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
+setAllHsFilesAsTargets cpIn = do
+  files <- ask
+  return cpIn {cfTargetFiles = map cfFp files }
 
 configureDynFlagsWithCompileInput :: CompileInput -> DynFlags -> DynFlags 
 configureDynFlagsWithCompileInput cpIn dflags = do 
@@ -61,16 +71,18 @@ getFileListenInfoForCompileInput cpIn =
 
 -- * Target files filtering
 
-removeFileWithTemplateHaskell :: [CompileFile] -> CompileInput -> CompileInput
+removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
 removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
 
-removeFileWithMain :: [CompileFile] -> CompileInput -> CompileInput
+removeFileWithMain :: CompileInput -> CompileR CompileInput
 removeFileWithMain = removeFileWithPredicate cfHasMain
 
-removeFileWithPredicate :: (CompileFile -> Bool) -> [CompileFile] -> CompileInput -> CompileInput
-removeFileWithPredicate predicate cfList cpIn =  cpIn {cfTargetFiles =  targets \\ toRemove}
-  where toRemove =  map cfFp $ filter predicate cfList
-        targets = cfTargetFiles cpIn
+removeFileWithPredicate :: (CompileFile -> Bool) -> CompileInput -> CompileR CompileInput
+removeFileWithPredicate predicate cpIn = do 
+  cpFl <- ask 
+  let toRemove = map cfFp $ filter predicate cpFl
+  return $ cpIn {cfTargetFiles =  targets \\ toRemove}
+  where targets = cfTargetFiles cpIn
 
 -- * GHC Compile management
 
@@ -83,5 +95,4 @@ ghcCompile cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do
      target <- mapM (`guessTarget` Nothing) targetFiles
      setTargets target
      load LoadAllTargets
-
 
