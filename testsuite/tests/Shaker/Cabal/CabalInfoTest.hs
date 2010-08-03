@@ -7,8 +7,8 @@ import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Type
 import Shaker.Io
+import Shaker.CommonTest
 import Test.HUnit
-import Control.Exception
 import Shaker.Cabal.CabalInfo
 import GHC(DynFlags(DynFlags))
 import DynFlags(
@@ -56,10 +56,4 @@ testProjectCabalContentWithLocalSource = TestCase $
     length cplInps == 1 @? "Should have one compile input, got "++ show (length cplInps)
     let targs = cfTargetFiles cplInp
     targs == ["./noHsSource.hs"] @? "Expected [\"./noHsSource.hs\"] got " ++ show cplInp
-
-runTestOnDirectory :: FilePath -> Assertion -> Assertion
-runTestOnDirectory fp fun = do
-  oldDir <- getCurrentDirectory 
-  setCurrentDirectory fp
-  finally fun (setCurrentDirectory oldDir)
 
