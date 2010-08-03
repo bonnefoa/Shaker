@@ -14,7 +14,7 @@ data CompileFile = CompileFile {
   cfFp :: FilePath 
   ,cfHasMain :: Bool 
   ,cfHasTH :: Bool
- }
+ } deriving Show
 
 -- * Compile input management
 
