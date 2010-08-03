@@ -1,8 +1,8 @@
 module Shaker.SourceHelper
  where
 
-import Data.List 
 import GHC
+import Data.List
 import Shaker.Io
 import Shaker.Type
 import Control.Monad.Trans 
@@ -14,10 +14,12 @@ data CompileFile = CompileFile {
   ,cfHasTH :: Bool
  }
 
-constructCompileFileList :: CompileInput -> [CompileFile] 
+-- * Compile input management
+
+constructCompileFileList :: CompileInput -> IO [CompileFile] 
 constructCompileFileList cpIn = do
-    files <- recurseMultipleListFiles fli
-    mapM constructCompileFile files
+  files <- recurseMultipleListFiles fli
+  mapM constructCompileFile files
   where fli = getFileListenInfoForCompileInput cpIn
   
 constructCompileFile :: FilePath -> IO CompileFile      
@@ -26,39 +28,22 @@ constructCompileFile fp = do
   hasTH <- isFileContainingTH fp
   return $ CompileFile fp hasMain hasTH
 
-
--- | Fill the target files to all files in listenerInput if empty
-fillTargetIfEmpty :: CompileInput -> IO CompileInput
-fillTargetIfEmpty cpIn
-  | null targetFiles = do 
-        files <- recurseMultipleListFiles fli
-        return cpIn { cfTargetFiles = files}
-  | otherwise = return cpIn
-  where targetFiles = cfTargetFiles cpIn
-        fli = getFileListenInfoForCompileInput cpIn
-
-ghcCompile :: GhcMonad m => CompileInput -> m SuccessFlag
-ghcCompile cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
-     dflags <- getSessionDynFlags
-     (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
-     let chgdFlags = configureDynFlagsWithCompileInput cpIn newFlags
-     _ <- setSessionDynFlags $ procFlags chgdFlags
-     target <- mapM (`guessTarget` Nothing) targetFiles
-     setTargets target
-     load LoadAllTargets
-
-setAllHsFilesAsTargets :: CompileInput -> IO CompileInput
-setAllHsFilesAsTargets cpIn = do
-  targets <- recurseMultipleListFiles $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns ) srcDirs 
-  return cpIn {cfTargetFiles = targets}
-  where srcDirs = cfSourceDirs cpIn
-
-getCompileInputForAllHsSources :: Shaker IO CompileInput
-getCompileInputForAllHsSources = do 
+mergeCompileInputsSources :: Shaker IO CompileInput
+mergeCompileInputsSources = do 
   cplInps@(cpIn:_) <- asks compileInputs
   let srcDirs = nub $ concatMap cfSourceDirs cplInps
-  cpInRes <- lift $ setAllHsFilesAsTargets cpIn {cfSourceDirs = srcDirs} 
-  return $ cpInRes {cfDescription ="Full compilation"  }
+  return $  cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"  } 
+
+-- | Fill the target files to all files in listenerInput if empty
+fillTargetIfEmpty :: [CompileFile] -> CompileInput -> CompileInput
+fillTargetIfEmpty cpFlList cpIn 
+  | null targetFiles = setAllHsFilesAsTargets cpFlList cpIn
+  | otherwise = cpIn
+  where targetFiles = cfTargetFiles cpIn
+
+setAllHsFilesAsTargets :: [CompileFile] -> CompileInput -> CompileInput
+setAllHsFilesAsTargets cpFlList cpIn = 
+  cpIn {cfTargetFiles = map cfFp cpFlList}
 
 configureDynFlagsWithCompileInput :: CompileInput -> DynFlags -> DynFlags 
 configureDynFlagsWithCompileInput cpIn dflags = do 
@@ -76,15 +61,27 @@ getFileListenInfoForCompileInput cpIn =
 
 -- * Target files filtering
 
-removeFileWithTemplateHaskell :: CompileInput -> IO CompileInput
-removeFileWithTemplateHaskell = removeFileWithPredicate (\a -> not `liftM` isFileContainingTH a) 
+removeFileWithTemplateHaskell :: [CompileFile] -> CompileInput -> CompileInput
+removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
 
-removeFileWithMain :: CompileInput -> IO CompileInput
-removeFileWithMain = removeFileWithPredicate (\a -> not `liftM` isFileContainingMain a) 
+removeFileWithMain :: [CompileFile] -> CompileInput -> CompileInput
+removeFileWithMain = removeFileWithPredicate cfHasMain
 
-removeFileWithPredicate :: (String -> IO Bool) -> CompileInput -> IO CompileInput 
-removeFileWithPredicate predicate cpIn = do
-  let targetFiles = cfTargetFiles cpIn
-  filteredTargets <- filterM predicate targetFiles
-  return cpIn {cfTargetFiles = filteredTargets}
+removeFileWithPredicate :: (CompileFile -> Bool) -> [CompileFile] -> CompileInput -> CompileInput
+removeFileWithPredicate predicate cfList cpIn =  cpIn {cfTargetFiles =  targets \\ toRemove}
+  where toRemove =  map cfFp $ filter predicate cfList
+        targets = cfTargetFiles cpIn
+
+-- * GHC Compile management
+
+ghcCompile :: GhcMonad m => CompileInput -> m SuccessFlag
+ghcCompile cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
+     dflags <- getSessionDynFlags
+     (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
+     let chgdFlags = configureDynFlagsWithCompileInput cpIn newFlags
+     _ <- setSessionDynFlags $ procFlags chgdFlags
+     target <- mapM (`guessTarget` Nothing) targetFiles
+     setTargets target
+     load LoadAllTargets
+
 
