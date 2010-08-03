@@ -8,6 +8,25 @@ import Shaker.Type
 import Control.Monad.Trans 
 import Control.Monad.Reader
 
+data CompileFile = CompileFile {
+  cfFp :: FilePath 
+  ,cfHasMain :: Bool 
+  ,cfHasTH :: Bool
+ }
+
+constructCompileFileList :: CompileInput -> [CompileFile] 
+constructCompileFileList cpIn = do
+    files <- recurseMultipleListFiles fli
+    mapM constructCompileFile files
+  where fli = getFileListenInfoForCompileInput cpIn
+  
+constructCompileFile :: FilePath -> IO CompileFile      
+constructCompileFile fp = do
+  hasMain <- isFileContainingMain fp
+  hasTH <- isFileContainingTH fp
+  return $ CompileFile fp hasMain hasTH
+
+
 -- | Fill the target files to all files in listenerInput if empty
 fillTargetIfEmpty :: CompileInput -> IO CompileInput
 fillTargetIfEmpty cpIn
