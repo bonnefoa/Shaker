@@ -10,13 +10,6 @@ import Control.Monad.Reader
 
 type CompileR = Reader [CompileFile]
 
-{-
-data CompileState = CompileState {
-  csCpIn:: CompileInput
- ,csCpFl :: [CompileFile] 
-}
--}
-
 data CompileFile = CompileFile {
   cfFp :: FilePath 
   ,cfHasMain :: Bool 
@@ -37,11 +30,11 @@ constructCompileFile fp = do
   hasTH <- isFileContainingTH fp
   return $ CompileFile fp hasMain hasTH
 
-mergeCompileInputsSources :: Shaker IO CompileInput
-mergeCompileInputsSources = do 
-  cplInps@(cpIn:_) <- asks compileInputs
+-- mergeCompileInputsSources :: Shaker CompileInput
+mergeCompileInputsSources :: [CompileInput] -> CompileInput
+mergeCompileInputsSources cplInps@(cpIn:_) = do 
   let srcDirs = nub $ concatMap cfSourceDirs cplInps
-  return $  cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"  } 
+  cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"  } 
 
 -- | Fill the target files to all files in listenerInput if empty
 fillTargetIfEmpty ::CompileInput -> CompileR CompileInput

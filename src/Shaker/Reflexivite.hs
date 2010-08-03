@@ -24,7 +24,8 @@ data ModuleMapping = ModuleMapping {
 -- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]
 runReflexivite = do
-  cpIn <- mergeCompileInputsSources
+  cpList <- asks compileInputs 
+  let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
   modMaps <- lift $ runGhc (Just libdir) $ do 
             _ <- ghcCompile $ runReader (removeFileWithTemplateHaskell cpIn >>= removeFileWithMain >>= setAllHsFilesAsTargets ) cfFlList
