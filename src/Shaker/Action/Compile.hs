@@ -12,10 +12,11 @@ import GHC.Paths
 import Shaker.Type
 import Control.Monad.Reader
 
--- |Run haskell compilation on given file input 
+-- | Run haskell compilation on given CompileInput list
 runCompile :: Plugin
 runCompile = asks compileInputs >>= mapM (lift . runSingleCompileInput )  >> return ()
  
+-- | Run haskell compilation on all haskell files
 runFullCompile :: Plugin
 runFullCompile = do
   cpList <- asks compileInputs 
