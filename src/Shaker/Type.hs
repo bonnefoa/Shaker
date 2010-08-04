@@ -15,8 +15,14 @@ data Duration =
 	| Continuous-- ^Execute the action when a source file modification is done until it is stopped
 	deriving (Show,Eq)
 
--- | Action represents the differents actions realisable by shaker
+-- | Action represents the differents action with arguments
 data Action = 
+  Action ShakerAction
+  | ActionWithArg ShakerAction String
+  deriving (Show,Eq,Ord)
+
+-- | ShakerAction represents the differents actions realisable by shaker
+data ShakerAction = 
 	Compile -- ^ Compile sources with ghc
 	| FullCompile -- ^ Compile all hs sources with ghc
 	| QuickCheck -- ^ Execute quickcheck properties
@@ -26,7 +32,7 @@ data Action =
   deriving (Show,Eq,Ord)
 
 -- | Command agregate a duration with an action
-data Command = Command Duration [Action]
+data Command = Command Duration [Action] 
   deriving (Show,Eq)
 
 -- | Represents the global configuration of the system
@@ -70,9 +76,9 @@ data FileInfo = FileInfo FilePath ClockTime
   deriving (Show,Eq)
   
 -- | Represents the mapping beetween an action and the function to execute
-type PluginMap = M.Map Action Plugin
+type PluginMap = M.Map ShakerAction Plugin
 -- | Represents the mapping between the command-line input and the action
-type CommandMap = M.Map String Action 
+type CommandMap = M.Map String ShakerAction 
 -- | Represents an action of shaker
 type Plugin = Shaker IO()
 

@@ -10,8 +10,11 @@ import Shaker.Config
 import Shaker.Properties()
 import System.Console.Haskeline.Completion
 
-instance Arbitrary Action where
+instance Arbitrary ShakerAction where
   arbitrary = elements [Compile,Quit,Help]
+
+instance Arbitrary Action where
+  arbitrary = Action `liftM` arbitrary
 
 data ActionInt = ActionInt Action Int
   deriving (Show)
