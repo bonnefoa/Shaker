@@ -22,7 +22,7 @@ runFullCompile = do
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
-  let newInp = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain)  cfFlList
+  let newInp = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>= removeFileWithTemplateHaskell )  cfFlList
   lift $ runSingleCompileInput newInp
 
 runSingleCompileInput :: CompileInput -> IO()
