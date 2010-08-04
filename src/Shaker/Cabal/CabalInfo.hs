@@ -3,7 +3,6 @@
 module Shaker.Cabal.CabalInfo
    where
 
-import Shaker.Io(FileListenInfo(..),defaultHaskellPatterns,defaultExclude)
 import Shaker.Type
 import Shaker.Config
 import Distribution.Simple.Configure (getPersistBuildConfig)

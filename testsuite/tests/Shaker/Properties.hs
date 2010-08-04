@@ -4,7 +4,6 @@ module Shaker.Properties
 import Control.Monad
 import Test.QuickCheck 
 import System.Time
-import Shaker.Type
 import Shaker.Io
 
 instance Arbitrary TimeDiff where

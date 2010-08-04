@@ -2,10 +2,10 @@
 module RunTestTH
  where
 
-import Test.QuickCheck
 import Test.HUnit
 import Control.Monad.Trans
-import Shaker.TestTH
+-- import Shaker.TestTH
+-- import Test.QuickCheck
 
 runAll :: IO()
 runAll = do 

@@ -4,10 +4,21 @@ module Shaker.CommonTest
 import System.Directory
 import Test.HUnit
 import Control.Exception
+import Shaker.Type
 
 runTestOnDirectory :: FilePath -> Assertion -> Assertion
 runTestOnDirectory fp fun = do
   oldDir <- getCurrentDirectory 
   setCurrentDirectory fp
   finally fun (setCurrentDirectory oldDir)
+
+initializeEmptyCompileInput :: CompileInput 
+initializeEmptyCompileInput = CompileInput {
+  cfSourceDirs = []
+  ,cfDescription = ""
+  ,cfCompileTarget = ""
+  ,cfDynFlags = id
+  ,cfCommandLineFlags =[]
+  ,cfTargetFiles = []
+}
 

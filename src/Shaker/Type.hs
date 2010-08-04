@@ -1,10 +1,10 @@
 module Shaker.Type
  where
 
-import DynFlags(DynFlags)
-import Shaker.Io(FileListenInfo)
+import DynFlags
 import qualified Data.Map as M
 import Control.Monad.Reader
+import System.Time(ClockTime)
 
 type Shaker  = ReaderT ShakerInput 
 type CompileM = Reader CompileInput
@@ -56,6 +56,18 @@ data ListenerInput = ListenerInput {
   fileListenInfo :: [FileListenInfo] -- ^ The files to listen
   ,delay :: Int  -- ^ Delay beetween 2 check in microsecond
 }
+
+-- | Represents directory to listen 
+data FileListenInfo = FileListenInfo{
+  dir :: FilePath     -- ^ location of the listened directory
+  ,ignore :: [String] -- ^ ignore patterns
+  ,include :: [String] -- ^include patterns
+  }
+  deriving (Show,Eq)
+
+-- |Agregate a FilePath with its modification time
+data FileInfo = FileInfo FilePath ClockTime 
+  deriving (Show,Eq)
   
 -- | Represents the mapping beetween an action and the function to execute
 type PluginMap = M.Map Action Plugin
@@ -64,3 +76,42 @@ type CommandMap = M.Map String Action
 -- | Represents an action of shaker
 type Plugin = Shaker IO()
 
+
+-- * Default data
+
+-- | Default compilation argument.
+-- Wall is activated by default
+defaultCompileInput :: CompileInput
+defaultCompileInput = CompileInput {
+  cfSourceDirs= ["src/","testsuite/tests/"]
+  ,cfDescription = "Default Compilation"
+  ,cfCompileTarget =  "target"  
+  ,cfDynFlags = defaultCompileFlags  
+  ,cfCommandLineFlags = ["-Wall"]
+  ,cfTargetFiles = []
+}
+
+-- | default dynamics flags
+-- the sources are expected to be in src as described in <http://www.haskell.org/haskellwiki/structure_of_a_haskell_project>
+-- the result of compilation (.o and .hi) are placed in the target/ directory
+-- there is no main linkage by default to allow faster compilation feedback
+defaultCompileFlags :: (DynFlags -> DynFlags)
+defaultCompileFlags = \a-> a  {
+    verbosity = 1
+    ,ghcLink = NoLink
+} 
+
+-- | The default Listener configuration
+-- Listened sources are all haskell sources in src/ and testsuite/
+-- The default delay is 2 sec
+defaultListenerInput :: ListenerInput                                   
+defaultListenerInput = ListenerInput {
+    fileListenInfo= [FileListenInfo "src/" [] defaultHaskellPatterns, FileListenInfo "testsuite/" [] defaultHaskellPatterns ]
+    ,delay = 2000000
+    }
+
+defaultHaskellPatterns :: [String]
+defaultHaskellPatterns = [".*\\.hs$"]
+
+defaultExclude :: [String]
+defaultExclude =  [".*Setup\\.hs$"]

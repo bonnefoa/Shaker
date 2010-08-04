@@ -1,6 +1,7 @@
 module Shaker.Action.Quickcheck
  where
 
+{-
 import OccName (occNameString)
 import Name (nameOccName)
 import Var (varName)
@@ -17,7 +18,6 @@ import Control.Monad.Reader
 import Unsafe.Coerce
 
 
-{-
 runQuickcheck :: Plugin
 runQuickcheck = do
         (CompileInput sourceDir targetInput procFlags strflags) <-  asks compileInputs
@@ -32,13 +32,13 @@ runQuickcheck = do
                        setTargets target
         	       _ <- load LoadAllTargets
                        return()
--}
+runTest :: IO()
 runTest = do 
-  func <- getTestFunc
+  _ <- getTestFunc
   return()
 
 
---getTestFunc :: IO()
+getTestFunc :: IO()
 getTestFunc = 
             defaultErrorHandler defaultDynFlags $ do
             runGhc (Just libdir) $ do
@@ -47,7 +47,7 @@ getTestFunc =
             _ <- setSessionDynFlags newFlags
             target <- guessTarget "Shaker.RunTest" Nothing
             setTargets [target]
-            r <- load LoadAllTargets
+            _ <- load LoadAllTargets
             m <- findModule (mkModuleName "Shaker.RunTest") Nothing
             setContext [] [m]
             dynCompileExpr("runAll")
@@ -95,3 +95,4 @@ setSourceAndTarget sources target dflags = dflags{
   }
 
 
+-} 

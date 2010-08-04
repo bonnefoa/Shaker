@@ -5,7 +5,6 @@ import GHC
 import Data.List
 import Shaker.Io
 import Shaker.Type
-import Control.Monad.Trans 
 import Control.Monad.Reader
 
 type CompileR = Reader [CompileFile]
@@ -32,6 +31,7 @@ constructCompileFile fp = do
 
 -- mergeCompileInputsSources :: Shaker CompileInput
 mergeCompileInputsSources :: [CompileInput] -> CompileInput
+mergeCompileInputsSources [] = defaultCompileInput 
 mergeCompileInputsSources cplInps@(cpIn:_) = do 
   let srcDirs = nub $ concatMap cfSourceDirs cplInps
   cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"  } 

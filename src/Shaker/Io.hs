@@ -19,19 +19,7 @@ import Control.Monad
 import System.Directory
 import Data.List
 import Shaker.Regex
-import System.Time
-
--- | Represents directory to listen 
-data FileListenInfo = FileListenInfo{
-  dir :: FilePath     -- ^ location of the listened directory
-  ,ignore :: [String] -- ^ ignore patterns
-  ,include :: [String] -- ^include patterns
-  }
-  deriving (Show,Eq)
-
--- |Agregate a FilePath with its modification time
-data FileInfo = FileInfo FilePath ClockTime 
-  deriving (Show,Eq)
+import Shaker.Type
 
 -- |Get the tuples of (newFiles,modifiedFiles) from given list of directory
 listModifiedAndCreatedFiles :: [FileListenInfo] -> [FileInfo] -> IO ([FileInfo],[FileInfo])
@@ -91,10 +79,4 @@ convertToFullPath absDir = map (\a-> concat [absDir, "/",a])
 
 removeDotDirectory :: [String] -> [String]
 removeDotDirectory = filter (not . isSuffixOf "."  ) 
-
-defaultHaskellPatterns :: [String]
-defaultHaskellPatterns = [".*\\.hs$"]
-
-defaultExclude :: [String]
-defaultExclude =  [".*Setup\\.hs$"]
 

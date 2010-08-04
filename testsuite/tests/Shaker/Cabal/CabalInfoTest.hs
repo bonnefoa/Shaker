@@ -6,16 +6,11 @@ import System.Directory
 import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Type
-import Shaker.Io
 import Shaker.CommonTest
 import Test.HUnit
 import Shaker.Cabal.CabalInfo
-import GHC(DynFlags(DynFlags))
-import DynFlags(
-    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
-    ,PackageFlag (ExposePackage)
-    ,GhcLink (NoLink)
-  )
+import DynFlags( DynFlags, packageFlags, importPaths ,PackageFlag (ExposePackage) , defaultDynFlags
+        )
 
 testParseCabalConfig :: Test
 testParseCabalConfig = TestCase $ runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
@@ -26,7 +21,7 @@ testParseCabalConfig = TestCase $ runTestOnDirectory "testsuite/tests/resources/
   cfCommandLineFlags cplLib == ["-Wall"] @? "command line flags should be -Wall, got " ++ show ( cfCommandLineFlags cplLib)
   cfTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( cfTargetFiles cplLib)
   cfTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( cfTargetFiles cplExe)
-  let dFlags = cfDynFlags cplExe DynFlags{}
+  let dFlags = cfDynFlags cplExe defaultDynFlags
   importPaths dFlags == ["src"] @? "importPaths should be src, got "++ show (importPaths dFlags)
   packageFlags dFlags == [ExposePackage "ghc"] @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
   let (ListenerInput (flLib:[]) _) = listenerInput shIn
