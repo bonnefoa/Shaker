@@ -15,7 +15,12 @@ getQuickCheckProperty :: [ModuleMapping] -> [Exp]
 getQuickCheckProperty = concatMap getQuickCheckProperty'
 
 getQuickCheckProperty' :: ModuleMapping -> [Exp]
-getQuickCheckProperty' modMap = map (AppE (VarE (mkName "quickCheck") ) . VarE . mkName) $ cfPropName modMap
+getQuickCheckProperty' modMap = map getSingleQuickCheck $ cfPropName modMap
+
+getSingleQuickCheck :: String -> Exp
+getSingleQuickCheck propName = DoE [NoBindS printName, NoBindS quickCall] 
+  where quickCall = (AppE (VarE $ mkName "quickCheck" ) . VarE . mkName) propName
+        printName = AppE (VarE $ mkName "putStrLn") (LitE (StringL propName)) 
 
 listHunit :: ExpQ 
 listHunit = do 
