@@ -18,7 +18,7 @@ abstractTestListFiles :: FileListenInfo -> ([FilePath] -> [FilePath] -> Bool) ->
 abstractTestListFiles fli predicat = monadicIO action
   where action = do
                lstFile <- run $ listFiles fli{ignore= []}
-               r <- run $listFiles fli
+               r <- run $ listFiles fli
                assert $ predicat lstFile r 
 
 prop_listFiles :: FileListenInfo -> Property

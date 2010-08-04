@@ -41,8 +41,7 @@ mergeCompileInputsSources cplInps@(cpIn:_) = do
 
 -- | Fill the target files to all files in listenerInput if empty
 fillTargetIfEmpty ::CompileInput -> CompileR CompileInput
-fillTargetIfEmpty cpIn = do
-  if null (cfTargetFiles cpIn) 
+fillTargetIfEmpty cpIn = if null (cfTargetFiles cpIn) 
      then setAllHsFilesAsTargets cpIn
      else return cpIn
 
@@ -55,8 +54,7 @@ setAllHsFilesAsTargets cpIn = do
 -- | Change the dynflags with information from the CompileInput like importPaths 
 -- and .o and .hi directory
 configureDynFlagsWithCompileInput :: CompileInput -> DynFlags -> DynFlags 
-configureDynFlagsWithCompileInput cpIn dflags = do 
-  dflags{
+configureDynFlagsWithCompileInput cpIn dflags = dflags{
     importPaths = sourceDirs
     ,objectDir = Just compileTarget
     ,hiDir = Just compileTarget

@@ -27,18 +27,17 @@ runReflexivite = do
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
-  modMaps <- lift $ runGhc (Just libdir) $ do 
-            _ <- ghcCompile $ runReader (removeFileWithTemplateHaskell cpIn >>= removeFileWithMain >>= setAllHsFilesAsTargets ) cfFlList
+  lift $ runGhc (Just libdir) $ do 
+            _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
             modSummaries <- getModuleGraph
             mapM getModuleMapping modSummaries 
-  return modMaps
 
 -- | Collect module name and tests name for the given module
 getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping
 getModuleMapping  modSum = do 
   mayModuleInfo <- getModuleInfo $  ms_mod modSum
-  props <- return $ getQuickcheckFunction mayModuleInfo
-  hunits <- return $ getHunitFunctions mayModuleInfo
+  let props = getQuickcheckFunction mayModuleInfo
+  let hunits = getHunitFunctions mayModuleInfo
   return $ ModuleMapping modName hunits props
   where modName = (moduleNameString . moduleName . ms_mod) modSum        
        
@@ -51,7 +50,7 @@ getHunitFunctions = getFunctionWithPredicate ("test" `isPrefixOf`)
 getFunctionWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionWithPredicate _ Nothing = []
 getFunctionWithPredicate predicat (Just modInfo) = filter predicat nameList
-   where idList = catMaybes $ map tyThingToId $ modInfoTyThings modInfo
+   where idList = mapMaybe tyThingToId $ modInfoTyThings modInfo
          nameList = map (occNameString . nameOccName . varName) idList 
 
 tyThingToId :: TyThing -> Maybe Id
