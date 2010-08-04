@@ -13,6 +13,7 @@ import Shaker.Type
 import Shaker.Action.Compile
 import Shaker.SourceHelper
 import Control.Monad.Reader
+import Control.Arrow
 
 -- ^ Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
@@ -52,7 +53,7 @@ getFunctionTypeWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionTypeWithPredicate _ Nothing = []
 getFunctionTypeWithPredicate predicat (Just modInfo) = map snd $ filter ( predicat . fst)  typeList
    where idList = getIdList modInfo
-         typeList = map (\a -> ( (showPpr . idType) a, getFunctionNameFromId a ) )  idList 
+         typeList = map ((showPpr . idType) &&& getFunctionNameFromId ) idList 
 
 getFunctionNameWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionNameWithPredicate _ Nothing = []

@@ -19,17 +19,12 @@ import Shaker.SourceHelperTest
 runAll :: IO()
 runAll = do 
   mapM_ liftIO propLists
---  testLists
+  _ <- testLists
   return () 
 
 propLists :: [IO()]
 propLists = $(listProperties)
 
-{-
 testLists :: IO Counts
 testLists = runTestTT  $ TestList $(listHunit)
--}
-ga = $(listHunit) 
-  -- putStrLn "testRunCompileProject" >> runTestTT testRunCompileProject,
-  
 

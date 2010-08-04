@@ -11,7 +11,7 @@ testConstuctCompileFileList :: Test
 testConstuctCompileFileList = TestCase $ runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do 
   let cpIn = initializeEmptyCompileInput {cfSourceDirs = ["src"]}
   fileList <- constructCompileFileList cpIn 
-  any (\cpFl -> "Main.hs" `isSuffixOf` (cfFp cpFl) && cfHasMain cpFl) fileList @? "Should have one main file, got " ++ show fileList
-  any (\cpFl -> "CabalTest.hs" `isSuffixOf` (cfFp cpFl) && (not . cfHasMain) cpFl) fileList @? "Should have one main file, got " ++ show fileList
+  any (\cpFl -> "Main.hs" `isSuffixOf` cfFp cpFl && cfHasMain cpFl) fileList @? "Should have one main file, got " ++ show fileList
+  any (\cpFl -> "CabalTest.hs" `isSuffixOf` cfFp cpFl && (not . cfHasMain) cpFl) fileList @? "Should have one main file, got " ++ show fileList
 
 
