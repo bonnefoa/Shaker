@@ -5,6 +5,7 @@ import System.Directory
 import Test.HUnit
 import Control.Exception
 import Shaker.Type
+import Shaker.Config
 
 runTestOnDirectory :: FilePath -> Assertion -> Assertion
 runTestOnDirectory fp fun = do
@@ -21,4 +22,12 @@ initializeEmptyCompileInput = CompileInput {
   ,cfCommandLineFlags =[]
   ,cfTargetFiles = []
 }
+
+tShakerInput :: ShakerInput
+tShakerInput = defaultInput {
+  compileInputs = [defaultCompileInput {
+       cfCommandLineFlags = ["-package ghc"]
+     }]
+}
+
 

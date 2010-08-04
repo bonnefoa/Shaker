@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fglasgow-exts -XTemplateHaskell #-}
-
 module Shaker.TestTH
  where
 
@@ -8,21 +6,25 @@ import Language.Haskell.TH
 import Control.Monad.Reader
 import Shaker.Cabal.CabalInfo
 
-importModules :: ExpQ
-importModules = undefined
-
 listProperties :: ExpQ 
 listProperties = do
   modMaps <- runIO $ defaultCabalInput >>= runReaderT runReflexivite
   return $ ListE $ getQuickCheckProperty modMaps
 
 getQuickCheckProperty :: [ModuleMapping] -> [Exp]
-getQuickCheckProperty = concat . (map getQuickCheckProperty')
+getQuickCheckProperty = concatMap getQuickCheckProperty'
 
 getQuickCheckProperty' :: ModuleMapping -> [Exp]
-getQuickCheckProperty' modMap = map (\pName -> 
-  AppE (VarE (mkName "quickCheck") ) (VarE (mkName pName) ) ) $ cfPropName modMap
+getQuickCheckProperty' modMap = map (AppE (VarE (mkName "quickCheck") ) . VarE . mkName) $ cfPropName modMap
 
 listHunit :: ExpQ 
-listHunit = undefined
+listHunit = do 
+  modMaps <- runIO $ defaultCabalInput >>= runReaderT runReflexivite
+  return $ ListE $ getHunit modMaps
+
+getHunit :: [ModuleMapping] -> [Exp]
+getHunit = concatMap getHunit'
+
+getHunit' :: ModuleMapping -> [Exp]
+getHunit' modMap = map (VarE . mkName) $ cfHunitName modMap
 

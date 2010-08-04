@@ -16,7 +16,8 @@ import Control.Monad.Trans
 runAll :: IO()
 runAll = do
   mapM_ liftIO propLists
-  mapM_ liftIO testLists
+  _ <- hunitLists
+  return ()
 
 propLists :: [IO()]
 propLists =[
@@ -44,16 +45,16 @@ propLists =[
   putStrLn "prop_getIncludedAll_none ">> quickCheck prop_getIncludedAll_none
  ]
 
-testLists :: [IO Counts]
-testLists = [
-  putStrLn "testRunCompileProject" >> runTestTT testRunCompileProject,
-  putStrLn "testParseCabalConfig " >> runTestTT testParseCabalConfig ,
-  putStrLn "testInvalidMainShouldBeExcluded " >> runTestTT testInvalidMainShouldBeExcluded ,
-  putStrLn "testCompileWithLocalSource " >> runTestTT testCompileWithLocalSource ,
-  putStrLn "testProjectCabalContentWithLocalSource " >> runTestTT testProjectCabalContentWithLocalSource ,
-  putStrLn "testRecurseListFiles " >> runTestTT testRecurseListFiles ,
-  putStrLn "testListFiles " >> runTestTT testListFiles ,
-  putStrLn "testListHsFiles " >> runTestTT testListHsFiles ,
-  putStrLn "testIsFileContainingMain " >> runTestTT testIsFileContainingMain ,
-  putStrLn "testIsFileNotContainingMain " >> runTestTT testIsFileNotContainingMain
+hunitLists :: IO Counts
+hunitLists = runTestTT $ TestList [
+  testRunCompileProject,
+  testParseCabalConfig ,
+  testInvalidMainShouldBeExcluded ,
+  testCompileWithLocalSource ,
+  testProjectCabalContentWithLocalSource ,
+  testRecurseListFiles ,
+  testListFiles ,
+  testListHsFiles ,
+  testIsFileContainingMain ,
+  testIsFileNotContainingMain
  ]

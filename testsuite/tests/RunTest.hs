@@ -14,7 +14,7 @@ import Control.Monad.Trans
 main :: IO()
 main = do 
   mapM_ liftIO propLists
-  mapM_ liftIO testLists
+  mapM_ liftIO hunitLists
 
 propLists :: [IO()]
 propLists =[ 
@@ -42,8 +42,8 @@ propLists =[
     putStrLn "prop_getIncludedAll_none ">> quickCheck prop_getIncludedAll_none
   ]
 
-testLists :: [IO Counts]
-testLists = [
+hunitLists :: [IO Counts]
+hunitLists = [
    putStrLn "testRunCompileProject" >> runTestTT testRunCompileProject,
    putStrLn "testParseCabalConfig " >> runTestTT testParseCabalConfig ,
    putStrLn "testInvalidMainShouldBeExcluded " >> runTestTT testInvalidMainShouldBeExcluded ,
