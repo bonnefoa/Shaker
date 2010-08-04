@@ -9,7 +9,7 @@ import Shaker.CommonTest
 
 testRunReflexivite ::Test
 testRunReflexivite = TestCase $ do
-  modMapLst <- runReaderT runReflexivite tShakerInput
+  modMapLst <- runReaderT runReflexivite testShakerInput
   length modMapLst > 1 @? "Should have more than one module, got : "++ show (length modMapLst)
   any ( \(ModuleMapping nm _ _) -> nm == "Shaker.ReflexiviteTest") modMapLst @? 
     "Should have module Shaker.ReflexiviteTest, got " ++ show modMapLst
@@ -18,6 +18,8 @@ testRunReflexivite = TestCase $ do
     ++ show (cfPropName regexpModMap)
   let (Just reflexiviteModMap)  = find (\(ModuleMapping nm _ _) -> nm == "Shaker.ReflexiviteTest" ) modMapLst
   any (== "testRunReflexivite") (cfHunitName reflexiviteModMap) @? "Should contain reflexivite test module with hunit test testRunReflexivite, got "
+    ++ show (cfHunitName reflexiviteModMap)
+  not ( any (== "testShakerInput") (cfHunitName reflexiviteModMap) ) @? "Should not contain function testShakerInput, got "
     ++ show (cfHunitName reflexiviteModMap)
   not (any (\a ->cfModuleName a == "Shaker.RunTestTH") modMapLst) @? "Should have excluded RunTestTH, got " ++ show modMapLst
     

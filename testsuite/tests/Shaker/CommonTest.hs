@@ -23,8 +23,8 @@ initializeEmptyCompileInput = CompileInput {
   ,cfTargetFiles = []
 }
 
-tShakerInput :: ShakerInput
-tShakerInput = defaultInput {
+testShakerInput :: ShakerInput
+testShakerInput = defaultInput {
   compileInputs = [defaultCompileInput {
        cfCommandLineFlags = ["-package ghc"]
      }]

@@ -8,6 +8,7 @@ import Data.List
 import Data.Maybe
 import GHC
 import GHC.Paths
+import Outputable
 import Shaker.Type 
 import Shaker.Action.Compile
 import Shaker.SourceHelper
@@ -42,16 +43,28 @@ getModuleMapping  modSum = do
   where modName = (moduleNameString . moduleName . ms_mod) modSum        
        
 getQuickcheckFunction :: Maybe ModuleInfo -> [String]
-getQuickcheckFunction = getFunctionWithPredicate ("prop_" `isPrefixOf`) 
+getQuickcheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`) 
 
 getHunitFunctions :: Maybe ModuleInfo -> [String]
-getHunitFunctions = getFunctionWithPredicate ("test" `isPrefixOf`) 
+getHunitFunctions = getFunctionTypeWithPredicate ("Test" `isSuffixOf`) 
 
-getFunctionWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
-getFunctionWithPredicate _ Nothing = []
-getFunctionWithPredicate predicat (Just modInfo) = filter predicat nameList
-   where idList = mapMaybe tyThingToId $ modInfoTyThings modInfo
-         nameList = map (occNameString . nameOccName . varName) idList 
+getFunctionTypeWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
+getFunctionTypeWithPredicate _ Nothing = []
+getFunctionTypeWithPredicate predicat (Just modInfo) = map snd $ filter ( predicat . fst)  typeList
+   where idList = getIdList modInfo
+         typeList = map (\a -> ( (showPpr . idType) a, getFunctionNameFromId a ) )  idList 
+
+getFunctionNameWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
+getFunctionNameWithPredicate _ Nothing = []
+getFunctionNameWithPredicate predicat (Just modInfo) = filter predicat nameList
+   where idList = getIdList modInfo
+         nameList = map getFunctionNameFromId idList 
+
+getFunctionNameFromId :: Id -> String
+getFunctionNameFromId = occNameString . nameOccName . varName
+
+getIdList :: ModuleInfo -> [Id]
+getIdList modInfo = mapMaybe tyThingToId $ modInfoTyThings modInfo
 
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
