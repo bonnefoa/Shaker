@@ -87,10 +87,13 @@ Executable shaker
     Shaker.Action.Compile
     Shaker.Conductor
     Shaker.Config
+    Shaker.TestTH
     Shaker.PluginConfig
+    Shaker.Reflexivite
     Shaker.Regex
     Shaker.Cli
     Shaker.Io
+    Shaker.SourceHelper
     Shaker.Cabal.CabalInfo
     Shaker.Type
     Shaker.Listener
@@ -118,14 +121,17 @@ Executable test
   main-is:         RunTest.hs
   ghc-options: -Wall -fno-warn-orphans
   other-modules: 
+    RunTestTH
     Shaker.RegexTest
     Shaker.Properties
     Shaker.Action.CompileTest
     Shaker.IoTest
     Shaker.CliTest
+    Shaker.CommonTest
     Shaker.ParserTest
     Shaker.Cabal.CabalInfoTest
     Shaker.ListenerTest
+    Shaker.ReflexiviteTest
     Shaker.ConductorTest
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
