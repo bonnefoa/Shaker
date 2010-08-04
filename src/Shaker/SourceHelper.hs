@@ -17,6 +17,8 @@ data CompileFile = CompileFile {
 
 -- * Compile input management
 
+-- | Build the list of haskell source files located in 
+-- CompileInput source dirs
 constructCompileFileList :: CompileInput -> IO [CompileFile] 
 constructCompileFileList cpIn = do
   files <- recurseMultipleListFiles fli
@@ -29,7 +31,8 @@ constructCompileFile fp = do
   hasTH <- isFileContainingTH fp
   return $ CompileFile fp hasMain hasTH
 
--- mergeCompileInputsSources :: Shaker CompileInput
+-- | Merge source dirs informations from the CompileInput list to 
+-- create a single CompileInput
 mergeCompileInputsSources :: [CompileInput] -> CompileInput
 mergeCompileInputsSources [] = defaultCompileInput 
 mergeCompileInputsSources cplInps@(cpIn:_) = do 
@@ -43,11 +46,14 @@ fillTargetIfEmpty cpIn = do
      then setAllHsFilesAsTargets cpIn
      else return cpIn
 
+-- | Configure the CompileInput with all haskell files configured as targets
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
 setAllHsFilesAsTargets cpIn = do
   files <- ask
   return cpIn {cfTargetFiles = map cfFp files }
 
+-- | Change the dynflags with information from the CompileInput like importPaths 
+-- and .o and .hi directory
 configureDynFlagsWithCompileInput :: CompileInput -> DynFlags -> DynFlags 
 configureDynFlagsWithCompileInput cpIn dflags = do 
   dflags{
