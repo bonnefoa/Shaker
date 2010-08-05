@@ -41,6 +41,7 @@ data ShakerInput = ShakerInput {
   ,listenerInput :: ListenerInput
   ,pluginMap :: PluginMap
   ,commandMap :: CommandMap
+  ,argument :: Maybe String
 }
   
 -- | Configuration flags to pass to the ghc compiler

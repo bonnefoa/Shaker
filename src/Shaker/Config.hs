@@ -13,6 +13,7 @@ defaultInput = ShakerInput {
   listenerInput = defaultListenerInput,
   pluginMap = defaultPluginMap,
   commandMap = defaultCommandMap
+  ,argument = Nothing
   }
 
 defaultInputState :: IO InputState
