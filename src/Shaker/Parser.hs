@@ -39,7 +39,8 @@ typeAction cmMap = skipMany (char ' ') >>
 parseArgument :: CommandMap -> GenParser Char st String
 parseArgument cmMap = 
   skipMany (char ' ') >>
-  mapM_ (\a -> notFollowedBy $ string a) (M.keys cmMap) >>  
+  mapM_ (\a -> notFollowedBy $ string (a++" ") ) (M.keys cmMap) >>  
+  mapM_ (\a -> notFollowedBy $ string (a++"\n") ) (M.keys cmMap) >>  
   many1 (noneOf " \n") >>= \str ->
   skipMany (char ' ') >>
   return str 

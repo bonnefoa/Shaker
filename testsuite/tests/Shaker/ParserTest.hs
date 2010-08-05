@@ -39,7 +39,7 @@ instance Arbitrary ActionString where
               proc str = elements $ map (\(key,value) -> ActionString (key ++ " " ++ trim str) (ActionWithArg value str)  ) (toList defaultCommandMap)
 
 trim :: String -> String
-trim = reverse . (dropWhile isSpace) . reverse
+trim = reverse . dropWhile isSpace . reverse
 
 instance Arbitrary CommandString where
   arbitrary = do 
