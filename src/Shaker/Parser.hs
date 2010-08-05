@@ -30,14 +30,21 @@ typeMultipleAction cmMap = many (typeAction cmMap) >>= \res ->
 typeAction :: CommandMap -> GenParser Char st Action
 typeAction cmMap = skipMany (char ' ') >>
   typeShakerAction cmMap >>= \shAct -> 
-  parseArgument cmMap>>= \arg ->
+  optionMaybe (parseArgument cmMap) >>= \arg ->
   skipMany (char ' ') >> 
   case arg of
        Nothing -> return $ Action shAct
        Just str -> return $ ActionWithArg shAct str
 
-parseArgument :: CommandMap -> GenParser Char st (Maybe String)
-parseArgument cmMap = undefined
+parseArgument :: CommandMap -> GenParser Char st String
+parseArgument cmMap = 
+  skipMany (char ' ') >>
+  notFollowedBy (string "Compile") >>  
+  many1 (noneOf " \n") >>= \str ->
+  skipMany (char ' ') >>
+  proc (str `M.member` cmMap) str 
+  where proc False str = return str
+        proc True _ = unexpected "string match an action"
 
 -- | Parse a ShakerAction 
 typeShakerAction :: CommandMap -> GenParser Char st ShakerAction
