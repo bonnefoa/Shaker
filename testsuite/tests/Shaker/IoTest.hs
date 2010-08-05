@@ -80,5 +80,8 @@ testIsFileNotContainingMain = TestCase $ do
   res <- isFileContainingMain "src/Shaker/Config.hs"
   assertBool "File Config.hs should not contain main methods" $ not res
 
-
+testIsFileConductorNotContainingMain :: Test
+testIsFileConductorNotContainingMain = TestCase $ do
+  res <- isFileContainingMain "src/Shaker/Conductor.hs"
+  assertBool "File Config.hs should not contain main methods" $ not res
 
