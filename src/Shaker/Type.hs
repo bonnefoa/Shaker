@@ -27,6 +27,7 @@ data ShakerAction =
 	| FullCompile -- ^ Compile all hs sources with ghc
 	| QuickCheck -- ^ Execute quickcheck properties
 	| Help -- ^ Display the help
+        | Execute -- ^ Execute a command
 	| Quit -- ^ Exit shaker
 	| Clean -- ^ Delete generated 
   deriving (Show,Eq,Ord)
