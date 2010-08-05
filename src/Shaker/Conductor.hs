@@ -31,7 +31,7 @@ mainThread st@(InputState inputMv tokenMv) = do
   cmd <- lift $ takeMVar inputMv
   executeCommand cmd  
   case cmd of
-       Command _ [Quit] -> return ()
+       Command _ [Action Quit] -> return ()
        _ ->  mainThread st
 
 -- | Continuously execute the given action until a keyboard input is done
@@ -62,5 +62,15 @@ executeCommand (Command Continuous act) = listenManager ( executeAction act ) >>
 -- | Execute given action
 executeAction :: [Action] -> Shaker IO()
 executeAction acts = do
-   thePluginMap <- asks pluginMap
-   sequence_ $ mapMaybe (`M.lookup` thePluginMap) acts 
+   mapM_ executeAction' acts 
+   return () 
+
+executeAction' :: Action -> Shaker IO()
+executeAction' (ActionWithArg act arg) = do 
+  plMap<- asks pluginMap 
+  local (\shIn -> shIn {argument = Just arg} ) $ fromJust $ act `M.lookup` plMap
+executeAction' (Action act) = do
+  plMap <- asks pluginMap 
+  fromJust $ act `M.lookup` plMap
+
+
