@@ -67,7 +67,7 @@ isFileContainingTH :: FilePath -> IO Bool
 isFileContainingTH fp = isFileContaining fp (L.pack "$(" `L.isInfixOf`)
 
 isFileContainingMain :: FilePath -> IO Bool
-isFileContainingMain fp = isFileContaining fp (L.pack "main" `L.isPrefixOf`)
+isFileContainingMain fp = isFileContaining fp (\a -> L.pack "main " `L.isPrefixOf` a || L.pack "main:" `L.isPrefixOf` a)
 
 isFileContaining :: FilePath -> (L.ByteString -> Bool) -> IO Bool
 isFileContaining fp pat = do
