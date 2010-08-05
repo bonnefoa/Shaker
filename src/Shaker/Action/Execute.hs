@@ -16,3 +16,12 @@ runExecute = do
             modSummaries <- getModuleGraph
             return ()
   return ()
+
+launchFunction :: (Maybe String) -> Plugin 
+launchFunction Nothing = lift $ putStrLn "No action to execute. Give an argument of ModuleName.functionName. The function should be of type IO()"
+launchFunction (Just actStr) = lift $ putStrLn "Ga "
+  where (mod, fun) = parseModuleAndAction actStr
+
+parseModuleAndAction :: String -> (String,String)
+parseModuleAndAction actStr = (moduleStr, functionStr)
+  where (functionStr, moduleStr) = ( \(a,b) -> (a,reverse . tail $ b) ) . span (/= '.') . reverse $ actStr
