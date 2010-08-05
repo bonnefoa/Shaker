@@ -39,17 +39,16 @@ typeAction cmMap = skipMany (char ' ') >>
 parseArgument :: CommandMap -> GenParser Char st String
 parseArgument cmMap = 
   skipMany (char ' ') >>
-  notFollowedBy (string "Compile") >>  
+  mapM_ (\a -> notFollowedBy $ string a) (M.keys cmMap) >>  
   many1 (noneOf " \n") >>= \str ->
   skipMany (char ' ') >>
-  proc (str `M.member` cmMap) str 
-  where proc False str = return str
-        proc True _ = unexpected "string match an action"
+  return str 
 
 -- | Parse a ShakerAction 
 typeShakerAction :: CommandMap -> GenParser Char st ShakerAction
 typeShakerAction cmMap = skipMany (char ' ') >>
   choice (parseMapAction cmMap)  >>= \res ->
+  notFollowedBy (noneOf " \n") >> 
   skipMany (char ' ') >> return res
 
 -- | Parse the continuous tag (~)

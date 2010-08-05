@@ -16,7 +16,7 @@ instance Arbitrary ShakerAction where
 instance Arbitrary Action where
   arbitrary = Action `liftM` arbitrary
 
-data ActionInt = ActionInt Action Int
+data ActionInt = ActionInt ShakerAction Int
   deriving (Show)
 instance Arbitrary ActionInt where
   arbitrary = ActionInt `liftM` arbitrary
