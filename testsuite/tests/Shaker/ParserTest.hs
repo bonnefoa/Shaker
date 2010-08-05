@@ -33,7 +33,7 @@ data ActionString = ActionString {
 
 instance Arbitrary ActionString where
   arbitrary = do 
-        str <- listOf $ elements ['a'..'z'] 
+        str <- listOf $ elements ['a'..'p'] 
         proc str 
         where proc "" = elements $ map (\(key,value) -> ActionString key (Action value)) (toList defaultCommandMap)
               proc str = elements $ map (\(key,value) -> ActionString (key ++ " " ++ trim str) (ActionWithArg value str)  ) (toList defaultCommandMap)
