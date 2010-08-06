@@ -1,7 +1,8 @@
 -- | Conductor is responsible to control the command-line listener, 
 -- the listener manager and the action to execute
 module Shaker.Conductor(
- initThread
+ initThread,
+ executeCommand
 )
   where
 
