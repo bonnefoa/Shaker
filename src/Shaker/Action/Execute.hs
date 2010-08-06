@@ -1,6 +1,6 @@
 module Shaker.Action.Execute
  where
-
+  
 import Shaker.Type
 import Shaker.Reflexivite
 import Control.Monad.Reader
@@ -18,5 +18,5 @@ launchFunction (Just actStr) = runFunction runnableFunction
 
 parseModuleAndAction :: String -> RunnableFunction
 parseModuleAndAction actStr = RunnableFunction moduleStr functionStr
-  where (functionStr, moduleStr) =  second (reverse . tail )  . span (/= '.') . reverse $ actStr
-
+  where (functionStr, moduleStr) =  first reverse . second (reverse . tail )  . span (/= '.') . reverse $ actStr
+ 

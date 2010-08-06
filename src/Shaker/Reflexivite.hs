@@ -28,6 +28,7 @@ data RunnableFunction = RunnableFunction {
   cfModule :: String
   ,cfFunctionName :: String -- The function name. Should have IO() as signature
 }
+ deriving Show
 
 -- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]
@@ -92,4 +93,4 @@ getIdList modInfo = mapMaybe tyThingToId $ modInfoTyThings modInfo
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
-
+ 
