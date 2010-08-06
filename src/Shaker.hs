@@ -14,7 +14,7 @@ main = do
   args <- getArgs
   inputState <- defaultInputState
   cab <- defaultCabalInput 
-  if (null args) 
+  if null args 
     then runReaderT (initThread inputState) cab
     else runReaderT ( executeCommand . parseCommand cab $ concat args)  cab 
- 
+  

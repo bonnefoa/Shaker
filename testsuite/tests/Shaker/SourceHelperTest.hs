@@ -18,7 +18,7 @@ testConstructCompileFileList = TestCase $ runTestOnDirectory "testsuite/tests/re
 testConstructConductorCompileFileList :: Test
 testConstructConductorCompileFileList = TestCase $ do
   list <- constructCompileFileList defaultCompileInput 
-  let (Just cpFile) = find (\a ->  "Conductor.hs" `isSuffixOf` (cfFp a) ) list
+  let (Just cpFile) = find (\a ->  "Conductor.hs" `isSuffixOf` cfFp a ) list
   not (cfHasMain cpFile) && not (cfHasTH cpFile) @? "Should have conductor in list, got " ++ show cpFile
 
 testCompileInputConstruction :: Test

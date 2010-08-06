@@ -51,10 +51,10 @@ runFunction (RunnableFunction mod fun) = do
          _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
          m <- findModule (mkModuleName mod) Nothing
          setContext [] [m]
-         value <- compileExpr (fun)
-         do let value' = (unsafeCoerce value) :: IO ()
+         value <- compileExpr fun
+         do let value' = unsafeCoerce value :: IO ()
             return value'
-  lift $ fun
+  lift fun
   return () 
 
 -- | Collect module name and tests name for the given module
