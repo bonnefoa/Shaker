@@ -1,4 +1,4 @@
-module Shaker
+module Main
  where
 
 import Shaker.Conductor

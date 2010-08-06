@@ -12,6 +12,7 @@ import Outputable
 import Shaker.Type 
 import Shaker.Action.Compile
 import Shaker.SourceHelper
+import Unsafe.Coerce
 import Control.Monad.Reader
 import Control.Arrow
 
@@ -23,6 +24,11 @@ data ModuleMapping = ModuleMapping {
  }
  deriving Show
 
+data RunnableFunction = RunnableFunction {
+  cfModule :: String
+  ,cfFunctionName :: String -- The function name. Should have IO() as signature
+}
+
 -- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]
 runReflexivite = do
@@ -33,6 +39,22 @@ runReflexivite = do
             _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
             modSummaries <- getModuleGraph
             mapM getModuleMapping modSummaries 
+
+-- | Compile, load and run the given function
+runFunction :: RunnableFunction -> Shaker IO()
+runFunction (RunnableFunction mod fun) = do
+  cpList <- asks compileInputs 
+  let cpIn = mergeCompileInputsSources cpList
+  cfFlList <- lift $ constructCompileFileList cpIn
+  fun <- lift $ runGhc (Just libdir) $ do
+         _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
+         m <- findModule (mkModuleName mod) Nothing
+         setContext [] [m]
+         value <- compileExpr (fun)
+         do let value' = (unsafeCoerce value) :: IO ()
+            return value'
+  lift $ fun
+  return () 
 
 -- | Collect module name and tests name for the given module
 getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping

@@ -6,6 +6,7 @@ import Test.HUnit
 import Data.List
 import Control.Monad.Reader
 import Shaker.CommonTest
+import System.Directory
 
 testRunReflexivite ::Test
 testRunReflexivite = TestCase $ do
@@ -23,3 +24,18 @@ testRunReflexivite = TestCase $ do
     ++ show (cfHunitName reflexiviteModMap)
   not (any (\a ->cfModuleName a == "Shaker.RunTestTH") modMapLst) @? "Should have excluded RunTestTH, got " ++ show modMapLst
     
+aFun :: IO ()
+aFun = do
+  tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
+  exist <- doesDirectoryExist tempFp
+  proc exist tempFp            
+  where proc True fp = removeDirectory fp >> createDirectory fp
+        proc _ fp = createDirectory fp
+
+testRunFunction :: Test 
+testRunFunction = TestCase $ do 
+  let run = RunnableFunction "Shaker.ReflexiviteTest" "aFun"
+  tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
+  runReaderT (runFunction run) testShakerInput 
+  doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
+
