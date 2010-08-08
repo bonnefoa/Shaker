@@ -63,13 +63,13 @@ runFunction (RunnableFunction funModuleName fun) = do
 getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping
 getModuleMapping  modSum = do 
   mayModuleInfo <- getModuleInfo $  ms_mod modSum
-  let props = getQuickcheckFunction mayModuleInfo
+  let props = getQuickCheckFunction mayModuleInfo
   let hunits = getHunitFunctions mayModuleInfo
   return $ ModuleMapping modName hunits props
   where modName = (moduleNameString . moduleName . ms_mod) modSum        
        
-getQuickcheckFunction :: Maybe ModuleInfo -> [String]
-getQuickcheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`) 
+getQuickCheckFunction :: Maybe ModuleInfo -> [String]
+getQuickCheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`) 
 
 getHunitFunctions :: Maybe ModuleInfo -> [String]
 getHunitFunctions = getFunctionTypeWithPredicate (== "Test.HUnit.Base.Test") 

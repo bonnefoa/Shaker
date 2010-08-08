@@ -7,7 +7,7 @@ import Test.HUnit
 import Control.Monad.Reader
 import Shaker.CommonTest
 
-testRunQuickcheck :: Test
-testRunQuickcheck = TestCase $ do
-  runReaderT runQuickcheck testShakerInput
+testRunQuickCheck :: Test
+testRunQuickCheck = TestCase $ do
+  runReaderT runQuickCheck testShakerInput
 
