@@ -17,6 +17,8 @@ launchFunction (Just actStr) = runFunction runnableFunction
   where runnableFunction = parseModuleAndAction actStr
 
 parseModuleAndAction :: String -> RunnableFunction
-parseModuleAndAction actStr = RunnableFunction moduleStr functionStr
-  where (functionStr, moduleStr) =  first reverse . second (reverse . tail )  . span (/= '.') . reverse $ actStr
+parseModuleAndAction actStr 
+  | '>' `elem` actStr = RunnableFunction moduleStr functionStr
+  | otherwise = RunnableFunction "" actStr
+  where (functionStr, moduleStr) =  first reverse . second ( reverse . tail )  . span (/= '>') . reverse $ actStr
  
