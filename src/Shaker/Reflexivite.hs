@@ -25,7 +25,7 @@ data ModuleMapping = ModuleMapping {
  deriving Show
 
 data RunnableFunction = RunnableFunction {
-  cfModule :: String
+  cfModule :: [String]
   ,cfFunctionName :: String -- The function name. Should have IO() as signature
 }
  deriving Show
@@ -43,19 +43,21 @@ runReflexivite = do
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
-runFunction (RunnableFunction mod fun) = do
+runFunction (RunnableFunction funModuleName fun) = do
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
   dynFun <- lift $ runGhc (Just libdir) $ do
          _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-         m <- findModule (mkModuleName mod) Nothing
-         setContext [] [m]
+         configureContext funModuleName
          value <- compileExpr fun
          do let value' = unsafeCoerce value :: a
             return value'
   _ <- lift dynFun
   return () 
+  where 
+        configureContext [] = getModuleGraph >>= \mGraph ->  setContext [] $ map ms_mod mGraph
+        configureContext imports = mapM (\a -> findModule (mkModuleName a)  Nothing ) imports >>= \m -> setContext [] m
 
 -- | Collect module name and tests name for the given module
 getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping
@@ -70,7 +72,7 @@ getQuickcheckFunction :: Maybe ModuleInfo -> [String]
 getQuickcheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`) 
 
 getHunitFunctions :: Maybe ModuleInfo -> [String]
-getHunitFunctions = getFunctionTypeWithPredicate ("Test" `isSuffixOf`) 
+getHunitFunctions = getFunctionTypeWithPredicate (== "Test.HUnit.Base.Test") 
 
 getFunctionTypeWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionTypeWithPredicate _ Nothing = []

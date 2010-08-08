@@ -77,13 +77,13 @@ source-repository this
 
 Executable shaker
   Main-Is: Shaker.hs
-  ghc-options: -Wall -fno-warn-orphans
+  ghc-options: -Wall -fno-warn-orphans 
   hs-source-dirs: src 
   other-modules: 
     Shaker.Parser
     Shaker.Action.Clean
     Shaker.Action.Standard
-    Shaker.Action.Quickcheck
+    Shaker.Action.QuickCheck
     Shaker.Action.Compile
     Shaker.Conductor
     Shaker.Config
@@ -133,6 +133,7 @@ Executable test
     Shaker.ListenerTest
     Shaker.ReflexiviteTest
     Shaker.ConductorTest
+    Shaker.QuickCheckTest
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,

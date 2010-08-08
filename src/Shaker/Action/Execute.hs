@@ -5,6 +5,7 @@ import Shaker.Type
 import Shaker.Reflexivite
 import Control.Monad.Reader
 import Control.Arrow
+import Data.List
 
 runExecute :: Plugin
 runExecute = do
@@ -18,7 +19,10 @@ launchFunction (Just actStr) = runFunction runnableFunction
 
 parseModuleAndAction :: String -> RunnableFunction
 parseModuleAndAction actStr 
-  | '>' `elem` actStr = RunnableFunction moduleStr functionStr
-  | otherwise = RunnableFunction "" actStr
+  | '>' `elem` actStr = RunnableFunction (split ',' moduleStr)  functionStr
+  | otherwise = RunnableFunction [""] actStr
   where (functionStr, moduleStr) =  first reverse . second ( reverse . tail )  . span (/= '>') . reverse $ actStr
- 
+
+split :: Char -> String -> [String]
+split sep = takeWhile (not . null) . unfoldr (Just . span (/= sep) . dropWhile (== sep))
+

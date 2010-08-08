@@ -23,7 +23,7 @@ testRunReflexivite = TestCase $ do
   not ( any (== "testShakerInput") (cfHunitName reflexiviteModMap) ) @? "Should not contain function testShakerInput, got "
     ++ show (cfHunitName reflexiviteModMap)
   not (any (\a ->cfModuleName a == "Shaker.RunTestTH") modMapLst) @? "Should have excluded RunTestTH, got " ++ show modMapLst
-    
+
 aFun :: String -> IO ()
 aFun tempFp = do
   exist <- doesDirectoryExist tempFp
@@ -31,11 +31,18 @@ aFun tempFp = do
   where proc True fp = removeDirectory fp >> createDirectory fp
         proc _ fp = createDirectory fp
 
-testRunFunction :: Test 
-testRunFunction = TestCase $ do 
+testRunFunction :: Test
+testRunFunction = templateTestRunFunction "Shaker.ReflexiviteTest"
+
+testRunFunctionWithEmptyModule :: Test
+testRunFunctionWithEmptyModule = templateTestRunFunction $ "" 
+
+templateTestRunFunction :: String -> Test 
+templateTestRunFunction mod = TestCase $ do 
   tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
-  let run = RunnableFunction "Shaker.ReflexiviteTest" $ "aFun " ++ show tempFp
+  let run = RunnableFunction [mod] $ "aFun " ++ show tempFp
   runReaderT (runFunction run) testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
+
 
 

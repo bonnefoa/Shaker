@@ -8,6 +8,7 @@ import Shaker.TestTH
 import Test.QuickCheck
 import Shaker.Cabal.CabalInfoTest
 import Shaker.Action.CompileTest
+import Shaker.Action.QuickcheckTest
 import Shaker.CliTest
 import Shaker.ListenerTest
 import Shaker.ParserTest

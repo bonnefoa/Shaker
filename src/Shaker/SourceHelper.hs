@@ -71,6 +71,9 @@ getFileListenInfoForCompileInput cpIn =
 removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
 removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
 
+addTemplateHaskellOption :: CompileInput ->CompileInput
+addTemplateHaskellOption cpIn = cpIn {cfCommandLineFlags = "-XTemplateHaskell" : cfCommandLineFlags cpIn } 
+
 removeFileWithMain :: CompileInput -> CompileR CompileInput
 removeFileWithMain = removeFileWithPredicate cfHasMain
 
