@@ -47,14 +47,14 @@ runFunction (RunnableFunction mod fun) = do
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
-  fun <- lift $ runGhc (Just libdir) $ do
+  dynFun <- lift $ runGhc (Just libdir) $ do
          _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
          m <- findModule (mkModuleName mod) Nothing
          setContext [] [m]
          value <- compileExpr fun
-         do let value' = unsafeCoerce value :: IO ()
+         do let value' = unsafeCoerce value :: a
             return value'
-  lift fun
+  _ <- lift dynFun
   return () 
 
 -- | Collect module name and tests name for the given module
