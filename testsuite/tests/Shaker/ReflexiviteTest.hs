@@ -35,12 +35,12 @@ testRunFunction :: Test
 testRunFunction = templateTestRunFunction "Shaker.ReflexiviteTest"
 
 testRunFunctionWithEmptyModule :: Test
-testRunFunctionWithEmptyModule = templateTestRunFunction $ "" 
+testRunFunctionWithEmptyModule = templateTestRunFunction "" 
 
 templateTestRunFunction :: String -> Test 
-templateTestRunFunction mod = TestCase $ do 
+templateTestRunFunction singleMod = TestCase $ do 
   tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
-  let run = RunnableFunction [mod] $ "aFun " ++ show tempFp
+  let run = RunnableFunction [singleMod] $ "aFun " ++ show tempFp
   runReaderT (runFunction run) testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
 

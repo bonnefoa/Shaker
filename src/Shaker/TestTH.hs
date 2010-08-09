@@ -3,16 +3,15 @@ module Shaker.TestTH
 
 import Shaker.Reflexivite
 import Language.Haskell.TH
-import Control.Monad.Reader
 import Shaker.Cabal.CabalInfo
 
 thListProperties :: ExpQ 
 thListProperties = do
-  shIn <-runIO $ defaultCabalInput
+  shIn <-runIO defaultCabalInput
   listProperties shIn
 
 thListHunit :: ExpQ 
 thListHunit = do 
-  shIn <-runIO $ defaultCabalInput
+  shIn <-runIO defaultCabalInput
   listHunit shIn
 

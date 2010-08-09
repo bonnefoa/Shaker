@@ -10,8 +10,8 @@ import Language.Haskell.TH
 runQuickCheck :: Plugin
 runQuickCheck = do 
   modMap <- runReflexivite 
-  let filteredModMap = filter (\a ->  not . null $ cfPropName a) modMap
-  let modules = ["Test.QuickCheck","Prelude" ] ++ (map cfModuleName filteredModMap )
+  let filteredModMap = filter (not . null . cfPropName ) modMap
+  let modules = ["Test.QuickCheck","Prelude" ] ++ map cfModuleName filteredModMap 
   expression <- asks listProperties 
   resolvedExp <- lift $ runQ expression
   let function =  filter (/= '\n') $ pprint resolvedExp
