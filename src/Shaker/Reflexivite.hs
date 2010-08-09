@@ -15,6 +15,7 @@ import Shaker.SourceHelper
 import Unsafe.Coerce
 import Control.Monad.Reader
 import Control.Arrow
+import Language.Haskell.TH
 
 -- ^ Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
@@ -96,3 +97,33 @@ tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
  
+
+-- * Template haskell generator
+
+getQuickCheckProperty :: [ModuleMapping] -> [Exp]
+getQuickCheckProperty = concatMap getQuickCheckProperty'
+
+getQuickCheckProperty' :: ModuleMapping -> [Exp]
+getQuickCheckProperty' modMap = map getSingleQuickCheck $ cfPropName modMap
+
+getSingleQuickCheck :: String -> Exp
+getSingleQuickCheck propName = InfixE (Just printName) (VarE $ mkName ">>") (Just quickCall)
+  where quickCall = (AppE (VarE $ mkName "quickCheck" ) . VarE . mkName) propName
+        printName = AppE (VarE $ mkName "putStrLn") (LitE (StringL propName)) 
+
+getHunit :: [ModuleMapping] -> [Exp]
+getHunit = concatMap getHunit'
+
+getHunit' :: ModuleMapping -> [Exp]
+getHunit' modMap = map (VarE . mkName) $ cfHunitName modMap
+
+listProperties :: ShakerInput -> ExpQ
+listProperties shIn = do
+  modMaps <- runIO $ runReaderT runReflexivite shIn
+  return $ ListE $ getQuickCheckProperty modMaps
+
+listHunit :: ShakerInput -> ExpQ
+listHunit shIn = do 
+  modMaps <- runIO $ runReaderT runReflexivite shIn
+  return $ ListE $ getHunit modMaps
+
