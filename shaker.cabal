@@ -111,6 +111,7 @@ Executable shaker
                  regex-posix >= 0.94.1,
                  old-time >= 1.0.0
                  ,bytestring >= 0.9.1.5
+                 ,template-haskell >= 2.4.0.0
 
 flag test
   description: Build test program.
@@ -150,5 +151,6 @@ Executable test
                  ,bytestring >= 0.9.1.5
                  ,HUnit >= 1.2.2.1
                  ,QuickCheck >= 2.1.1.1
+                 ,template-haskell >= 2.4.0.0
   if !flag(test)
     buildable:     False
