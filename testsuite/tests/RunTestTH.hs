@@ -24,8 +24,9 @@ runAll = do
   return () 
 
 propLists :: [IO()]
-propLists = $(listProperties)
+propLists = $(thListProperties)
 
 testLists :: IO Counts
-testLists = runTestTT  $ TestList $(listHunit)
+testLists = runTestTT  $ TestList $(thListHunit)
+
 
