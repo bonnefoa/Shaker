@@ -8,6 +8,7 @@ import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Action.Standard
 import Shaker.Action.Execute
+import Shaker.Action.QuickCheck
 
 -- | The default plugin map contains mapping for compile, help and exit action 
 defaultPluginMap :: PluginMap
@@ -17,6 +18,7 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
                 (FullCompile,runFullCompile ),
                 (Help,runHelp),
                 (Execute,runExecute),
+                (QuickCheck,runQuickCheck),
                 (Clean,runClean),
                 (Quit,runExit)
               ]
@@ -28,7 +30,7 @@ defaultCommandMap = M.fromList list
             ("FullCompile",FullCompile),
             ("Help", Help),
             ("Execute", Execute),
---            ("QuickCheck",QuickCheck),
+            ("QuickCheck",QuickCheck),
             ("Clean",Clean),
             ("q",Quit),
             ("Quit",Quit)
