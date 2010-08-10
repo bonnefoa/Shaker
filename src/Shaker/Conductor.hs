@@ -43,22 +43,31 @@ listenManager fun = do
   lift $ action shIn 
   where action shIn = do
           -- Setup keyboard listener
+          killChannel <- newMVar [] 
           endToken <- newEmptyMVar 
           endProcess <- newMVar 42 :: IO ( MVar Int )
-          procCharListener <- forkIO $ getChar >>= putMVar endToken
+          forkIO (getChar >>= putMVar endToken) >>= addThreadIdToMVar killChannel
           -- Setup source listener
           listenState <- initialize (listenerInput shIn)
           -- Run the action
-          procId <-  forkIO $ forever $ threadExecutor listenState endProcess (runReaderT fun shIn)
+          forkIO (forever $ threadExecutor listenState endProcess killChannel (runReaderT fun shIn) ) >>= addThreadIdToMVar killChannel
           _ <- readMVar endToken 
-          mapM_ killThread  $  [procId,procCharListener] ++ threadIds listenState
+          cleanThreads killChannel listenState
   
+cleanThreads :: MVar [ThreadId] -> ListenState -> IO()
+cleanThreads chan lsState = do 
+  lstChan <- readMVar chan
+  mapM_ killThread $ lstChan ++ (threadIds lsState)
+
+addThreadIdToMVar :: MVar [ThreadId] -> ThreadId -> IO ()
+addThreadIdToMVar mvar thrId = modifyMVar_ mvar (\b -> return $ thrId:b) 
+
 -- | Execute the given action when the modified MVar is filled
-threadExecutor :: ListenState -> MVar Int -> IO() -> IO ThreadId
-threadExecutor listenState endProcess fun = do 
+threadExecutor :: ListenState -> MVar Int -> MVar [ThreadId] -> IO() -> IO ()
+threadExecutor listenState endProcess killChannel fun = do 
   _ <- takeMVar (modifiedFiles listenState)
   _ <- takeMVar endProcess
-  forkIO $ fun `C.finally` putMVar endProcess 42
+  forkIO (fun `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar killChannel
   
 -- | Execute Given Command in a new thread
 executeCommand :: Command -> Shaker IO()
