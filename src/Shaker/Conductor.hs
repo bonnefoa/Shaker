@@ -36,23 +36,40 @@ mainThread st@(InputState inputMv tokenMv) = do
        Command _ [Action Quit] -> return ()
        _ ->  mainThread st
 
+data ConductorThread = ConductorThread {
+  coKillChannel :: MVar [ThreadId]
+  ,coEndToken :: MVar Char
+  ,coEndProcess :: MVar Int
+  ,coListenState :: ListenState
+  ,coFun :: IO ()
+ }
+
 -- | Continuously execute the given action until a keyboard input is done
 listenManager :: Shaker IO() -> Shaker IO()
 listenManager fun = do
   shIn <- ask 
+  listenState <- lift $ initialize (listenerInput shIn)
+  conductorThread <- lift $ initializeConductorThread listenState (runReaderT fun shIn)
   lift $ action shIn 
   where action shIn = do
           -- Setup keyboard listener
+          listenState <- initialize (listenerInput shIn)
           killChannel <- newMVar [] 
           endToken <- newEmptyMVar 
           endProcess <- newMVar 42 :: IO ( MVar Int )
           forkIO (getChar >>= putMVar endToken) >>= addThreadIdToMVar killChannel
           -- Setup source listener
-          listenState <- initialize (listenerInput shIn)
           -- Run the action
           forkIO (forever $ threadExecutor listenState endProcess killChannel (runReaderT fun shIn) ) >>= addThreadIdToMVar killChannel
           _ <- readMVar endToken 
           cleanThreads killChannel listenState
+
+initializeConductorThread :: ListenState -> IO () -> IO ConductorThread 
+initializeConductorThread lstState fun = do
+   killChannel <- newMVar [] 
+   endToken <- newEmptyMVar 
+   endProcess <- newMVar 42 :: IO ( MVar Int )
+   return $ ConductorThread killChannel endToken endProcess lstState fun
   
 cleanThreads :: MVar [ThreadId] -> ListenState -> IO()
 cleanThreads chan lsState = do 
