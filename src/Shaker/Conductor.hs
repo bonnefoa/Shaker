@@ -14,6 +14,7 @@ import Shaker.Cli
 import qualified Data.Map as M
 import Control.Monad.Reader
 import Data.Maybe
+import qualified Control.Exception as C
  
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
@@ -43,18 +44,22 @@ listenManager fun = do
   where action shIn = do
           -- Setup keyboard listener
           endToken <- newEmptyMVar 
+          endProcess <- newMVar 42 :: IO ( MVar Int )
           procCharListener <- forkIO $ getChar >>= putMVar endToken
           -- Setup source listener
           listenState <- initialize (listenerInput shIn)
           -- Run the action
-          procId <-  forkIO $ forever $ threadExecutor listenState (runReaderT fun shIn)
+          procId <-  forkIO $ forever $ threadExecutor listenState endProcess (runReaderT fun shIn)
           _ <- readMVar endToken 
           mapM_ killThread  $  [procId,procCharListener] ++ threadIds listenState
   
 -- | Execute the given action when the modified MVar is filled
-threadExecutor :: ListenState -> IO() -> IO ThreadId
-threadExecutor listenState fun = takeMVar (modifiedFiles listenState) >> forkIO fun 
-
+threadExecutor :: ListenState -> MVar Int -> IO() -> IO ThreadId
+threadExecutor listenState endProcess fun = do 
+  _ <- takeMVar (modifiedFiles listenState)
+  _ <- takeMVar endProcess
+  forkIO $ fun `C.finally` putMVar endProcess 42
+  
 -- | Execute Given Command in a new thread
 executeCommand :: Command -> Shaker IO()
 executeCommand (Command OneShot act) = executeAction act 
@@ -73,5 +78,4 @@ executeAction' (ActionWithArg act arg) = do
 executeAction' (Action act) = do
   plMap <- asks pluginMap 
   fromJust $ act `M.lookup` plMap
-
 
