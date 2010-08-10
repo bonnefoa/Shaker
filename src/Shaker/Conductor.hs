@@ -47,12 +47,10 @@ data ConductorData = ConductorData {
 -- | Continuously execute the given action until a keyboard input is done
 listenManager :: Shaker IO() -> Shaker IO()
 listenManager fun = do
-  shIn <- ask 
-  lift $ action shIn 
-  where action shIn = do
+  conductorData <- initializeConductorData fun 
+  lift $ action conductorData
+  where action conductorData = do
          -- Setup keyboard listener
-         listenState <- initialize (listenerInput shIn)
-         conductorData <- initializeConductorData listenState (runReaderT fun shIn)
          forkIO (getChar >>= putMVar (coEndToken conductorData) ) >>= addThreadIdToMVar conductorData
          -- Setup source listener
          -- Run the action
@@ -60,12 +58,14 @@ listenManager fun = do
          _ <- readMVar (coEndToken conductorData)
          cleanThreads conductorData
 
-initializeConductorData :: ListenState -> IO () -> IO ConductorData 
-initializeConductorData lstState fun = do
-   killChannel <- newMVar [] 
-   endToken <- newEmptyMVar 
-   endProcess <- newMVar 42 :: IO ( MVar Int )
-   return $ ConductorData killChannel endToken endProcess lstState fun
+initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
+initializeConductorData fun = do
+  shIn <- ask
+  lstState <- initializeListener 
+  killChannel <- lift $ newMVar [] 
+  endToken <- lift $ newEmptyMVar 
+  endProcess <- lift $ ( newMVar 42 :: IO ( MVar Int ) )
+  return $ ConductorData killChannel endToken endProcess lstState (runReaderT fun shIn)
   
 cleanThreads :: ConductorData -> IO()
 cleanThreads (ConductorData chan _ _ lsState _) = do 
@@ -77,7 +77,7 @@ addThreadIdToMVar conductorData thrId = modifyMVar_ (coKillChannel conductorData
 
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ConductorData -> IO ()
-threadExecutor cdtData@(ConductorData killChannel _ endProcess listenState fun) = do 
+threadExecutor cdtData@(ConductorData _ _ endProcess listenState fun) = do 
   _ <- takeMVar (modifiedFiles listenState)
   _ <- takeMVar endProcess
   forkIO (fun `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData

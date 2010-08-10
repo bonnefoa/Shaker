@@ -1,6 +1,6 @@
 module Shaker.Listener(
   listen
-  ,initialize
+  ,initializeListener
   ,schedule
   ,updateFileStat
   ,ListenState(ListenState,threadIds,modifiedFiles,currentFiles)
@@ -8,6 +8,7 @@ module Shaker.Listener(
 where
 
 import Control.Monad
+import Control.Monad.Reader
 import Control.Concurrent.MVar
 import Control.Concurrent
 import Shaker.Type
@@ -26,6 +27,11 @@ data ListenState = ListenState {
   ,modifiedFiles :: ModifiedFiles -- ^ Differences between last and before last check
   ,threadIds :: [ThreadId] -- ^ List of all forks id initialized
 }
+
+initializeListener :: Shaker IO ListenState
+initializeListener =do
+  lstInput <- asks listenerInput 
+  lift $ initialize lstInput
 
 -- | initialize the mvar and launch forks
 initialize :: ListenerInput -> IO ListenState
