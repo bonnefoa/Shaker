@@ -4,6 +4,7 @@ module Shaker.PluginConfig
 
 import qualified Data.Map as M (fromList)
 import Shaker.Type
+import Shaker.Action.HUnit
 import Shaker.Action.Compile
 import Shaker.Action.Clean
 import Shaker.Action.Standard
@@ -19,6 +20,7 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
                 (Help,runHelp),
                 (Execute,runExecute),
                 (QuickCheck,runQuickCheck),
+                (HUnit,runHUnit),
                 (Clean,runClean),
                 (Quit,runExit)
               ]
@@ -31,6 +33,7 @@ defaultCommandMap = M.fromList list
             ("Help", Help),
             ("Execute", Execute),
             ("QuickCheck",QuickCheck),
+            ("HUnit",HUnit),
             ("Clean",Clean),
             ("q",Quit),
             ("Quit",Quit)
