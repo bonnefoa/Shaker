@@ -58,7 +58,7 @@ updateFileStat :: CurrentFiles -> ModifiedFiles -> [FileInfo] -> [FileInfo] -> I
 updateFileStat _ _ _ [] = return ()
 updateFileStat mC mM curFiles curMod = do
   _ <- swapMVar mC curFiles 
-  putMVar mM curMod 
+  _ <- swapMVar mM curMod 
   return()  
 
 
