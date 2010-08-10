@@ -134,7 +134,6 @@ Executable test
     Shaker.ListenerTest
     Shaker.ReflexiviteTest
     Shaker.ConductorTest
-    Shaker.QuickCheckTest
   build-depends: base >= 4.1,
                  Cabal >= 1.8.0.2,
                  containers >= 0.3,
