@@ -52,9 +52,8 @@ listenManager fun = do
   where action conductorData = do
          -- Setup keyboard listener
          forkIO (getChar >>= putMVar (coEndToken conductorData) ) >>= addThreadIdToMVar conductorData
-         -- Setup source listener
          -- Run the action
-         forkIO (forever $ threadExecutor conductorData ) >>= addThreadIdToMVar conductorData
+         forkIO (forever $ threadExecutor conductorData) >>= addThreadIdToMVar conductorData
          _ <- readMVar (coEndToken conductorData)
          cleanThreads conductorData
 
@@ -63,14 +62,14 @@ initializeConductorData fun = do
   shIn <- ask
   lstState <- initializeListener 
   killChannel <- lift $ newMVar [] 
-  endToken <- lift $ newEmptyMVar 
-  endProcess <- lift $ ( newMVar 42 :: IO ( MVar Int ) )
+  endToken <- lift newEmptyMVar 
+  endProcess <- lift ( newMVar 42 :: IO ( MVar Int ) )
   return $ ConductorData killChannel endToken endProcess lstState (runReaderT fun shIn)
   
 cleanThreads :: ConductorData -> IO()
 cleanThreads (ConductorData chan _ _ lsState _) = do 
   lstChan <- readMVar chan
-  mapM_ killThread $ lstChan ++ (threadIds lsState)
+  mapM_ killThread $ lstChan ++ threadIds lsState
 
 addThreadIdToMVar :: ConductorData -> ThreadId -> IO ()
 addThreadIdToMVar conductorData thrId = modifyMVar_ (coKillChannel conductorData) (\b -> return $ thrId:b) 
