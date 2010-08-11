@@ -7,7 +7,6 @@ import Shaker.Type
 import Shaker.Action.Test
 import Shaker.Action.Compile
 import Shaker.Action.Standard
-import Shaker.Action.Execute
 
 -- | The default plugin map contains mapping for compile, help and exit action 
 defaultPluginMap :: PluginMap
