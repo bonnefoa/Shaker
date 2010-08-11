@@ -4,12 +4,10 @@ module Shaker.PluginConfig
 
 import qualified Data.Map as M (fromList)
 import Shaker.Type
-import Shaker.Action.HUnit
+import Shaker.Action.Test
 import Shaker.Action.Compile
-import Shaker.Action.Clean
 import Shaker.Action.Standard
 import Shaker.Action.Execute
-import Shaker.Action.QuickCheck
 
 -- | The default plugin map contains mapping for compile, help and exit action 
 defaultPluginMap :: PluginMap

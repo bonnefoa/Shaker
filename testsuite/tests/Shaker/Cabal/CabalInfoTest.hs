@@ -4,7 +4,7 @@ module Shaker.Cabal.CabalInfoTest
 import Control.Monad.Reader
 import System.Directory
 import Shaker.Action.Compile
-import Shaker.Action.Clean
+import Shaker.Action.Standard
 import Shaker.Type
 import Shaker.CommonTest
 import Test.HUnit
