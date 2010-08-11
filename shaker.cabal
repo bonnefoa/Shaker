@@ -43,8 +43,6 @@ description:
   .
   [@Clean@] Clean the directory containing .o and .hi files.
   .
-  [@Execute@] Execute the given haskell expression.
-  .
   [@QuickCheck@] Launch all QuickCheck properties of the project.
   .
   [@HUnit@] Launch all HUnit tests of the project.
@@ -60,6 +58,8 @@ description:
   [@% ~Compile@] Switch to continuous mode and will compile the project when sources are modified.
   .
   [@% ~Clean Compile@] Switch to continuous mode and will clean and compile the project when sources are modified.
+  .
+  [@% ~Execute "RunTestTH>main"@] Switch to continuous mode and will clean and compile the project when sources are modified.
 extra-source-files: README TODO testsuite/tests/resources/invalidMain/dist/setup-config
     testsuite/tests/resources/invalidMain/src/Main.hs
     testsuite/tests/resources/invalidMain/tests/Dummy.hs
