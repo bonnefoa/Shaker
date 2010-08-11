@@ -32,17 +32,15 @@ aFun tempFp = do
         proc _ fp = createDirectory fp
 
 testRunFunction :: Test
-testRunFunction = templateTestRunFunction "Shaker.ReflexiviteTest"
+testRunFunction = templateTestRunFunction ["Shaker.ReflexiviteTest"]
 
 testRunFunctionWithEmptyModule :: Test
-testRunFunctionWithEmptyModule = templateTestRunFunction "" 
+testRunFunctionWithEmptyModule = templateTestRunFunction [] 
 
-templateTestRunFunction :: String -> Test 
-templateTestRunFunction singleMod = TestCase $ do 
+templateTestRunFunction :: [String] -> Test 
+templateTestRunFunction modules= TestCase $ do 
   tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
-  let run = RunnableFunction [singleMod] $ "aFun " ++ show tempFp
+  let run = RunnableFunction modules $ "aFun " ++ show tempFp
   runReaderT (runFunction run) testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
-
-
 

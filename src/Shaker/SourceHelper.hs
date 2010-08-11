@@ -1,3 +1,4 @@
+-- | Utilities function for compilation and haskell file management
 module Shaker.SourceHelper(
   mergeCompileInputsSources
   ,constructCompileFileList
