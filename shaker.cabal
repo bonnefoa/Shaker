@@ -43,6 +43,12 @@ description:
   .
   [@Clean@] Clean the directory containing .o and .hi files.
   .
+  [@Execute@] Execute the given haskell expression.
+  .
+  [@QuickCheck@] Launch all QuickCheck properties of the project.
+  .
+  [@HUnit@] Launch all HUnit tests of the project.
+  .
   [@Quit@] Exit the application.
   . 
   /Examples/
@@ -75,15 +81,56 @@ source-repository this
   location: git://github.com/bonnefoa/Shaker.git 
   tag:      0.3
 
+Library 
+  ghc-options: -Wall -fno-warn-orphans 
+  hs-source-dirs:  src, testsuite/tests 
+  exposed-modules:
+    Shaker.Parser
+    Shaker.Action.Clean
+    Shaker.Action.Standard
+    Shaker.Action.QuickCheck
+    Shaker.Action.HUnit
+    Shaker.Action.Execute
+    Shaker.Action.Compile
+    Shaker.Conductor
+    Shaker.Config
+    Shaker.TestTH
+    Shaker.PluginConfig
+    Shaker.Reflexivite
+    Shaker.Regex
+    Shaker.Cli
+    Shaker.Io
+    Shaker.SourceHelper
+    Shaker.Cabal.CabalInfo
+    Shaker.Type
+    Shaker.Listener
+  build-depends: base >= 4.1,
+                 Cabal >= 1.8.0.2,
+                 containers >= 0.3,
+                 haskeline >= 0.6.2.2 
+                 ,directory >= 1.0.1.0,
+                 filepath >= 1.1,
+                 ghc >= 6,
+                 ghc-paths >= 0.1,
+                 haskell98 >= 1.0,
+                 mtl >= 1.0,
+                 parsec >= 3.0,
+                 regex-posix >= 0.94.1,
+                 old-time >= 1.0.0
+                 ,bytestring >= 0.9.1.5
+                 ,HUnit >= 1.2.2.1
+                 ,QuickCheck >= 2.1.1.1
+                 ,template-haskell >= 2.4.0.0
+
 Executable shaker
   Main-Is: Shaker.hs
   ghc-options: -Wall -fno-warn-orphans 
   hs-source-dirs: src 
   other-modules: 
     Shaker.Parser
-    Shaker.Action.Clean
     Shaker.Action.Standard
-    Shaker.Action.QuickCheck
+    Shaker.Action.Test
+    Shaker.Action.Execute
     Shaker.Action.Compile
     Shaker.Conductor
     Shaker.Config
@@ -130,6 +177,7 @@ Executable test
     Shaker.CliTest
     Shaker.CommonTest
     Shaker.ParserTest
+    Shaker.SourceHelperTest
     Shaker.Cabal.CabalInfoTest
     Shaker.ListenerTest
     Shaker.ReflexiviteTest
