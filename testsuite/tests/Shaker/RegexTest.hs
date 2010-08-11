@@ -16,9 +16,3 @@ prop_filterListPartial list = length list >= length filtered
 prop_includeAll :: [String] -> Bool
 prop_includeAll list = processListWithRegexp list [] [".*"] == nub list
 
-prop_getIncludedAll_all :: [String] -> Bool
-prop_getIncludedAll_all list = getIncluded list [".*"] == list
-
-prop_getIncludedAll_none :: [String] -> Bool
-prop_getIncludedAll_none list = getIncluded list [] == []
-
