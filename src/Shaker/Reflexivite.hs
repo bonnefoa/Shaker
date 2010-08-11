@@ -3,6 +3,7 @@ module Shaker.Reflexivite(
   ,RunnableFunction(..)
   ,runReflexivite
   ,runFunction
+  -- * Template haskell generator
   ,listHunit
   ,listProperties
 )
@@ -24,7 +25,7 @@ import Control.Monad.Reader
 import Control.Arrow
 import Language.Haskell.TH
 
--- ^ Mapping between module name (to import) and test to execute
+-- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
   cfModuleName :: String -- ^ Complete name of the module 
   ,cfHunitName :: [String] -- ^ Hunit test function names
@@ -105,8 +106,6 @@ tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
  
 
--- * Template haskell generator
-
 getQuickCheckProperty :: [ModuleMapping] -> [Exp]
 getQuickCheckProperty = concatMap getQuickCheckProperty'
 
@@ -124,11 +123,15 @@ getHunit = concatMap getHunit'
 getHunit' :: ModuleMapping -> [Exp]
 getHunit' modMap = map (VarE . mkName) $ cfHunitName modMap
 
+-- | List the quickeck properties of the project.
+-- see "Shaker.TestTH"
 listProperties :: ShakerInput -> ExpQ
 listProperties shIn = do
   modMaps <- runIO $ runReaderT runReflexivite shIn
   return $ ListE $ getQuickCheckProperty modMaps
 
+-- | List all test case of the project.
+-- see "Shaker.TestTH"
 listHunit :: ShakerInput -> ExpQ
 listHunit shIn = do 
   modMaps <- runIO $ runReaderT runReflexivite shIn

@@ -1,12 +1,15 @@
 -- | Utilities function for compilation and haskell file management
 module Shaker.SourceHelper(
-  mergeCompileInputsSources
+  -- * Compile input management
+  CompileFile(..)
+  ,mergeCompileInputsSources
   ,constructCompileFileList
+  -- * Target files filtering
   ,setAllHsFilesAsTargets
   ,removeFileWithMain
-  ,ghcCompile
   ,removeFileWithTemplateHaskell
-  ,CompileFile(..)
+  -- * GHC Compile management
+  ,ghcCompile
 )
  where
 
@@ -24,7 +27,6 @@ data CompileFile = CompileFile {
   ,cfHasTH :: Bool
  } deriving Show
 
--- * Compile input management
 
 -- | Build the list of haskell source files located in 
 -- CompileInput source dirs
@@ -69,7 +71,6 @@ getFileListenInfoForCompileInput :: CompileInput -> [FileListenInfo]
 getFileListenInfoForCompileInput cpIn =
   map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns) (cfSourceDirs cpIn)
 
--- * Target files filtering
 
 removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
 removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
@@ -84,8 +85,9 @@ removeFileWithPredicate predicate cpIn = do
   return $ cpIn {cfTargetFiles =  targets \\ toRemove}
   where targets = cfTargetFiles cpIn
 
--- * GHC Compile management
 
+-- | Configure and load targets of compilation. 
+-- It is possible to exploit the compilation result after this step.
 ghcCompile :: GhcMonad m => CompileInput -> m SuccessFlag
 ghcCompile cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
      dflags <- getSessionDynFlags
