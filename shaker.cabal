@@ -164,7 +164,7 @@ flag test
 
 Executable test
   hs-source-dirs:  src, testsuite/tests 
-  main-is:         RunTest.hs
+  main-is:         RunTestTH.hs
   ghc-options: -Wall -fno-warn-orphans
   other-modules: 
     RunTestTH

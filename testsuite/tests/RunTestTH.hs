@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module RunTestTH
+module Main
  where
 
 import Test.HUnit
@@ -16,8 +16,8 @@ import Shaker.IoTest
 import Shaker.ReflexiviteTest
 import Shaker.SourceHelperTest
 
-runAll :: IO()
-runAll = do 
+main :: IO()
+main = do 
   mapM_ liftIO propLists
   _ <- testLists
   return () 
