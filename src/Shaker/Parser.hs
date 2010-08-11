@@ -1,3 +1,4 @@
+-- | Module responsible to parse a String into a Command
 module Shaker.Parser(
   parseCommand
 )

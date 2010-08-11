@@ -1,6 +1,8 @@
 -- | Allow to use cabal configuration (generated via the configure action of cabal).
 -- Source directories and compilation options will be reused by Shaker.
-module Shaker.Cabal.CabalInfo
+module Shaker.Cabal.CabalInfo(
+    defaultCabalInput
+  )
    where
 
 import Shaker.Type

@@ -1,3 +1,5 @@
+-- | Manage all file operations like listing files with includes and exclude patterns
+-- and file filtering
 module Shaker.Io(
   listModifiedAndCreatedFiles
   ,getCurrentFpCl
@@ -6,7 +8,6 @@ module Shaker.Io(
   ,recurseListFiles 
   ,FileInfo(FileInfo)
   ,FileListenInfo(..)
-  ,isFileContaining
   ,isFileContainingMain
   ,isFileContainingTH
   ,defaultHaskellPatterns

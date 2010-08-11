@@ -1,4 +1,12 @@
-module Shaker.SourceHelper
+module Shaker.SourceHelper(
+  mergeCompileInputsSources
+  ,constructCompileFileList
+  ,setAllHsFilesAsTargets
+  ,removeFileWithMain
+  ,ghcCompile
+  ,removeFileWithTemplateHaskell
+  ,CompileFile(..)
+)
  where
 
 import GHC
@@ -39,12 +47,6 @@ mergeCompileInputsSources cplInps@(cpIn:_) = do
   let srcDirs = nub $ concatMap cfSourceDirs cplInps
   cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"  } 
 
--- | Fill the target files to all files in listenerInput if empty
-fillTargetIfEmpty ::CompileInput -> CompileR CompileInput
-fillTargetIfEmpty cpIn = if null (cfTargetFiles cpIn) 
-     then setAllHsFilesAsTargets cpIn
-     else return cpIn
-
 -- | Configure the CompileInput with all haskell files configured as targets
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
 setAllHsFilesAsTargets cpIn = do
@@ -70,9 +72,6 @@ getFileListenInfoForCompileInput cpIn =
 
 removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
 removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
-
-addTemplateHaskellOption :: CompileInput ->CompileInput
-addTemplateHaskellOption cpIn = cpIn {cfCommandLineFlags = "-XTemplateHaskell" : cfCommandLineFlags cpIn } 
 
 removeFileWithMain :: CompileInput -> CompileR CompileInput
 removeFileWithMain = removeFileWithPredicate cfHasMain

@@ -1,3 +1,5 @@
+-- | Manage file listener operation for continuous mode.
+-- All communication are made via MVars
 module Shaker.Listener(
   listen
   ,initializeListener

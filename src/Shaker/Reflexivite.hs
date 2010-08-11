@@ -1,4 +1,11 @@
-module Shaker.Reflexivite
+module Shaker.Reflexivite(
+  ModuleMapping(..)
+  ,RunnableFunction(..)
+  ,runReflexivite
+  ,runFunction
+  ,listHunit
+  ,listProperties
+)
  where
 
 import OccName (occNameString)

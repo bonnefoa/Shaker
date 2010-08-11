@@ -1,3 +1,4 @@
+-- | Aggregate all types and data used through shaker
 module Shaker.Type
  where
 
@@ -6,7 +7,12 @@ import qualified Data.Map as M
 import Control.Monad.Reader
 import System.Time(ClockTime)
 
+-- | Environnement containing the project configuration.
+-- It is generated at startup and won't change
 type Shaker  = ReaderT ShakerInput 
+-- | Environnement for the project compilation
+-- This environnement can change depending on the compile 
+-- action called
 type CompileM = Reader CompileInput
 
 -- | Duration define the life span of an action
@@ -119,8 +125,10 @@ defaultListenerInput = ListenerInput {
     ,delay = 2000000
     }
 
+-- | Default haskell file pattern : *.hs
 defaultHaskellPatterns :: [String]
 defaultHaskellPatterns = [".*\\.hs$"]
 
+-- | Default exclude pattern : Setup.hs
 defaultExclude :: [String]
 defaultExclude =  [".*Setup\\.hs$"]
