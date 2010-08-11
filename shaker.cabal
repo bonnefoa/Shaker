@@ -86,10 +86,8 @@ Library
   hs-source-dirs:  src, testsuite/tests 
   exposed-modules:
     Shaker.Parser
-    Shaker.Action.Clean
     Shaker.Action.Standard
-    Shaker.Action.QuickCheck
-    Shaker.Action.HUnit
+    Shaker.Action.Test
     Shaker.Action.Execute
     Shaker.Action.Compile
     Shaker.Conductor
