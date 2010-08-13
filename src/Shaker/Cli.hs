@@ -49,7 +49,7 @@ processInput shIn (InputState inputMv tokenMv) = do
 myDefaultSettings :: MonadIO m => ShakerInput-> Settings m
 myDefaultSettings shIn = Settings {
   complete = completeAction shIn,
-  historyFile = Nothing,
+  historyFile = Just ".haskelineHistory",
   autoAddHistory = True
 }
 
