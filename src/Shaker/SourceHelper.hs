@@ -9,6 +9,7 @@ module Shaker.SourceHelper(
   ,removeFileWithMain
   ,removeFileWithTemplateHaskell
   -- * GHC Compile management
+  ,initializeGhc
   ,ghcCompile
 )
  where
@@ -89,12 +90,16 @@ removeFileWithPredicate predicate cpIn = do
 -- | Configure and load targets of compilation. 
 -- It is possible to exploit the compilation result after this step.
 ghcCompile :: GhcMonad m => CompileInput -> m SuccessFlag
-ghcCompile cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
+ghcCompile cpIn = do   
+     initializeGhc cpIn
+     load LoadAllTargets
+
+initializeGhc :: GhcMonad m => CompileInput -> m ()
+initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
      dflags <- getSessionDynFlags
      (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
      let chgdFlags = configureDynFlagsWithCompileInput cpIn newFlags
      _ <- setSessionDynFlags $ procFlags chgdFlags
      target <- mapM (`guessTarget` Nothing) targetFiles
      setTargets target
-     load LoadAllTargets
 
