@@ -50,6 +50,7 @@ data ShakerInput = ShakerInput {
   ,pluginMap :: PluginMap
   ,commandMap :: CommandMap
   ,argument :: Maybe String
+  ,modifiedFiled :: [FilePath]
 }
   
 -- | Configuration flags to pass to the ghc compiler
@@ -81,7 +82,10 @@ data FileListenInfo = FileListenInfo{
   deriving (Show,Eq)
 
 -- |Agregate a FilePath with its modification time
-data FileInfo = FileInfo FilePath ClockTime 
+data FileInfo = FileInfo {
+  fileInfoFilePath :: FilePath
+ ,fileInfoClockTime:: ClockTime 
+  }
   deriving (Show,Eq)
   
 -- | Represents the mapping beetween an action and the function to execute
