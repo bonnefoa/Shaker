@@ -3,6 +3,7 @@ module Shaker.Reflexivite(
   ,RunnableFunction(..)
   ,runReflexivite
   ,runFunction
+  ,collectChangedModules
   -- * Template haskell generator
   ,listHunit
   ,listProperties
@@ -16,6 +17,7 @@ import Data.List
 import Data.Maybe
 import GHC
 import GHC.Paths
+import Digraph
 import Outputable
 import Shaker.Type 
 import Shaker.Action.Compile
@@ -38,6 +40,17 @@ data RunnableFunction = RunnableFunction {
   ,cfFunctionName :: String -- The function name. Should have IO() as signature
 }
  deriving Show
+
+collectChangedModules :: Shaker IO [Module]
+collectChangedModules = do 
+  cpList <- asks compileInputs 
+  let cpIn = mergeCompileInputsSources cpList
+  cfFlList <- lift $ constructCompileFileList cpIn
+  lift $ runGhc (Just libdir) $ do 
+            _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
+            modSummaries <- getModuleGraph
+            return $ map (\(AcyclicSCC a) -> ms_mod a) (topSortModuleGraph False modSummaries Nothing)
+            -- mapM getModuleMapping modSummaries 
 
 -- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]
