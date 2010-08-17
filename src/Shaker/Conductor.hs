@@ -41,7 +41,7 @@ data ConductorData = ConductorData {
   ,coEndToken :: MVar Char
   ,coEndProcess :: MVar Int
   ,coListenState :: ListenState
-  ,coFun :: IO ()
+  ,coFun :: [FilePath] -> IO ()
  }
 
 -- | Continuously execute the given action until a keyboard input is done
@@ -64,7 +64,8 @@ initializeConductorData fun = do
   killChannel <- lift $ newMVar [] 
   endToken <- lift newEmptyMVar 
   endProcess <- lift ( newMVar 42 :: IO ( MVar Int ) )
-  return $ ConductorData killChannel endToken endProcess lstState (runReaderT fun shIn)
+  let theFun = \a -> runReaderT fun shIn
+  return $ ConductorData killChannel endToken endProcess lstState theFun
   
 cleanThreads :: ConductorData -> IO()
 cleanThreads (ConductorData chan _ _ lsState _) = do 
@@ -77,9 +78,9 @@ addThreadIdToMVar conductorData thrId = modifyMVar_ (coKillChannel conductorData
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ConductorData -> IO ()
 threadExecutor cdtData@(ConductorData _ _ endProcess listenState fun) = do 
-  _ <- takeMVar (modifiedFiles listenState)
+  modFiles <- takeMVar (modifiedFiles listenState)
   _ <- takeMVar endProcess
-  forkIO (fun `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData
+  forkIO ((fun (map fileInfoFilePath modFiles) ) `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData
   
 -- | Execute Given Command in a new thread
 executeCommand :: Command -> Shaker IO()
