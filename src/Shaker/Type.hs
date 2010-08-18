@@ -50,7 +50,7 @@ data ShakerInput = ShakerInput {
   ,pluginMap :: PluginMap
   ,commandMap :: CommandMap
   ,argument :: Maybe String
-  ,modifiedFiled :: [FilePath]
+  ,modifiedInfoFiles :: [FileInfo]
 }
   
 -- | Configuration flags to pass to the ghc compiler

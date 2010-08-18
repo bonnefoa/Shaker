@@ -5,7 +5,7 @@ module Shaker.Listener(
   ,initializeListener
   ,schedule
   ,updateFileStat
-  ,ListenState(ListenState,threadIds,modifiedFiles,currentFiles)
+  ,ListenState(..)
 )
 where
 
@@ -19,14 +19,14 @@ import Shaker.Io
 -- | MVar used to store currentFiles listed
 type CurrentFiles = MVar [FileInfo]
 -- | MVar used to store modifiedFiles since the last check
-type ModifiedFiles = MVar [FileInfo]
+type MvModifiedFiles = MVar [FileInfo]
 -- | MVar used to pass action to the directory scanner
 type Job = MVar [FileListenInfo]
 
 -- | Agregate all information of listener
 data ListenState = ListenState {
   currentFiles :: CurrentFiles  -- ^ Files found in the last check
-  ,modifiedFiles :: ModifiedFiles -- ^ Differences between last and before last check
+  ,mvModifiedFiles :: MvModifiedFiles -- ^ Differences between last and before last check
   ,threadIds :: [ThreadId] -- ^ List of all forks id initialized
 }
 
@@ -53,7 +53,7 @@ schedule lstInput mJ = do
   return ()
      
 -- | listen to the job box and process the job
-listen :: CurrentFiles -> ModifiedFiles -> Job -> IO ()
+listen :: CurrentFiles -> MvModifiedFiles -> Job -> IO ()
 listen mC mM mJ = do 
   job <- takeMVar mJ
   curFiles <- readMVar mC 
@@ -62,7 +62,7 @@ listen mC mM mJ = do
   return ()
 
 -- | Update the files status
-updateFileStat :: CurrentFiles -> ModifiedFiles -> [FileInfo] -> [FileInfo] -> IO ()
+updateFileStat :: CurrentFiles -> MvModifiedFiles -> [FileInfo] -> [FileInfo] -> IO ()
 updateFileStat _ _ _ [] = return ()
 updateFileStat mC mM curFiles curMod = do
   _ <- swapMVar mC curFiles 

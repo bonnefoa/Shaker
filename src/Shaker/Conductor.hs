@@ -78,7 +78,7 @@ addThreadIdToMVar conductorData thrId = modifyMVar_ (coKillChannel conductorData
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ConductorData -> IO ()
 threadExecutor cdtData@(ConductorData _ _ endProcess listenState fun) = do 
-  modFiles <- takeMVar (modifiedFiles listenState)
+  modFiles <- takeMVar (mvModifiedFiles listenState)
   _ <- takeMVar endProcess
   forkIO ((fun (map fileInfoFilePath modFiles) ) `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData
   

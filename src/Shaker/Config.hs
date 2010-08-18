@@ -14,6 +14,7 @@ defaultInput = ShakerInput {
   pluginMap = defaultPluginMap,
   commandMap = defaultCommandMap
   ,argument = Nothing
+  ,modifiedInfoFiles = []
   }
 
 defaultInputState :: IO InputState
