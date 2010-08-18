@@ -19,11 +19,13 @@ import GHC
 import GHC.Paths
 import Digraph
 import Outputable
+import MkIface 
 import Shaker.Type 
 import Shaker.Action.Compile
 import Shaker.SourceHelper
 import Unsafe.Coerce
-import Control.Monad.Reader
+import MonadUtils
+import Control.Monad.Reader(runReader,runReaderT,asks, lift, filterM)
 import Control.Arrow
 import Language.Haskell.TH
 
@@ -41,16 +43,33 @@ data RunnableFunction = RunnableFunction {
 }
  deriving Show
 
-collectChangedModules :: Shaker IO [Module]
+collectChangedModules :: Shaker IO ()
 collectChangedModules = do 
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
+  modInfoFiles <- asks modifiedInfoFiles
   lift $ runGhc (Just libdir) $ do 
-            _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
-            modSummaries <- getModuleGraph
-            return $ map (\(AcyclicSCC a) -> ms_mod a) (topSortModuleGraph False modSummaries Nothing)
+            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
+            modSummaries <- depanal [] False
+            -- liftIO $ putStrLn $ show modInfoFiles
+            toRecompile <- filterM (isModuleNeedCompilation (map fileInfoFilePath modInfoFiles) ) modSummaries
+            liftIO $ mapM (putStrLn . showPpr . ms_mod) toRecompile
+            return ()
             -- mapM getModuleMapping modSummaries 
+
+isModuleNeedCompilation :: (GhcMonad m) => [FilePath] -> ModSummary -> m Bool
+isModuleNeedCompilation modFiles ms = do
+    hsc_env <- getSession
+    (recom, _ ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
+    return recom 
+  where source_unchanged = checkUnchangedSources modFiles ms
+
+checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
+checkUnchangedSources modifiedFiles ms = check hsSource
+  where hsSource = (ml_hs_file . ms_location) ms
+        check Nothing = False
+        check (Just src) = src `elem` modifiedFiles
 
 -- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]
