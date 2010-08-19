@@ -58,8 +58,9 @@ testCheckUnchangedSources = TestCase $ do
   mss <- runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
             depanal [] False
-  putStrLn $  show $ map (ml_hs_file . ms_location) mss
---  putStrLn $  show $ map (showPpr) mss
-  False @? "False"
+  all (checkUnchangedSources  []) mss @? "checkUnchangedSources with no modified files should be true"
+  not (all (checkUnchangedSources  hsSrcs) mss) @? "checkUnchangedSources with all modified files should be false"
+  -- putStrLn $  show $ map (ml_hs_file . ms_location) mss
+  -- putStrLn $  show $ map (showPpr) mss
 
 

@@ -4,6 +4,7 @@ module Shaker.Reflexivite(
   ,runReflexivite
   ,runFunction
   ,collectChangedModules
+  ,checkUnchangedSources
   -- * Template haskell generator
   ,listHunit
   ,listProperties
@@ -69,7 +70,7 @@ isModuleNeedCompilation modFiles ms = do
 checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
 checkUnchangedSources modifiedFiles ms = check hsSource
   where hsSource = (ml_hs_file . ms_location) ms
-        check Nothing = True
+        check Nothing = False
         check (Just src) = not $ src `elem` modifiedFiles
 
 -- | Collect all non-main modules with their test function associated
