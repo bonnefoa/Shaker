@@ -1,6 +1,7 @@
 module Shaker.ReflexiviteTest
  where
 
+import Data.Maybe
 import Shaker.Reflexivite
 import Test.HUnit
 import GHC
@@ -9,7 +10,8 @@ import GHC.Paths
 import Data.List
 import Shaker.Type
 import Shaker.Io
-import Control.Monad.Reader
+import MonadUtils
+import Control.Monad.Reader(runReader,runReaderT )
 import Shaker.CommonTest
 import System.Directory
 import Shaker.SourceHelper
@@ -54,13 +56,28 @@ testCheckUnchangedSources :: Test
 testCheckUnchangedSources = TestCase $ do
   let cpIn = head . compileInputs $ testShakerInput
   cfFlList <- constructCompileFileList cpIn
-  hsSrcs <- recurseMultipleListFiles [FileListenInfo "." defaultExclude defaultHaskellPatterns]
   mss <- runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
             depanal [] False
+  let hsSrcs = map (fromJust . ml_hs_file . ms_location) mss
+      partialSrc = tail hsSrcs
+      mapOfModifiedFiles = filter (==False) (map (checkUnchangedSources partialSrc ) mss )   
   all (checkUnchangedSources  []) mss @? "checkUnchangedSources with no modified files should be true"
-  not (all (checkUnchangedSources  hsSrcs) mss) @? "checkUnchangedSources with all modified files should be false"
+  not (all (checkUnchangedSources  hsSrcs) mss ) @? "checkUnchangedSources with all modified files should be false"
+
+  let lengthModifiedFiles = length mapOfModifiedFiles 
+      lengthPartialSrc = length partialSrc 
+  lengthModifiedFiles == lengthPartialSrc @? "checkUnchangedSources should output only " ++ show lengthPartialSrc ++ " but got " ++ show lengthModifiedFiles
   -- putStrLn $  show $ map (ml_hs_file . ms_location) mss
   -- putStrLn $  show $ map (showPpr) mss
 
-
+testModuleNeedCompilation :: Test
+testModuleNeedCompilation = TestCase $ do 
+  let cpIn = head . compileInputs $ testShakerInput
+  cfFlList <- constructCompileFileList cpIn
+  runGhc (Just libdir) $ do 
+            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
+            mss <- depanal [] False
+            mapRecompNeeded <- mapM (isModuleNeedCompilation []) mss 
+            liftIO $ all (==False) mapRecompNeeded @? "There should be no modules to recompile"
+  

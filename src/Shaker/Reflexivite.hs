@@ -5,6 +5,7 @@ module Shaker.Reflexivite(
   ,runFunction
   ,collectChangedModules
   ,checkUnchangedSources
+  ,isModuleNeedCompilation
   -- * Template haskell generator
   ,listHunit
   ,listProperties
@@ -51,7 +52,7 @@ collectChangedModules = do
   modInfoFiles <- asks modifiedInfoFiles
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
   lift $ runGhc (Just libdir) $ do 
-            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
+            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
             modSummaries <- depanal [] False
             -- liftIO $ putStrLn $ show modInfoFiles
             toRecompile <- filterM (isModuleNeedCompilation modFilePaths) modSummaries
@@ -63,7 +64,8 @@ isModuleNeedCompilation :: (GhcMonad m) => [FilePath] -> ModSummary -> m Bool
 isModuleNeedCompilation modFiles ms = do
     hsc_env <- getSession
     (recom, _ ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
-    liftIO $ putStrLn $ "Res : "++ show recom
+    liftIO $ putStrLn $ "Module : " ++ (showPpr . moduleName . ms_mod) ms  ++ "\t ToRecompile : "++ show recom
+--    liftIO $ putStrLn $ "Hi files : " ++ (ml_hi_file . ms_location ) ms  ++ "\t ToRecompile : "++ show recom
     return recom 
   where source_unchanged = checkUnchangedSources modFiles ms
 
