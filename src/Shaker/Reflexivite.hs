@@ -17,7 +17,6 @@ import Data.List
 import Data.Maybe
 import GHC
 import GHC.Paths
-import Digraph
 import Outputable
 import MkIface 
 import Shaker.Type 
@@ -43,33 +42,35 @@ data RunnableFunction = RunnableFunction {
 }
  deriving Show
 
-collectChangedModules :: Shaker IO ()
+collectChangedModules :: Shaker IO [ModSummary]
 collectChangedModules = do 
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
   modInfoFiles <- asks modifiedInfoFiles
+  let modFilePaths = (map fileInfoFilePath modInfoFiles)
   lift $ runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
             modSummaries <- depanal [] False
             -- liftIO $ putStrLn $ show modInfoFiles
-            toRecompile <- filterM (isModuleNeedCompilation (map fileInfoFilePath modInfoFiles) ) modSummaries
-            liftIO $ mapM (putStrLn . showPpr . ms_mod) toRecompile
-            return ()
+            toRecompile <- filterM (isModuleNeedCompilation modFilePaths) modSummaries
+            _ <- liftIO $ mapM (putStrLn . showPpr . ms_mod) toRecompile
+            return toRecompile
             -- mapM getModuleMapping modSummaries 
 
 isModuleNeedCompilation :: (GhcMonad m) => [FilePath] -> ModSummary -> m Bool
 isModuleNeedCompilation modFiles ms = do
     hsc_env <- getSession
     (recom, _ ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
+    liftIO $ putStrLn $ "Res : "++ show recom
     return recom 
   where source_unchanged = checkUnchangedSources modFiles ms
 
 checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
 checkUnchangedSources modifiedFiles ms = check hsSource
   where hsSource = (ml_hs_file . ms_location) ms
-        check Nothing = False
-        check (Just src) = src `elem` modifiedFiles
+        check Nothing = True
+        check (Just src) = not $ src `elem` modifiedFiles
 
 -- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]

@@ -3,10 +3,16 @@ module Shaker.ReflexiviteTest
 
 import Shaker.Reflexivite
 import Test.HUnit
+import GHC
+import Outputable
+import GHC.Paths
 import Data.List
+import Shaker.Type
+import Shaker.Io
 import Control.Monad.Reader
 import Shaker.CommonTest
 import System.Directory
+import Shaker.SourceHelper
 
 testRunReflexivite ::Test
 testRunReflexivite = TestCase $ do
@@ -43,4 +49,17 @@ templateTestRunFunction modules= TestCase $ do
   let run = RunnableFunction modules $ "aFun " ++ show tempFp
   runReaderT (runFunction run) testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
+
+testCheckUnchangedSources :: Test
+testCheckUnchangedSources = TestCase $ do
+  let cpIn = head . compileInputs $ testShakerInput
+  cfFlList <- constructCompileFileList cpIn
+  hsSrcs <- recurseMultipleListFiles [FileListenInfo "." defaultExclude defaultHaskellPatterns]
+  mss <- runGhc (Just libdir) $ do 
+            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
+            depanal [] False
+  putStrLn $  show $ map (ml_hs_file . ms_location) mss
+--  putStrLn $  show $ map (showPpr) mss
+  False @? "False"
+
 
