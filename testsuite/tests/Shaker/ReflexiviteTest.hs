@@ -2,19 +2,18 @@ module Shaker.ReflexiviteTest
  where
 
 import Data.Maybe
-import Shaker.Reflexivite
 import Test.HUnit
 import GHC
-import Outputable
 import GHC.Paths
 import Data.List
-import Shaker.Type
-import Shaker.Io
-import MonadUtils
-import Control.Monad.Reader(runReader,runReaderT )
-import Shaker.CommonTest
+import HscTypes
+import Control.Monad.Reader(runReader,runReaderT)
 import System.Directory
 import Shaker.SourceHelper
+import Shaker.Reflexivite
+import Shaker.CommonTest
+import Shaker.Type
+import Digraph
 
 testRunReflexivite ::Test
 testRunReflexivite = TestCase $ do
@@ -68,8 +67,6 @@ testCheckUnchangedSources = TestCase $ do
   let lengthModifiedFiles = length mapOfModifiedFiles 
       lengthPartialSrc = length partialSrc 
   lengthModifiedFiles == lengthPartialSrc @? "checkUnchangedSources should output only " ++ show lengthPartialSrc ++ " but got " ++ show lengthModifiedFiles
-  -- putStrLn $  show $ map (ml_hs_file . ms_location) mss
-  -- putStrLn $  show $ map (showPpr) mss
 
 testModuleNeedCompilation :: Test
 testModuleNeedCompilation = TestCase $ do 
@@ -78,6 +75,9 @@ testModuleNeedCompilation = TestCase $ do
   runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
             mss <- depanal [] False
-            mapRecompNeeded <- mapM (isModuleNeedCompilation []) mss 
+            let sort_mss = topSortModuleGraph True mss Nothing
+            mapRecompNeeded <- mapM (isModuleNeedCompilation []) (flattenSCCs sort_mss)
             liftIO $ all (==False) mapRecompNeeded @? "There should be no modules to recompile"
+
   
+

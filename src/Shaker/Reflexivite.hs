@@ -16,19 +16,22 @@ import OccName (occNameString)
 import Name (nameOccName)
 import Var (varName)
 import Data.List
+import Digraph
 import Data.Maybe
+import LazyUniqFM
+import Module
 import GHC
 import GHC.Paths
 import Outputable
 import MkIface 
-import Shaker.Type 
-import Shaker.Action.Compile
-import Shaker.SourceHelper
 import Unsafe.Coerce
-import MonadUtils
+import HscTypes
 import Control.Monad.Reader(runReader,runReaderT,asks, lift, filterM)
 import Control.Arrow
 import Language.Haskell.TH
+import Shaker.Type 
+import Shaker.Action.Compile
+import Shaker.SourceHelper
 
 -- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
@@ -44,6 +47,8 @@ data RunnableFunction = RunnableFunction {
 }
  deriving Show
 
+-- | Analyze all haskell modules of the project and 
+-- output all module needing recompilation
 collectChangedModules :: Shaker IO [ModSummary]
 collectChangedModules = do 
   cpList <- asks compileInputs 
@@ -53,20 +58,28 @@ collectChangedModules = do
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
   lift $ runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-            modSummaries <- depanal [] False
-            -- liftIO $ putStrLn $ show modInfoFiles
-            toRecompile <- filterM (isModuleNeedCompilation modFilePaths) modSummaries
-            _ <- liftIO $ mapM (putStrLn . showPpr . ms_mod) toRecompile
-            return toRecompile
-            -- mapM getModuleMapping modSummaries 
+            mss <- depanal [] False
+            let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
+            filterM (isModuleNeedCompilation modFilePaths) sort_mss
 
-isModuleNeedCompilation :: (GhcMonad m) => [FilePath] -> ModSummary -> m Bool
+-- | Check of the module need to be recompile.
+-- Modify ghc session by adding the module iface in the homePackageTable
+isModuleNeedCompilation :: (GhcMonad m) => 
+  [FilePath] -- ^ List of modified files
+  -> ModSummary  -- ^ ModSummary to check
+  -> m Bool -- ^ Result : is the module need to be recompiled
 isModuleNeedCompilation modFiles ms = do
     hsc_env <- getSession
-    (recom, _ ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
-    liftIO $ putStrLn $ "Module : " ++ (showPpr . moduleName . ms_mod) ms  ++ "\t ToRecompile : "++ show recom
---    liftIO $ putStrLn $ "Hi files : " ++ (ml_hi_file . ms_location ) ms  ++ "\t ToRecompile : "++ show recom
-    return recom 
+    (recom, mb_md_iface ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
+    case mb_md_iface of
+        Just md_iface -> do 
+                let module_name = (moduleName . mi_module) md_iface 
+                    the_hpt = hsc_HPT hsc_env 
+                    home_mod_info = HomeModInfo {hm_iface = md_iface, hm_details = emptyModDetails, hm_linkable = Nothing }
+                    newHpt = addToUFM  the_hpt module_name home_mod_info
+                modifySession (\h -> h {hsc_HPT = newHpt} )
+                return recom 
+        _ -> return True
   where source_unchanged = checkUnchangedSources modFiles ms
 
 checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
