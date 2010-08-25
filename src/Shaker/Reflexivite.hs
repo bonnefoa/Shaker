@@ -9,6 +9,7 @@ module Shaker.Reflexivite(
   -- * Template haskell generator
   ,listHunit
   ,listProperties
+  ,listAllProperties
 )
  where
 
@@ -161,7 +162,6 @@ tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
  
-
 getQuickCheckProperty :: [ModuleMapping] -> [Exp]
 getQuickCheckProperty = concatMap getQuickCheckProperty'
 
@@ -179,12 +179,13 @@ getHunit = concatMap getHunit'
 getHunit' :: ModuleMapping -> [Exp]
 getHunit' modMap = map (VarE . mkName) $ cfHunitName modMap
 
+listProperties :: [ModuleMapping] -> ExpQ
+listProperties modMaps = return $ ListE $ getQuickCheckProperty modMaps
+
 -- | List the quickeck properties of the project.
 -- see "Shaker.TestTH"
-listProperties :: ShakerInput -> ExpQ
-listProperties shIn = do
-  modMaps <- runIO $ runReaderT collectAllModulesForTest shIn
-  return $ ListE $ getQuickCheckProperty modMaps
+listAllProperties :: ShakerInput -> ExpQ
+listAllProperties shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= listProperties
 
 -- | List all test case of the project.
 -- see "Shaker.TestTH"

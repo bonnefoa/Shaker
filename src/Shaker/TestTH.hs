@@ -14,7 +14,7 @@ import Shaker.Cabal.CabalInfo
 thListProperties :: ExpQ 
 thListProperties = do
   shIn <-runIO defaultCabalInput
-  listProperties shIn
+  listAllProperties shIn
 
 -- | Template for the list of hunit tests.
 -- Currently generate a list of type [Test] containing

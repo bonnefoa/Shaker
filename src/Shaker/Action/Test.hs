@@ -16,15 +16,16 @@ runIntelligentQuickCheck :: Plugin
 runIntelligentQuickCheck = collectChangedModulesForTest >>= runQuickCheck'
  
 runQuickCheck' :: [ModuleMapping] -> Plugin
-runQuickCheck' modMap = do
-  let filteredModMap = filter (not . null . cfPropName) modMap
-  let modules = ["Test.QuickCheck","Prelude" ] ++ map cfModuleName filteredModMap 
-  expression <- asks listProperties 
-  resolvedExp <- lift $ runQ expression
-  let function =  filter (/= '\n') $ pprint resolvedExp
-  lift $ putStrLn function
-  runFunction $ RunnableFunction modules ("sequence_ " ++ function ++ " >> return () ") 
-
+runQuickCheck' modMap  
+ | null filteredModMap = lift $ putStrLn "No tests to run"
+ | otherwise = do
+     resolvedExp <- lift $ runQ (listProperties filteredModMap)
+     let function =  filter (/= '\n') $ pprint resolvedExp
+     let fullFunction = "sequence_ " ++ function ++ " >> return () "
+     lift $ putStrLn fullFunction
+     runFunction $ RunnableFunction modules fullFunction  
+ where filteredModMap = filter (not . null . cfPropName) modMap
+       modules = ["Test.QuickCheck","Prelude" ] ++ map cfModuleName filteredModMap 
 
 -- | Discover all Hunit test in the project and execute them
 runHUnit :: Plugin
