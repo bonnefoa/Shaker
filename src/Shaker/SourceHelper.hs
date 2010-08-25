@@ -29,6 +29,8 @@ import LazyUniqFM
 import MkIface 
 import HscTypes
 
+import System.Directory
+
 type CompileR = Reader [CompileFile]
 
 data CompileFile = CompileFile {
@@ -123,9 +125,10 @@ isModuleNeedCompilation :: (GhcMonad m) =>
   -> m Bool -- ^ Result : is the module need to be recompiled
 isModuleNeedCompilation modFiles ms = do
     hsc_env <- getSession
+    canonical_modFiles <- liftIO $ mapM canonicalizePath modFiles
+    let source_unchanged = checkUnchangedSources canonical_modFiles ms
     (recom, mb_md_iface ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
-    let ga = (ml_hs_file . ms_location) ms
-    case mb_md_iface of
+    case mb_md_iface of 
         Just md_iface -> do 
                 let module_name = (moduleName . mi_module) md_iface 
                     the_hpt = hsc_HPT hsc_env 
@@ -134,7 +137,6 @@ isModuleNeedCompilation modFiles ms = do
                 modifySession (\h -> h {hsc_HPT = newHpt} )
                 return recom 
         _ -> return True
-  where source_unchanged = checkUnchangedSources modFiles ms
 
 checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
 checkUnchangedSources modifiedFiles ms = check hsSource
