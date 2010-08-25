@@ -26,6 +26,7 @@ import Outputable
 import OccName (occNameString)
 import Name (nameOccName)
 import Var (varName)
+
 -- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
   cfModuleName :: String -- ^ Complete name of the module 
