@@ -8,6 +8,7 @@ module Shaker.SourceHelper(
   ,setAllHsFilesAsTargets
   ,removeFileWithMain
   ,removeFileWithTemplateHaskell
+  ,fillCompileInputWithStandardTarget
   -- * GHC Compile management
   ,initializeGhc
   ,ghcCompile
@@ -97,6 +98,10 @@ removeFileWithPredicate predicate cpIn = do
   return $ cpIn {cfTargetFiles =  targets \\ toRemove}
   where targets = cfTargetFiles cpIn
 
+-- | Fill compile input with every haskell files in the project except those
+-- containing main and template haskell
+fillCompileInputWithStandardTarget :: CompileInput -> CompileR CompileInput 
+fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell
 
 -- | Configure and load targets of compilation. 
 -- It is possible to exploit the compilation result after this step.

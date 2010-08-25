@@ -5,7 +5,6 @@ import Test.HUnit
 import Shaker.SourceHelper
 import Shaker.Type
 import Shaker.CommonTest
-import Data.List
 import Control.Monad.Reader(runReader,runReaderT)
 
 import GHC
@@ -31,7 +30,7 @@ testConstructConductorCompileFileList = TestCase $ do
 testCompileInputConstruction :: Test
 testCompileInputConstruction = TestCase $ do
   list <- constructCompileFileList defaultCompileInput 
-  let newCpIn = runReader (setAllHsFilesAsTargets defaultCompileInput >>= removeFileWithMain >>= removeFileWithTemplateHaskell ) list
+  let newCpIn = runReader (fillCompileInputWithStandardTarget defaultCompileInput) list 
   any (\a -> "Conductor.hs" `isSuffixOf` a) (cfTargetFiles newCpIn) @?"Should have conductor in list, got " ++ show (cfTargetFiles newCpIn)
 
 testCheckUnchangedSources :: Test
@@ -39,7 +38,7 @@ testCheckUnchangedSources = TestCase $ do
   let cpIn = head . compileInputs $ testShakerInput
   cfFlList <- constructCompileFileList cpIn
   mss <- runGhc (Just libdir) $ do 
-            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
+            _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
             depanal [] False
   let hsSrcs = map (fromJust . ml_hs_file . ms_location) mss
       partialSrc = tail hsSrcs
@@ -53,12 +52,26 @@ testCheckUnchangedSources = TestCase $ do
 
 testModuleNeedCompilation :: Test
 testModuleNeedCompilation = TestCase $ do 
+  (cpIn, cfFlList) <- compileProject
+  runGhc (Just libdir) $ do 
+      _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+      mss <- depanal [] False
+      let sort_mss = topSortModuleGraph True mss Nothing
+      mapRecompNeeded <- mapM (isModuleNeedCompilation []) (flattenSCCs sort_mss)
+      liftIO $ all (==False) mapRecompNeeded @? "There should be no modules to recompile"
+
+compileProject :: IO(CompileInput, [CompileFile])
+compileProject = do
   let cpIn = head . compileInputs $ testShakerInput
   cfFlList <- constructCompileFileList cpIn
-  runGhc (Just libdir) $ do 
-            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
-            mss <- depanal [] False
-            let sort_mss = topSortModuleGraph True mss Nothing
-            mapRecompNeeded <- mapM (isModuleNeedCompilation []) (flattenSCCs sort_mss)
-            liftIO $ all (==False) mapRecompNeeded @? "There should be no modules to recompile"
+  _ <- runGhc (Just libdir) $ 
+      ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+  return (cpIn, cfFlList)
+
+testCollectChangedModules :: Test
+testCollectChangedModules = TestCase $ do
+  _ <- compileProject
+  modules <- runReaderT collectChangedModules testShakerInput 
+  length modules == 0 @? "There should be no modules to recompile"
+
 
