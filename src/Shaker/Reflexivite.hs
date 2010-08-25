@@ -1,8 +1,10 @@
 module Shaker.Reflexivite(
   ModuleMapping(..)
   ,RunnableFunction(..)
-  ,runReflexivite
+  ,collectAllModulesForTest
+  ,collectAllModules
   ,collectChangedModules
+  ,collectChangedModulesForTest 
   ,runFunction
   -- * Template haskell generator
   ,listHunit
@@ -43,43 +45,73 @@ data RunnableFunction = RunnableFunction {
 }
  deriving Show
 
-collectAllModulesForTest :: Shaker IO [ModuleMapping]
-collectAllModulesForTest = do 
-  list_mss <- collectAllModules 
-  mapM getModuleMapping list_mss 
-
--- | Collect all non-main modules with their test function associated
-collectAllModules :: Shaker IO [ModSummary]
-collectAllModules = do
+initializeFilesForCompilation :: Shaker IO (CompileInput, [CompileFile] )
+initializeFilesForCompilation = do
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
+  return (cpIn, cfFlList)
+
+-- | Collect all non-main modules with their test function associated
+collectAllModulesForTest :: Shaker IO [ModuleMapping]
+collectAllModulesForTest = do 
+  (cpIn, cfFlList) <- initializeFilesForCompilation 
   lift $ runGhc (Just libdir) $ do 
-         _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-         getModuleGraph
-         
+        let processed_cpIn = runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+        _ <- ghcCompile processed_cpIn
+        collectAllModulesForTest' processed_cpIn 
+
+-- | Collect all non-main modules 
+collectAllModules :: Shaker IO [ModSummary]
+collectAllModules = do
+  (cpIn, cfFlList) <- initializeFilesForCompilation 
+  lift $ runGhc (Just libdir) $ do
+        _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+        collectAllModules'
+
 -- | Analyze all haskell modules of the project and 
 -- output all module needing recompilation
 collectChangedModules :: Shaker IO [ModSummary]
 collectChangedModules = do 
-  cpList <- asks compileInputs 
-  let cpIn = mergeCompileInputsSources cpList
-  cfFlList <- lift $ constructCompileFileList cpIn
+  (cpIn, cfFlList) <- initializeFilesForCompilation 
   modInfoFiles <- asks modifiedInfoFiles
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
   lift $ runGhc (Just libdir) $ do 
-            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-            mss <- depanal [] False
-            let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
-            filterM (isModuleNeedCompilation modFilePaths) sort_mss
+           _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
+           collectChangedModules' modFilePaths
 
+collectChangedModulesForTest :: Shaker IO [ModuleMapping]
+collectChangedModulesForTest = do 
+  (cpIn, cfFlList) <- initializeFilesForCompilation 
+  modInfoFiles <- asks modifiedInfoFiles
+  let modFilePaths = (map fileInfoFilePath modInfoFiles)
+  lift $ runGhc (Just libdir) $ do 
+           _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
+           collectChangedModulesForTest' modFilePaths
+  
+
+collectAllModules' :: GhcMonad m => m [ModSummary] 
+collectAllModules' = do 
+  mss <- depanal [] False
+  let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
+  return sort_mss
+         
+collectAllModulesForTest' :: GhcMonad m => CompileInput -> m [ModuleMapping] 
+collectAllModulesForTest' cpIn = do 
+  changedModules <- collectAllModules' 
+  ghcCompile cpIn 
+  mapM getModuleMapping changedModules 
+
+collectChangedModules' :: GhcMonad m => [FilePath] -> m [ModSummary] 
+collectChangedModules' modFilePaths = collectAllModules' >>= filterM (isModuleNeedCompilation modFilePaths) 
+
+collectChangedModulesForTest' :: GhcMonad m => [FilePath] -> m [ModuleMapping] 
+collectChangedModulesForTest' modFilePaths = collectChangedModules' modFilePaths >>= mapM getModuleMapping 
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
 runFunction (RunnableFunction funModuleName fun) = do
-  cpList <- asks compileInputs 
-  let cpIn = mergeCompileInputsSources cpList
-  cfFlList <- lift $ constructCompileFileList cpIn
+  (cpIn, cfFlList) <- initializeFilesForCompilation 
   dynFun <- lift $ runGhc (Just libdir) $ do
          _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
          configureContext funModuleName

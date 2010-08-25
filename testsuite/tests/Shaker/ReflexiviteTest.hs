@@ -13,7 +13,7 @@ import System.FilePath
 
 testRunReflexivite ::Test
 testRunReflexivite = TestCase $ do
-  modMapLst <- runReaderT runReflexivite testShakerInput
+  modMapLst <- runReaderT collectAllModulesForTest testShakerInput
   length modMapLst > 1 @? "Should have more than one module, got : "++ show (length modMapLst)
   any ( \(ModuleMapping nm _ _) -> nm == "Shaker.ReflexiviteTest") modMapLst @? 
     "Should have module Shaker.ReflexiviteTest, got " ++ show modMapLst
@@ -57,4 +57,19 @@ testCollectChangedModules = TestCase $ do
   removeFile target
   exp_one_modules <- runReaderT collectChangedModules testShakerInput 
   length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
+
+testCollectChangedModulesForTest :: Test
+testCollectChangedModulesForTest = TestCase $ do
+  (cpIn,_) <- compileProject
+  exp_no_modules <- runReaderT collectChangedModulesForTest testShakerInput 
+  length exp_no_modules == 0 @? "There should be no modules to recompile"
+  -- Remove a target file 
+  let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
+  removeFile target
+  exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput 
+  length exp_one_modules == 1 @? "One module should need compilation"
+  let module_mapping = head exp_one_modules 
+  cfModuleName module_mapping == "Shaker.SourceHelperTest" @? "module SourceHelperTest should need recompilation, got " ++ cfModuleName module_mapping
+  length (cfHunitName module_mapping) >2  @? "module SourceHelperTest should have hunit test" 
+  
 

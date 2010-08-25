@@ -23,10 +23,9 @@ import Data.List
 import Shaker.Io
 import Shaker.Type
 
-import Control.Monad.Reader(runReader,asks, ask, Reader, lift, filterM)
+import Control.Monad.Reader(ask, Reader)
 
 import LazyUniqFM
-import GHC.Paths
 import MkIface 
 import HscTypes
 
