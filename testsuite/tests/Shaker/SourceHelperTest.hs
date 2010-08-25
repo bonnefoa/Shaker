@@ -7,6 +7,8 @@ import Shaker.Type
 import Shaker.CommonTest
 import Control.Monad.Reader(runReader,runReaderT)
 
+import System.Directory
+import System.FilePath 
 import GHC
 import GHC.Paths
 import Data.List
@@ -70,8 +72,14 @@ compileProject = do
 
 testCollectChangedModules :: Test
 testCollectChangedModules = TestCase $ do
-  _ <- compileProject
-  modules <- runReaderT collectChangedModules testShakerInput 
-  length modules == 0 @? "There should be no modules to recompile"
+  (cpIn,_) <- compileProject
+  exp_no_modules <- runReaderT collectChangedModules testShakerInput 
+  length exp_no_modules == 0 @? "There should be no modules to recompile"
+  -- Remove a target file 
+  let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
+  removeFile target
 
+  exp_one_modules <- runReaderT collectChangedModules testShakerInput 
+  length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
+  
 
