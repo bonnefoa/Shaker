@@ -13,7 +13,6 @@ module Shaker.SourceHelper(
   ,initializeGhc
   ,ghcCompile
   -- * module change detection
-  ,collectChangedModules
   ,checkUnchangedSources
   ,isModuleNeedCompilation
 )
@@ -30,7 +29,6 @@ import LazyUniqFM
 import GHC.Paths
 import MkIface 
 import HscTypes
-import Digraph
 
 type CompileR = Reader [CompileFile]
 
@@ -84,7 +82,6 @@ getFileListenInfoForCompileInput :: CompileInput -> [FileListenInfo]
 getFileListenInfoForCompileInput cpIn =
   map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns) (cfSourceDirs cpIn)
 
-
 removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
 removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
 
@@ -118,23 +115,6 @@ initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do
      _ <- setSessionDynFlags $ procFlags chgdFlags
      target <- mapM (`guessTarget` Nothing) targetFiles
      setTargets target
-
-
-
--- | Analyze all haskell modules of the project and 
--- output all module needing recompilation
-collectChangedModules :: Shaker IO [ModSummary]
-collectChangedModules = do 
-  cpList <- asks compileInputs 
-  let cpIn = mergeCompileInputsSources cpList
-  cfFlList <- lift $ constructCompileFileList cpIn
-  modInfoFiles <- asks modifiedInfoFiles
-  let modFilePaths = (map fileInfoFilePath modInfoFiles)
-  lift $ runGhc (Just libdir) $ do 
-            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-            mss <- depanal [] False
-            let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
-            filterM (isModuleNeedCompilation modFilePaths) sort_mss
 
 -- | Check of the module need to be recompile.
 -- Modify ghc session by adding the module iface in the homePackageTable

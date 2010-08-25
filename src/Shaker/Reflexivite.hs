@@ -2,6 +2,7 @@ module Shaker.Reflexivite(
   ModuleMapping(..)
   ,RunnableFunction(..)
   ,runReflexivite
+  ,collectChangedModules
   ,runFunction
   -- * Template haskell generator
   ,listHunit
@@ -15,9 +16,10 @@ import Shaker.Type
 import Shaker.Action.Compile
 import Shaker.SourceHelper
 
-import Control.Monad.Reader(runReader,runReaderT,asks, Reader, lift)
+import Control.Monad.Reader(runReader,runReaderT,asks, Reader, lift, filterM)
 import Control.Arrow
 
+import Digraph
 import Language.Haskell.TH
 import GHC
 import GHC.Paths
@@ -41,17 +43,36 @@ data RunnableFunction = RunnableFunction {
 }
  deriving Show
 
+collectAllModulesForTest :: Shaker IO [ModuleMapping]
+collectAllModulesForTest = do 
+  list_mss <- collectAllModules 
+  mapM getModuleMapping list_mss 
 
 -- | Collect all non-main modules with their test function associated
-runReflexivite :: Shaker IO [ModuleMapping]
-runReflexivite = do
+collectAllModules :: Shaker IO [ModSummary]
+collectAllModules = do
   cpList <- asks compileInputs 
   let cpIn = mergeCompileInputsSources cpList
   cfFlList <- lift $ constructCompileFileList cpIn
   lift $ runGhc (Just libdir) $ do 
-            _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell) cfFlList
-            modSummaries <- getModuleGraph
-            mapM getModuleMapping modSummaries 
+         _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+         getModuleGraph
+         
+-- | Analyze all haskell modules of the project and 
+-- output all module needing recompilation
+collectChangedModules :: Shaker IO [ModSummary]
+collectChangedModules = do 
+  cpList <- asks compileInputs 
+  let cpIn = mergeCompileInputsSources cpList
+  cfFlList <- lift $ constructCompileFileList cpIn
+  modInfoFiles <- asks modifiedInfoFiles
+  let modFilePaths = (map fileInfoFilePath modInfoFiles)
+  lift $ runGhc (Just libdir) $ do 
+            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
+            mss <- depanal [] False
+            let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
+            filterM (isModuleNeedCompilation modFilePaths) sort_mss
+
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
@@ -130,13 +151,13 @@ getHunit' modMap = map (VarE . mkName) $ cfHunitName modMap
 -- see "Shaker.TestTH"
 listProperties :: ShakerInput -> ExpQ
 listProperties shIn = do
-  modMaps <- runIO $ runReaderT runReflexivite shIn
+  modMaps <- runIO $ runReaderT collectAllModulesForTest shIn
   return $ ListE $ getQuickCheckProperty modMaps
 
 -- | List all test case of the project.
 -- see "Shaker.TestTH"
 listHunit :: ShakerInput -> ExpQ
 listHunit shIn = do 
-  modMaps <- runIO $ runReaderT runReflexivite shIn
+  modMaps <- runIO $ runReaderT collectAllModulesForTest shIn
   return $ ListE $ getHunit modMaps
 

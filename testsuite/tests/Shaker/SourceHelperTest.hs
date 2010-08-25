@@ -5,10 +5,8 @@ import Test.HUnit
 import Shaker.SourceHelper
 import Shaker.Type
 import Shaker.CommonTest
-import Control.Monad.Reader(runReader,runReaderT)
+import Control.Monad.Reader(runReader)
 
-import System.Directory
-import System.FilePath 
 import GHC
 import GHC.Paths
 import Data.List
@@ -61,25 +59,4 @@ testModuleNeedCompilation = TestCase $ do
       let sort_mss = topSortModuleGraph True mss Nothing
       mapRecompNeeded <- mapM (isModuleNeedCompilation []) (flattenSCCs sort_mss)
       liftIO $ all (==False) mapRecompNeeded @? "There should be no modules to recompile"
-
-compileProject :: IO(CompileInput, [CompileFile])
-compileProject = do
-  let cpIn = head . compileInputs $ testShakerInput
-  cfFlList <- constructCompileFileList cpIn
-  _ <- runGhc (Just libdir) $ 
-      ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-  return (cpIn, cfFlList)
-
-testCollectChangedModules :: Test
-testCollectChangedModules = TestCase $ do
-  (cpIn,_) <- compileProject
-  exp_no_modules <- runReaderT collectChangedModules testShakerInput 
-  length exp_no_modules == 0 @? "There should be no modules to recompile"
-  -- Remove a target file 
-  let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
-  removeFile target
-
-  exp_one_modules <- runReaderT collectChangedModules testShakerInput 
-  length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
-  
 

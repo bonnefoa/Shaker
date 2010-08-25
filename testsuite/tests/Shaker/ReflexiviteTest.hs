@@ -4,9 +4,12 @@ module Shaker.ReflexiviteTest
 import Test.HUnit
 import Data.List
 import Control.Monad.Reader(runReaderT)
-import System.Directory
 import Shaker.Reflexivite
+import Shaker.Type
 import Shaker.CommonTest
+
+import System.Directory
+import System.FilePath 
 
 testRunReflexivite ::Test
 testRunReflexivite = TestCase $ do
@@ -44,4 +47,14 @@ templateTestRunFunction modules= TestCase $ do
   runReaderT (runFunction run) testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
   
+testCollectChangedModules :: Test
+testCollectChangedModules = TestCase $ do
+  (cpIn,_) <- compileProject
+  exp_no_modules <- runReaderT collectChangedModules testShakerInput 
+  length exp_no_modules == 0 @? "There should be no modules to recompile"
+  -- Remove a target file 
+  let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
+  removeFile target
+  exp_one_modules <- runReaderT collectChangedModules testShakerInput 
+  length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
 

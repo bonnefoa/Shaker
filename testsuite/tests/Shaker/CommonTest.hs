@@ -6,6 +6,12 @@ import Test.HUnit
 import Control.Exception
 import Shaker.Type
 import Shaker.Config
+import Shaker.SourceHelper
+
+import Control.Monad.Reader(runReader)
+
+import GHC
+import GHC.Paths
 
 runTestOnDirectory :: FilePath -> Assertion -> Assertion
 runTestOnDirectory fp fun = do
@@ -29,5 +35,13 @@ testShakerInput = defaultInput {
        cfCommandLineFlags = ["-package ghc"]
      }]
 }
+
+compileProject :: IO(CompileInput, [CompileFile])
+compileProject = do
+  let cpIn = head . compileInputs $ testShakerInput
+  cfFlList <- constructCompileFileList cpIn
+  _ <- runGhc (Just libdir) $ 
+      ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+  return (cpIn, cfFlList)
 
 
