@@ -10,7 +10,10 @@ import Language.Haskell.TH
 -- | Discover all quickcheck properties in the project 
 -- and execute them
 runQuickCheck :: Plugin
-runQuickCheck = runReflexivite >>= runQuickCheck'
+runQuickCheck = collectAllModulesForTest >>= runQuickCheck'
+
+runIntelligentQuickCheck :: Plugin
+runIntelligentQuickCheck = collectChangedModulesForTest >>= runQuickCheck'
  
 runQuickCheck' :: [ModuleMapping] -> Plugin
 runQuickCheck' modMap = do
@@ -22,15 +25,11 @@ runQuickCheck' modMap = do
   lift $ putStrLn function
   runFunction $ RunnableFunction modules ("sequence_ " ++ function ++ " >> return () ") 
 
-{-
-runIntelligentQuickCheck :: Plugin
-runIntelligentQuickCheck = do 
--}
 
 -- | Discover all Hunit test in the project and execute them
 runHUnit :: Plugin
 runHUnit = do 
-  modMap <- runReflexivite 
+  modMap <- collectAllModulesForTest
   let filteredModMap = filter (not . null . cfHunitName) modMap
   let modules = ["Test.HUnit","Prelude" ] ++ map cfModuleName filteredModMap 
   expression <- asks listHunit

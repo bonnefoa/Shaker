@@ -32,6 +32,7 @@ data ShakerAction =
 	Compile -- ^ Compile sources with ghc
 	| FullCompile -- ^ Compile all hs sources with ghc
 	| QuickCheck -- ^ Execute quickcheck properties
+	| IntelligentQuickCheck -- ^ Execute quickcheck properties only on necessary properties
 	| HUnit -- ^ Execute hunit tests
 	| Help -- ^ Display the help
         | Execute -- ^ Execute a command
