@@ -3,36 +3,29 @@ module Shaker.Reflexivite(
   ,RunnableFunction(..)
   ,runReflexivite
   ,runFunction
-  ,collectChangedModules
-  ,checkUnchangedSources
-  ,isModuleNeedCompilation
   -- * Template haskell generator
   ,listHunit
   ,listProperties
 )
  where
 
-import OccName (occNameString)
-import Name (nameOccName)
-import Var (varName)
 import Data.List
-import Digraph
 import Data.Maybe
-import LazyUniqFM
-import Module
-import GHC
-import GHC.Paths
-import Outputable
-import MkIface 
-import Unsafe.Coerce
-import HscTypes
-import Control.Monad.Reader(runReader,runReaderT,asks, lift, filterM)
-import Control.Arrow
-import Language.Haskell.TH
 import Shaker.Type 
 import Shaker.Action.Compile
 import Shaker.SourceHelper
 
+import Control.Monad.Reader(runReader,runReaderT,asks, Reader, lift)
+import Control.Arrow
+
+import Language.Haskell.TH
+import GHC
+import GHC.Paths
+import Unsafe.Coerce
+import Outputable
+import OccName (occNameString)
+import Name (nameOccName)
+import Var (varName)
 -- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
   cfModuleName :: String -- ^ Complete name of the module 
@@ -47,46 +40,6 @@ data RunnableFunction = RunnableFunction {
 }
  deriving Show
 
--- | Analyze all haskell modules of the project and 
--- output all module needing recompilation
-collectChangedModules :: Shaker IO [ModSummary]
-collectChangedModules = do 
-  cpList <- asks compileInputs 
-  let cpIn = mergeCompileInputsSources cpList
-  cfFlList <- lift $ constructCompileFileList cpIn
-  modInfoFiles <- asks modifiedInfoFiles
-  let modFilePaths = (map fileInfoFilePath modInfoFiles)
-  lift $ runGhc (Just libdir) $ do 
-            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-            mss <- depanal [] False
-            let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
-            filterM (isModuleNeedCompilation modFilePaths) sort_mss
-
--- | Check of the module need to be recompile.
--- Modify ghc session by adding the module iface in the homePackageTable
-isModuleNeedCompilation :: (GhcMonad m) => 
-  [FilePath] -- ^ List of modified files
-  -> ModSummary  -- ^ ModSummary to check
-  -> m Bool -- ^ Result : is the module need to be recompiled
-isModuleNeedCompilation modFiles ms = do
-    hsc_env <- getSession
-    (recom, mb_md_iface ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
-    case mb_md_iface of
-        Just md_iface -> do 
-                let module_name = (moduleName . mi_module) md_iface 
-                    the_hpt = hsc_HPT hsc_env 
-                    home_mod_info = HomeModInfo {hm_iface = md_iface, hm_details = emptyModDetails, hm_linkable = Nothing }
-                    newHpt = addToUFM  the_hpt module_name home_mod_info
-                modifySession (\h -> h {hsc_HPT = newHpt} )
-                return recom 
-        _ -> return True
-  where source_unchanged = checkUnchangedSources modFiles ms
-
-checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
-checkUnchangedSources modifiedFiles ms = check hsSource
-  where hsSource = (ml_hs_file . ms_location) ms
-        check Nothing = False
-        check (Just src) = not $ src `elem` modifiedFiles
 
 -- | Collect all non-main modules with their test function associated
 runReflexivite :: Shaker IO [ModuleMapping]

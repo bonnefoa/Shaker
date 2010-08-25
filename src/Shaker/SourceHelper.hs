@@ -11,6 +11,10 @@ module Shaker.SourceHelper(
   -- * GHC Compile management
   ,initializeGhc
   ,ghcCompile
+  -- * module change detection
+  ,collectChangedModules
+  ,checkUnchangedSources
+  ,isModuleNeedCompilation
 )
  where
 
@@ -18,7 +22,14 @@ import GHC
 import Data.List
 import Shaker.Io
 import Shaker.Type
-import Control.Monad.Reader
+
+import Control.Monad.Reader(runReader,asks, ask, Reader, lift, filterM)
+
+import LazyUniqFM
+import GHC.Paths
+import MkIface 
+import HscTypes
+import Digraph
 
 type CompileR = Reader [CompileFile]
 
@@ -102,4 +113,47 @@ initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do
      _ <- setSessionDynFlags $ procFlags chgdFlags
      target <- mapM (`guessTarget` Nothing) targetFiles
      setTargets target
+
+
+
+-- | Analyze all haskell modules of the project and 
+-- output all module needing recompilation
+collectChangedModules :: Shaker IO [ModSummary]
+collectChangedModules = do 
+  cpList <- asks compileInputs 
+  let cpIn = mergeCompileInputsSources cpList
+  cfFlList <- lift $ constructCompileFileList cpIn
+  modInfoFiles <- asks modifiedInfoFiles
+  let modFilePaths = (map fileInfoFilePath modInfoFiles)
+  lift $ runGhc (Just libdir) $ do 
+            _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
+            mss <- depanal [] False
+            let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
+            filterM (isModuleNeedCompilation modFilePaths) sort_mss
+
+-- | Check of the module need to be recompile.
+-- Modify ghc session by adding the module iface in the homePackageTable
+isModuleNeedCompilation :: (GhcMonad m) => 
+  [FilePath] -- ^ List of modified files
+  -> ModSummary  -- ^ ModSummary to check
+  -> m Bool -- ^ Result : is the module need to be recompiled
+isModuleNeedCompilation modFiles ms = do
+    hsc_env <- getSession
+    (recom, mb_md_iface ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
+    case mb_md_iface of
+        Just md_iface -> do 
+                let module_name = (moduleName . mi_module) md_iface 
+                    the_hpt = hsc_HPT hsc_env 
+                    home_mod_info = HomeModInfo {hm_iface = md_iface, hm_details = emptyModDetails, hm_linkable = Nothing }
+                    newHpt = addToUFM  the_hpt module_name home_mod_info
+                modifySession (\h -> h {hsc_HPT = newHpt} )
+                return recom 
+        _ -> return True
+  where source_unchanged = checkUnchangedSources modFiles ms
+
+checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
+checkUnchangedSources modifiedFiles ms = check hsSource
+  where hsSource = (ml_hs_file . ms_location) ms
+        check Nothing = False
+        check (Just src) = not $ src `elem` modifiedFiles
 
