@@ -124,6 +124,7 @@ isModuleNeedCompilation :: (GhcMonad m) =>
 isModuleNeedCompilation modFiles ms = do
     hsc_env <- getSession
     (recom, mb_md_iface ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
+    let ga = (ml_hs_file . ms_location) ms
     case mb_md_iface of
         Just md_iface -> do 
                 let module_name = (moduleName . mi_module) md_iface 
@@ -139,5 +140,5 @@ checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
 checkUnchangedSources modifiedFiles ms = check hsSource
   where hsSource = (ml_hs_file . ms_location) ms
         check Nothing = False
-        check (Just src) = not $ src `elem` modifiedFiles
+        check (Just src) = not $ src `elem` modifiedFiles 
 

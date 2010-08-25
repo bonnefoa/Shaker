@@ -14,6 +14,9 @@ import HscTypes
 import Digraph
 import Data.Maybe
 
+import System.FilePath 
+import System.Directory
+
 testConstructCompileFileList :: Test
 testConstructCompileFileList = TestCase $ runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do 
   let cpIn = initializeEmptyCompileInput {cfSourceDirs = ["src"]}
@@ -52,11 +55,15 @@ testCheckUnchangedSources = TestCase $ do
 
 testModuleNeedCompilation :: Test
 testModuleNeedCompilation = TestCase $ do 
-  (cpIn, cfFlList) <- compileProject
-  runGhc (Just libdir) $ do 
-      _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-      mss <- depanal [] False
-      let sort_mss = topSortModuleGraph True mss Nothing
-      mapRecompNeeded <- mapM (isModuleNeedCompilation []) (flattenSCCs sort_mss)
-      liftIO $ all (==False) mapRecompNeeded @? "There should be no modules to recompile"
+ (cpIn, cfFlList) <- compileProject
+ let targets = map (</> "Shaker" </> "SourceHelperTest.hs") (cfSourceDirs cpIn)
+ canon_target <- mapM canonicalizePath targets
+ runGhc (Just libdir) $ do 
+     _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+     mss <- depanal [] False
+     let sort_mss = topSortModuleGraph True mss Nothing
+     mapRecompNeeded <- mapM (isModuleNeedCompilation []) (flattenSCCs sort_mss)
+     liftIO $ all (==False) mapRecompNeeded @? "There should be no modules to recompile"
+     exp_one_mapRecompNeeded <- mapM (isModuleNeedCompilation canon_target) (flattenSCCs sort_mss)
+     liftIO $ any (==True) exp_one_mapRecompNeeded @? "There should be at least on module to recompile"
 
