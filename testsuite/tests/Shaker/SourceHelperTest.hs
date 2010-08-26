@@ -5,7 +5,7 @@ import Test.HUnit
 import Shaker.SourceHelper
 import Shaker.Type
 import Shaker.CommonTest
-import Control.Monad.Reader(runReader)
+import Control.Monad.Reader(runReader, filterM)
 
 import GHC
 import GHC.Paths
@@ -15,7 +15,6 @@ import Digraph
 import Data.Maybe
 
 import System.FilePath 
-import System.Directory
 
 testConstructCompileFileList :: Test
 testConstructCompileFileList = TestCase $ runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do 
@@ -38,20 +37,20 @@ testCompileInputConstruction = TestCase $ do
 
 testCheckUnchangedSources :: Test
 testCheckUnchangedSources = TestCase $ do
-  let cpIn = head . compileInputs $ testShakerInput
   cfFlList <- constructCompileFileList cpIn
   mss <- runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
             depanal [] False
   let hsSrcs = map (fromJust . ml_hs_file . ms_location) mss
-      partialSrc = tail hsSrcs
-      mapOfModifiedFiles = filter (==False) (map (checkUnchangedSources partialSrc ) mss )   
-  all (checkUnchangedSources  []) mss @? "checkUnchangedSources with no modified files should be true"
-  not (all (checkUnchangedSources  hsSrcs) mss ) @? "checkUnchangedSources with all modified files should be false"
-
-  let lengthModifiedFiles = length mapOfModifiedFiles 
-      lengthPartialSrc = length partialSrc 
-  lengthModifiedFiles == lengthPartialSrc @? "checkUnchangedSources should output only " ++ show lengthPartialSrc ++ " but got " ++ show lengthModifiedFiles
+  exp_all_true <- filterM (checkUnchangedSources  []) mss 
+  exp_all_false <- filterM (checkUnchangedSources hsSrcs) mss 
+  exp_one_true <- filterM ( checkUnchangedSources (tail hsSrcs) ) mss 
+  exp_one_false <- filterM ( checkUnchangedSources [(head hsSrcs)] ) mss 
+  length exp_all_true == length hsSrcs @? "checkUnchangedSources with no modified files should be true"
+  length exp_all_false == 0 @? "checkUnchangedSources with all modified files should be false, got " ++ (show $ map (moduleNameString . moduleName . ms_mod) exp_all_false)
+  length exp_one_true == 1 @? "partial checkUnchangedSources should have only one true"
+  length exp_one_false == length hsSrcs - 1 @? "partial checkUnchangedSources should have only one false"
+ where cpIn = head . compileInputs $ testShakerInput 
 
 testModuleNeedCompilation :: Test
 testModuleNeedCompilation = TestCase $ do 

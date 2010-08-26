@@ -110,6 +110,7 @@ ghcCompile cpIn = do
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
+     modifySession (\h -> h {hsc_HPT = emptyHomePackageTable} )
      dflags <- getSessionDynFlags
      (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
      let chgdFlags = configureDynFlagsWithCompileInput cpIn newFlags
@@ -125,8 +126,7 @@ isModuleNeedCompilation :: (GhcMonad m) =>
   -> m Bool -- ^ Result : is the module need to be recompiled
 isModuleNeedCompilation modFiles ms = do
     hsc_env <- getSession
-    canonical_modFiles <- liftIO $ mapM canonicalizePath modFiles
-    let source_unchanged = checkUnchangedSources canonical_modFiles ms
+    source_unchanged <- liftIO $ checkUnchangedSources modFiles ms
     (recom, mb_md_iface ) <- liftIO $ checkOldIface hsc_env ms source_unchanged Nothing
     case mb_md_iface of 
         Just md_iface -> do 
@@ -138,9 +138,13 @@ isModuleNeedCompilation modFiles ms = do
                 return recom 
         _ -> return True
 
-checkUnchangedSources :: [FilePath] -> ModSummary ->  Bool
-checkUnchangedSources modifiedFiles ms = check hsSource
-  where hsSource = (ml_hs_file . ms_location) ms
-        check Nothing = False
-        check (Just src) = not $ src `elem` modifiedFiles 
+checkUnchangedSources :: [FilePath] -> ModSummary ->  IO Bool
+checkUnchangedSources fps ms = checkUnchangedSources' fps $ (ml_hs_file . ms_location) ms
+
+checkUnchangedSources' :: [FilePath] -> Maybe FilePath ->  IO Bool
+checkUnchangedSources' _ Nothing = return False
+checkUnchangedSources' modifiedFiles (Just src) = do 
+   canonical_modFiles <- liftIO $ mapM canonicalizePath modifiedFiles
+   cano_src <- canonicalizePath src 
+   return $ not $ cano_src `elem` canonical_modFiles
 

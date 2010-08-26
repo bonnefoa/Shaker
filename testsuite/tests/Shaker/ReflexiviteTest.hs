@@ -61,7 +61,6 @@ testCollectChangedModules = TestCase $ do
 
 testCollectChangedModulesForTestNoRecomp :: Test
 testCollectChangedModulesForTestNoRecomp = TestCase $ do
-  (cpIn,_) <- compileProject
   exp_no_modules <- runReaderT collectChangedModulesForTest testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
 
@@ -82,8 +81,8 @@ testCollectChangedModulesForTestQuickCheck = TestCase $ do
   let target = cfCompileTarget cpIn </> "Shaker" </> "RegexTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput 
+  let module_mapping = head exp_one_modules  
   length exp_one_modules == 1 @? "One module should need compilation"
-  let module_mapping = head exp_one_modules 
   cfModuleName module_mapping == "Shaker.RegexTest" @? "module RegexTest should need recompilation, got " ++ cfModuleName module_mapping 
   length (cfPropName module_mapping) >2  @? "module RegexTest should have properties" 
 
@@ -95,4 +94,3 @@ testCollectChangedModulesWithModifiedFiles = TestCase $ do
   exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput {modifiedInfoFiles = modFileInfo }
   length exp_one_modules == 1 @? "One module should need compilation"
   
-
