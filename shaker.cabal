@@ -81,7 +81,7 @@ source-repository this
 
 Library 
   ghc-options: -Wall -fno-warn-orphans 
-  hs-source-dirs:  src, testsuite/tests 
+  hs-source-dirs:  src
   exposed-modules:
     Shaker.Parser
     Shaker.Action.Standard
@@ -121,27 +121,10 @@ Library
 Executable shaker
   Main-Is: Shaker.hs
   ghc-options: -Wall -fno-warn-orphans 
-  hs-source-dirs: src 
-  other-modules: 
-    Shaker.Parser
-    Shaker.Action.Standard
-    Shaker.Action.Test
-    Shaker.Action.Execute
-    Shaker.Action.Compile
-    Shaker.Conductor
-    Shaker.Config
-    Shaker.TestTH
-    Shaker.PluginConfig
-    Shaker.Reflexivite
-    Shaker.Regex
-    Shaker.Cli
-    Shaker.Io
-    Shaker.SourceHelper
-    Shaker.Cabal.CabalInfo
-    Shaker.Type
-    Shaker.Listener
+  hs-source-dirs: prog
   build-depends: base >= 4.1 && < 5 ,
-                 Cabal >= 1.8.0.2,
+                 shaker
+                 ,Cabal >= 1.8.0.2,
                  containers >= 0.3,
                  haskeline >= 0.6.2.2 
                  ,directory >= 1.0.1.0,
@@ -154,14 +137,15 @@ Executable shaker
                  regex-posix >= 0.94.1,
                  old-time >= 1.0.0
                  ,bytestring >= 0.9.1.5
+                 ,HUnit >= 1.2.2.1
+                 ,QuickCheck >= 2.1.1.1
                  ,template-haskell >= 2.4.0.0
-
 flag test
   description: Build test program.
   default:     False
 
 Executable test
-  hs-source-dirs:  src, testsuite/tests 
+  hs-source-dirs:  testsuite/tests 
   main-is:         RunTestTH.hs
   ghc-options: -Wall -fno-warn-orphans
   other-modules: 
@@ -179,7 +163,8 @@ Executable test
     Shaker.ReflexiviteTest
     Shaker.ConductorTest
   build-depends: base >= 4.1,
-                 Cabal >= 1.8.0.2,
+                 shaker
+                 ,Cabal >= 1.8.0.2,
                  containers >= 0.3,
                  haskeline >= 0.6.2.2 
                  ,directory >= 1.0.1.0,
