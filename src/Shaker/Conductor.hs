@@ -80,7 +80,7 @@ threadExecutor :: ConductorData -> IO ()
 threadExecutor cdtData@(ConductorData _ _ endProcess listenState fun) = do 
   modFiles <- takeMVar (mvModifiedFiles listenState)
   _ <- takeMVar endProcess
-  forkIO ((fun modFiles ) `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData
+  forkIO (fun modFiles `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData
   
 -- | Execute Given Command in a new thread
 executeCommand :: Command -> Shaker IO()

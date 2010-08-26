@@ -146,5 +146,5 @@ checkUnchangedSources' _ Nothing = return False
 checkUnchangedSources' modifiedFiles (Just src) = do 
    canonical_modFiles <- liftIO $ mapM canonicalizePath modifiedFiles
    cano_src <- canonicalizePath src 
-   return $ not $ cano_src `elem` canonical_modFiles
+   return $ cano_src `notElem` canonical_modFiles
 

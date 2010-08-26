@@ -45,9 +45,9 @@ testCheckUnchangedSources = TestCase $ do
   exp_all_true <- filterM (checkUnchangedSources  []) mss 
   exp_all_false <- filterM (checkUnchangedSources hsSrcs) mss 
   exp_one_true <- filterM ( checkUnchangedSources (tail hsSrcs) ) mss 
-  exp_one_false <- filterM ( checkUnchangedSources [(head hsSrcs)] ) mss 
+  exp_one_false <- filterM ( checkUnchangedSources [head hsSrcs] ) mss 
   length exp_all_true == length hsSrcs @? "checkUnchangedSources with no modified files should be true"
-  length exp_all_false == 0 @? "checkUnchangedSources with all modified files should be false, got " ++ (show $ map (moduleNameString . moduleName . ms_mod) exp_all_false)
+  length exp_all_false == 0 @? "checkUnchangedSources with all modified files should be false" 
   length exp_one_true == 1 @? "partial checkUnchangedSources should have only one true"
   length exp_one_false == length hsSrcs - 1 @? "partial checkUnchangedSources should have only one false"
  where cpIn = head . compileInputs $ testShakerInput 

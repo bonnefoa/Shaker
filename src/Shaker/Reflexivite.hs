@@ -87,7 +87,7 @@ collectChangedModulesForTest = do
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
   lift $ runGhc (Just libdir) $ do 
            let processedCpIn = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-           _ <- initializeGhc $ processedCpIn
+           _ <- initializeGhc processedCpIn
            collectChangedModulesForTest' modFilePaths processedCpIn
 
 collectAllModules' :: GhcMonad m => m [ModSummary] 
@@ -109,7 +109,7 @@ collectChangedModulesForTest' modFilePaths cpIn = do
     allModules <- collectAllModules' 
     let res = intersectBy ( \a b -> nameMod a == nameMod b ) allModules changedModules
     mapM getModuleMapping res
-  where nameMod = (moduleNameString . moduleName . ms_mod)
+  where nameMod = moduleNameString . moduleName . ms_mod
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
