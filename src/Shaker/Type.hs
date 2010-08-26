@@ -34,6 +34,7 @@ data ShakerAction =
 	| QuickCheck -- ^ Execute quickcheck properties
 	| IntelligentQuickCheck -- ^ Execute quickcheck properties only on necessary properties
 	| HUnit -- ^ Execute hunit tests
+	| IntelligentHunit -- ^ Execute hunit tests only on necessary properties
 	| Help -- ^ Display the help
         | Execute -- ^ Execute a command
 	| Quit -- ^ Exit shaker

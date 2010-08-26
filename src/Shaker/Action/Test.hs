@@ -12,6 +12,13 @@ import Language.Haskell.TH
 runQuickCheck :: Plugin
 runQuickCheck = collectAllModulesForTest >>= runQuickCheck'
 
+-- | Discover all Hunit test in the project and execute them
+runHUnit :: Plugin
+runHUnit = collectAllModulesForTest >>= runHUnit'
+
+runIntelligentHunit :: Plugin
+runIntelligentHunit = collectChangedModulesForTest >>= runHUnit'
+
 runIntelligentQuickCheck :: Plugin
 runIntelligentQuickCheck = collectChangedModulesForTest >>= runQuickCheck'
  
@@ -27,10 +34,8 @@ runQuickCheck' modMap
  where filteredModMap = filter (not . null . cfPropName) modMap
        modules = ["Test.QuickCheck","Prelude" ] ++ map cfModuleName filteredModMap 
 
--- | Discover all Hunit test in the project and execute them
-runHUnit :: Plugin
-runHUnit = do 
-  modMap <- collectAllModulesForTest
+runHUnit' :: [ModuleMapping] -> Plugin
+runHUnit' modMap = do 
   let filteredModMap = filter (not . null . cfHunitName) modMap
   let modules = ["Test.HUnit","Prelude" ] ++ map cfModuleName filteredModMap 
   expression <- asks listHunit
@@ -38,4 +43,5 @@ runHUnit = do
   let function =  filter (/= '\n') $ pprint resolvedExp
   lift $ putStrLn function
   runFunction $ RunnableFunction modules ("runTestTT  $ TestList $ " ++ function) 
+
 
