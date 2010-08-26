@@ -8,6 +8,7 @@ import Shaker.Reflexivite
 import Shaker.Type
 import Shaker.CommonTest
 
+import System.Time
 import System.Directory
 import System.FilePath 
 
@@ -58,18 +59,40 @@ testCollectChangedModules = TestCase $ do
   exp_one_modules <- runReaderT collectChangedModules testShakerInput 
   length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
 
-testCollectChangedModulesForTest :: Test
-testCollectChangedModulesForTest = TestCase $ do
+testCollectChangedModulesForTestNoRecomp :: Test
+testCollectChangedModulesForTestNoRecomp = TestCase $ do
   (cpIn,_) <- compileProject
   exp_no_modules <- runReaderT collectChangedModulesForTest testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
-  -- Remove a target file 
+
+testCollectChangedModulesForTestHunit:: Test
+testCollectChangedModulesForTestHunit = TestCase $ do
+  (cpIn,_) <- compileProject
   let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput 
   length exp_one_modules == 1 @? "One module should need compilation"
   let module_mapping = head exp_one_modules 
-  cfModuleName module_mapping == "Shaker.SourceHelperTest" @? "module SourceHelperTest should need recompilation, got " ++ cfModuleName module_mapping
+  cfModuleName module_mapping == "Shaker.SourceHelperTest" @? "module SourceHelperTest should need recompilation, got " ++ cfModuleName module_mapping 
   length (cfHunitName module_mapping) >2  @? "module SourceHelperTest should have hunit test" 
+  
+testCollectChangedModulesForTestQuickCheck :: Test
+testCollectChangedModulesForTestQuickCheck = TestCase $ do
+  (cpIn,_) <- compileProject
+  let target = cfCompileTarget cpIn </> "Shaker" </> "RegexTest.hi"
+  removeFile target
+  exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput 
+  length exp_one_modules == 1 @? "One module should need compilation"
+  let module_mapping = head exp_one_modules 
+  cfModuleName module_mapping == "Shaker.RegexTest" @? "module RegexTest should need recompilation, got " ++ cfModuleName module_mapping 
+  length (cfPropName module_mapping) >2  @? "module RegexTest should have properties" 
+
+testCollectChangedModulesWithModifiedFiles :: Test
+testCollectChangedModulesWithModifiedFiles = TestCase $ do
+  (cpIn,_) <- compileProject
+  let sources = map (</> "Shaker" </> "SourceHelperTest.hs") (cfSourceDirs cpIn)
+  let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources
+  exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput {modifiedInfoFiles = modFileInfo }
+  length exp_one_modules == 1 @? "One module should need compilation"
   
 
