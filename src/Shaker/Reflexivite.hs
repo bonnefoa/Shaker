@@ -58,9 +58,8 @@ collectAllModulesForTest :: Shaker IO [ModuleMapping]
 collectAllModulesForTest = do 
   (cpIn, cfFlList) <- initializeFilesForCompilation 
   lift $ runGhc (Just libdir) $ do 
-        let processed_cpIn = runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-        _ <- ghcCompile processed_cpIn
-        collectAllModulesForTest' processed_cpIn 
+        _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+        collectAllModulesForTest' 
 
 -- | Collect all non-main modules 
 collectAllModules :: Shaker IO [ModSummary]
@@ -87,9 +86,9 @@ collectChangedModulesForTest = do
   modInfoFiles <- asks modifiedInfoFiles
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
   lift $ runGhc (Just libdir) $ do 
-           _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-           collectChangedModulesForTest' modFilePaths
-  
+           let processedCpIn = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
+           _ <- initializeGhc $ processedCpIn
+           collectChangedModulesForTest' modFilePaths processedCpIn
 
 collectAllModules' :: GhcMonad m => m [ModSummary] 
 collectAllModules' = do 
@@ -97,17 +96,20 @@ collectAllModules' = do
   let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
   return sort_mss
          
-collectAllModulesForTest' :: GhcMonad m => CompileInput -> m [ModuleMapping] 
-collectAllModulesForTest' cpIn = do 
-  changedModules <- collectAllModules' 
-  ghcCompile cpIn 
-  mapM getModuleMapping changedModules 
+collectAllModulesForTest' :: GhcMonad m => m [ModuleMapping] 
+collectAllModulesForTest' = collectAllModules' >>= mapM getModuleMapping 
 
 collectChangedModules' :: GhcMonad m => [FilePath] -> m [ModSummary] 
 collectChangedModules' modFilePaths = collectAllModules' >>= filterM (isModuleNeedCompilation modFilePaths) 
 
-collectChangedModulesForTest' :: GhcMonad m => [FilePath] -> m [ModuleMapping] 
-collectChangedModulesForTest' modFilePaths = collectChangedModules' modFilePaths >>= mapM getModuleMapping 
+collectChangedModulesForTest' :: GhcMonad m => [FilePath] -> CompileInput -> m [ModuleMapping] 
+collectChangedModulesForTest' modFilePaths cpIn = do 
+    changedModules <- collectChangedModules' modFilePaths 
+    _ <- ghcCompile cpIn
+    allModules <- collectAllModules' 
+    let res = intersectBy ( \a b -> nameMod a == nameMod b ) allModules changedModules
+    mapM getModuleMapping res
+  where nameMod = (moduleNameString . moduleName . ms_mod)
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
