@@ -38,10 +38,8 @@ runHUnit' :: [ModuleMapping] -> Plugin
 runHUnit' modMap = do 
   let filteredModMap = filter (not . null . cfHunitName) modMap
   let modules = ["Test.HUnit","Prelude" ] ++ map cfModuleName filteredModMap 
-  expression <- asks listHunit
-  resolvedExp <- lift $ runQ expression
+  resolvedExp <- lift $ runQ (listHunit filteredModMap)
   let function =  filter (/= '\n') $ pprint resolvedExp
   lift $ putStrLn function
   runFunction $ RunnableFunction modules ("runTestTT  $ TestList $ " ++ function) 
-
 

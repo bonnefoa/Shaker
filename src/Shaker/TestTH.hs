@@ -23,5 +23,5 @@ thListProperties = do
 thListHunit :: ExpQ 
 thListHunit = do 
   shIn <-runIO defaultCabalInput
-  listHunit shIn
+  listAllHunit shIn
 

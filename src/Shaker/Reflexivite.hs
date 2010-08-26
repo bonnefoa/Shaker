@@ -10,6 +10,7 @@ module Shaker.Reflexivite(
   ,listHunit
   ,listProperties
   ,listAllProperties
+  ,listAllHunit
 )
  where
 
@@ -191,8 +192,9 @@ listAllProperties shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= li
 
 -- | List all test case of the project.
 -- see "Shaker.TestTH"
-listHunit :: ShakerInput -> ExpQ
-listHunit shIn = do 
-  modMaps <- runIO $ runReaderT collectAllModulesForTest shIn
-  return $ ListE $ getHunit modMaps
+listHunit :: [ModuleMapping] -> ExpQ
+listHunit modMaps = return $ ListE $ getHunit modMaps
+
+listAllHunit :: ShakerInput -> ExpQ
+listAllHunit shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listHunit
 
