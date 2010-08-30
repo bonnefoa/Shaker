@@ -45,7 +45,11 @@ description:
   .
   [@QuickCheck@] Launch all QuickCheck properties of the project.
   .
+  [@IQuickCheck@] Intelligent QuickCheck launch. Only launch necessary properties (beta). 
+  .
   [@HUnit@] Launch all HUnit tests of the project.
+  .
+  [@IHUnit@] Intelligent HUnit launch. Only launch necessary tests (beta).
   .
   [@Quit@] Exit the application.
   . 
