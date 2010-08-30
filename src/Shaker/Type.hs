@@ -133,7 +133,7 @@ defaultListenerInput = ListenerInput {
 
 -- | Default haskell file pattern : *.hs
 defaultHaskellPatterns :: [String]
-defaultHaskellPatterns = [".*\\.hs$"]
+defaultHaskellPatterns = [".*\\.hs$", ".*\\.lhs"]
 
 -- | Default exclude pattern : Setup.hs
 defaultExclude :: [String]
