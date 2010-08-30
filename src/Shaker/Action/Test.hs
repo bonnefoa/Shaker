@@ -4,7 +4,6 @@ module Shaker.Action.Test
 import Shaker.Type
 import Shaker.Reflexivite
 import Control.Monad.Trans
-import Control.Monad.Reader
 import Language.Haskell.TH
 
 -- | Discover all quickcheck properties in the project 
