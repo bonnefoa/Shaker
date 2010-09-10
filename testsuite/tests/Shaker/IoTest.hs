@@ -15,6 +15,9 @@ aTimeDiff = TimeDiff { tdYear = 0, tdMonth = 0, tdDay = 0, tdHour =0, tdMin=0, t
 modifyFileInfoClock :: FileInfo -> FileInfo
 modifyFileInfoClock (FileInfo fp cl) = FileInfo fp (addToClockTime aTimeDiff cl)
 
+defaultFileListenInfo :: FileListenInfo
+defaultFileListenInfo = FileListenInfo "src" [] [] 
+
 abstractHunitTestListFiles :: FileListenInfo -> ([FilePath] -> [FilePath] -> Bool) -> IO Bool
 abstractHunitTestListFiles fli predicat = do 
   normal_list <- listFiles fli{ignore= []}
@@ -23,23 +26,29 @@ abstractHunitTestListFiles fli predicat = do
 
 test_listFiles :: Test
 test_listFiles = TestCase $ do 
-  res <- abstractHunitTestListFiles (FileListenInfo "src" [] []) (\_ b -> length b > 2 )
+  res <- abstractHunitTestListFiles defaultFileListenInfo (\_ b -> length b > 2 )
   res  @? "should have more than 2 files in src/"
 
 test_listFilesWithIgnoreAll :: Test
 test_listFilesWithIgnoreAll = TestCase $ do 
-  res <- abstractHunitTestListFiles (FileListenInfo "src" [",*"] []) (\_ b -> b == [] )
+  res <- abstractHunitTestListFiles defaultFileListenInfo {ignore=[".*"]} (\_ b -> b == [] )
   res  @? "List with ignore all should return an empty list"
 
 test_listFilesWithIgnore :: Test
 test_listFilesWithIgnore = TestCase $ do
-  res <-  abstractHunitTestListFiles (FileListenInfo "src" ["\\.$"] []) (\a b -> length a  ==length b + 2 )
+  res <-  abstractHunitTestListFiles defaultFileListenInfo {ignore=["\\.$"]} (\a b -> length a  ==length b + 2)
   res @? "ignore of \\.$ should exclude only . and .."
 
 test_listFilesWithIncludeAll :: Test
 test_listFilesWithIncludeAll = TestCase $ do 
-  res <- abstractHunitTestListFiles (FileListenInfo "src" [] [".*"]) (\a b->length a == length b)
+  res <- abstractHunitTestListFiles defaultFileListenInfo {include=[".*"]} (\a b->length a == length b)
   res @? "inclue of .* should should list all files"
+
+abstractTestModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> IO Bool
+abstractTestModifiedFiles fli proc predicat= do
+     curList <- getCurrentFpCl fli 
+     (_,newList) <- listModifiedAndCreatedFiles [fli] (proc curList)
+     return $ predicat curList newList 
 
 testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
 testModifiedFiles fli proc predicat= monadicIO action
@@ -48,13 +57,15 @@ testModifiedFiles fli proc predicat= monadicIO action
                (_,newList) <- run $ listModifiedAndCreatedFiles [fli] (proc curList)
                assert $ predicat curList newList 
 
-prop_listModifiedFiles :: FileListenInfo -> Property
-prop_listModifiedFiles fli = 
-  testModifiedFiles fli (map modifyFileInfoClock) (\a b -> length a == length b)
+test_listModifiedFiles :: Test
+test_listModifiedFiles = TestCase $ do
+  res <- abstractTestModifiedFiles defaultFileListenInfo (map modifyFileInfoClock) (\a b -> length a == length b)
+  res @? "all modified files should be listed "
 
-prop_listCreatedFiles :: FileListenInfo -> Property
-prop_listCreatedFiles fli = 
-  testModifiedFiles fli init (\_ b -> length b==1)
+test_listCreatedFiles :: Test
+test_listCreatedFiles = TestCase $ do
+  res <- abstractTestModifiedFiles defaultFileListenInfo (init) (\_ b -> length b==1)
+  res @? "a created file should be listed "
 
 prop_listModifiedAndCreatedFiles :: FileListenInfo -> Property
 prop_listModifiedAndCreatedFiles fli = 
