@@ -6,6 +6,18 @@ import Shaker.Reflexivite
 import Control.Monad.Reader
 import Language.Haskell.TH
 
+runQuickHUnit :: Plugin
+runQuickHUnit = do 
+  modules <- collectAllModulesForTest 
+  runQuickCheck' modules
+  runHUnit' modules
+
+runIntelligentQuickHUnit :: Plugin
+runIntelligentQuickHUnit = do
+  modules <- collectChangedModulesForTest
+  runQuickCheck' modules
+  runHUnit' modules
+
 -- | Discover all quickcheck properties in the project 
 -- and execute them
 runQuickCheck :: Plugin
@@ -15,8 +27,8 @@ runQuickCheck = collectAllModulesForTest >>= runQuickCheck'
 runHUnit :: Plugin
 runHUnit = collectAllModulesForTest >>= runHUnit'
 
-runIntelligentHunit :: Plugin
-runIntelligentHunit = collectChangedModulesForTest >>= runHUnit'
+runIntelligentHUnit :: Plugin
+runIntelligentHUnit = collectChangedModulesForTest >>= runHUnit'
 
 runIntelligentQuickCheck :: Plugin
 runIntelligentQuickCheck = collectChangedModulesForTest >>= runQuickCheck'
