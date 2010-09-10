@@ -2,9 +2,9 @@
 -- and file filtering
 module Shaker.Io(
   listModifiedAndCreatedFiles
+  ,listFiles
   ,getCurrentFpCl
   ,recurseMultipleListFiles
-  ,listFiles
   ,recurseListFiles 
   ,FileInfo(FileInfo)
   ,FileListenInfo(..)
