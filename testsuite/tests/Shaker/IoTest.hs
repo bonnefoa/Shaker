@@ -22,6 +22,12 @@ abstractHunitTestListFiles fli predicat = do
   res <- listFiles fli
   return $ predicat normal_list res
 
+abstractTestModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> IO Bool
+abstractTestModifiedFiles fli proc predicat= do
+     curList <- getCurrentFpCl fli 
+     (_,newList) <- listModifiedAndCreatedFiles [fli] (proc curList)
+     return $ predicat curList newList 
+
 test_listFiles :: Test
 test_listFiles = TestCase $ do 
   res <- abstractHunitTestListFiles defaultFileListenInfo (\_ b -> length b > 2 )
@@ -42,12 +48,6 @@ test_listFilesWithIncludeAll = TestCase $ do
   res <- abstractHunitTestListFiles defaultFileListenInfo {include=[".*"]} (\a b->length a == length b)
   res @? "inclue of .* should should list all files"
 
-abstractTestModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> IO Bool
-abstractTestModifiedFiles fli proc predicat= do
-     curList <- getCurrentFpCl fli 
-     (_,newList) <- listModifiedAndCreatedFiles [fli] (proc curList)
-     return $ predicat curList newList 
-
 test_listModifiedFiles :: Test
 test_listModifiedFiles = TestCase $ do
   res <- abstractTestModifiedFiles defaultFileListenInfo (map modifyFileInfoClock) (\a b -> length a == length b)
@@ -63,36 +63,28 @@ test_listModifiedAndCreatedFiles = TestCase $ do
   res <- abstractTestModifiedFiles defaultFileListenInfo (map modifyFileInfoClock . init) (\a b -> length a == length b)
   res @? "should list modified and created files"
 
-testRecurseListFiles :: Test
-testRecurseListFiles = TestCase $ 
+test_recurseListFiles :: Test
+test_recurseListFiles = TestCase $ 
   recurseListFiles (FileListenInfo "." ["\\.$"] []) >>= \res ->
-  assertBool ("Should contains IoTest.hs file "++show res) $
-    any ("IoTest.hs" `isSuffixOf`) res
+  any ("IoTest.hs" `isSuffixOf`) res @? "Should contains IoTest.hs file "++show res
   
-testListFiles :: Test
-testListFiles = TestCase $ 
-  listFiles (FileListenInfo "." [] []) >>= \res ->
-  assertBool ("Should contains src dir"++show res) $
-    any ("src" `isSuffixOf`) res
-  
-testListHsFiles :: Test
-testListHsFiles = TestCase $
+test_listHsFiles :: Test
+test_listHsFiles = TestCase $
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \res ->
-  assertBool ("Should only contains hs files " ++ show res) $
-    all (".hs" `isSuffixOf`) res
-
-testIsFileContainingMain :: Test
-testIsFileContainingMain = TestCase $ do
+  all (".hs" `isSuffixOf`) res @?  "Should only contains hs files " ++ show res
+    
+test_isFileContainingMain :: Test
+test_isFileContainingMain = TestCase $ do
   res <- isFileContainingMain "prog/Shaker.hs" 
-  assertBool "File Shaker.hs should contain main methods" res
+  res @? "File Shaker.hs should contain main methods" 
 
-testIsFileNotContainingMain :: Test
-testIsFileNotContainingMain = TestCase $ do
+test_isFileNotContainingMain :: Test
+test_isFileNotContainingMain = TestCase $ do
   res <- isFileContainingMain "src/Shaker/Config.hs"
-  assertBool "File Config.hs should not contain main methods" $ not res
+  not res @? "File Config.hs should not contain main methods" 
 
-testIsFileConductorNotContainingMain :: Test
-testIsFileConductorNotContainingMain = TestCase $ do
+test_isFileConductorNotContainingMain :: Test
+test_isFileConductorNotContainingMain = TestCase $ do
   res <- isFileContainingMain "src/Shaker/Conductor.hs"
-  assertBool "File Config.hs should not contain main methods" $ not res
+  not res @?  "File Config.hs should not contain main methods" 
 
