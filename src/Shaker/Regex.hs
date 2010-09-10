@@ -14,8 +14,8 @@ import Data.List
 -- If no exclude pattern is given, all elements matching include patterns are taken.
 processListWithRegexp :: 
   [String] -- ^ Initial list to filter
-  -> [String] -- ^ include patterns (regex)
   -> [String] -- ^ exclude patterns (regex)
+  -> [String] -- ^ include patterns (regex)
   -> [String] -- ^ List with all elements matching include patterns minus all elements matching exclude patterns
 processListWithRegexp list [] [] = list
 processListWithRegexp list ignore [] = nub $ list \\ getExcluded list ignore 
