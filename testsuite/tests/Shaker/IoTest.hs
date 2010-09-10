@@ -34,63 +34,63 @@ abstractTestModifiedFiles fli proc predicat= do
      (_,newList) <- listModifiedAndCreatedFiles [fli] (proc curList)
      return $ predicat curList newList 
 
-test_listFiles :: Test
-test_listFiles = TestCase $ do 
+testListFiles :: Test
+testListFiles = TestCase $ do 
   res <- abstractHunitTestListFiles defaultFileListenInfo (\_ b -> length b > 2 )
   res  @? "should have more than 2 files in src/"
 
-test_listFilesWithIgnoreAll :: Test
-test_listFilesWithIgnoreAll = TestCase $ do 
+testListFilesWithIgnoreAll :: Test
+testListFilesWithIgnoreAll = TestCase $ do 
   res <- abstractHunitTestListFiles defaultFileListenInfo {ignore=[".*"]} (\_ b -> b == [] )
   res  @? "List with ignore all should return an empty list"
 
-test_listFilesWithIgnore :: Test
-test_listFilesWithIgnore = TestCase $ do
+testListFilesWithIgnore :: Test
+testListFilesWithIgnore = TestCase $ do
   res <-  abstractHunitTestListFiles defaultFileListenInfo {ignore=["\\.$"]} (\a b -> length a  ==length b + 2)
   res @? "ignore of \\.$ should exclude only . and .."
 
-test_listFilesWithIncludeAll :: Test
-test_listFilesWithIncludeAll = TestCase $ do 
+testListFilesWithIncludeAll :: Test
+testListFilesWithIncludeAll = TestCase $ do 
   res <- abstractHunitTestListFiles defaultFileListenInfo {include=[".*"]} (\a b->length a == length b)
   res @? "inclue of .* should should list all files"
 
-test_listModifiedFiles :: Test
-test_listModifiedFiles = TestCase $ do
+testListModifiedFiles :: Test
+testListModifiedFiles = TestCase $ do
   res <- abstractTestModifiedFiles defaultFileListenInfo (map modifyFileInfoClock) (\a b -> length a == length b)
   res @? "all modified files should be listed "
 
-test_listCreatedFiles :: Test
-test_listCreatedFiles = TestCase $ do
+testListCreatedFiles :: Test
+testListCreatedFiles = TestCase $ do
   res <- abstractTestModifiedFiles defaultFileListenInfo (init) (\_ b -> length b==1)
   res @? "a created file should be listed "
 
-test_listModifiedAndCreatedFiles :: Test
-test_listModifiedAndCreatedFiles = TestCase $ do
+testListModifiedAndCreatedFiles :: Test
+testListModifiedAndCreatedFiles = TestCase $ do
   res <- abstractTestModifiedFiles defaultFileListenInfo (map modifyFileInfoClock . init) (\a b -> length a == length b)
   res @? "should list modified and created files"
 
-test_recurseListFiles :: Test
-test_recurseListFiles = TestCase $ 
+testRecurseListFiles :: Test
+testRecurseListFiles = TestCase $ 
   recurseListFiles (FileListenInfo "." ["\\.$"] []) >>= \res ->
   any ("IoTest.hs" `isSuffixOf`) res @? "Should contains IoTest.hs file "++show res
   
-test_listHsFiles :: Test
-test_listHsFiles = TestCase $
+testListHsFiles :: Test
+testListHsFiles = TestCase $
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \res ->
   all (".hs" `isSuffixOf`) res @?  "Should only contains hs files " ++ show res
     
-test_isFileContainingMain :: Test
-test_isFileContainingMain = TestCase $ do
+testIsFileContainingMain :: Test
+testIsFileContainingMain = TestCase $ do
   res <- isFileContainingMain "prog/Shaker.hs" 
   res @? "File Shaker.hs should contain main methods" 
 
-test_isFileNotContainingMain :: Test
-test_isFileNotContainingMain = TestCase $ do
+testIsFileNotContainingMain :: Test
+testIsFileNotContainingMain = TestCase $ do
   res <- isFileContainingMain "src/Shaker/Config.hs"
   not res @? "File Config.hs should not contain main methods" 
 
-test_isFileConductorNotContainingMain :: Test
-test_isFileConductorNotContainingMain = TestCase $ do
+testIsFileConductorNotContainingMain :: Test
+testIsFileConductorNotContainingMain = TestCase $ do
   res <- isFileContainingMain "src/Shaker/Conductor.hs"
   not res @?  "File Config.hs should not contain main methods" 
 

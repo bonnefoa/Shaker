@@ -39,7 +39,6 @@ data CompileFile = CompileFile {
   ,cfHasTH :: Bool
  } deriving Show
 
-
 -- | Build the list of haskell source files located in 
 -- CompileInput source dirs
 constructCompileFileList :: CompileInput -> IO [CompileFile] 
@@ -48,6 +47,7 @@ constructCompileFileList cpIn = do
   mapM constructCompileFile files
   where fli = getFileListenInfoForCompileInput cpIn
   
+-- | Build an individual CompileFile. 
 constructCompileFile :: FilePath -> IO CompileFile      
 constructCompileFile fp = do
   hasMain <- isFileContainingMain fp
@@ -60,7 +60,7 @@ mergeCompileInputsSources :: [CompileInput] -> CompileInput
 mergeCompileInputsSources [] = defaultCompileInput 
 mergeCompileInputsSources cplInps@(cpIn:_) = do 
   let srcDirs = nub $ concatMap cfSourceDirs cplInps
-  cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"  } 
+  cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"} 
 
 -- | Configure the CompileInput with all haskell files configured as targets
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
