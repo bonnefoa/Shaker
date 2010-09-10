@@ -2,6 +2,8 @@ module Shaker.ReflexiviteTest
  where
 
 import Test.HUnit
+import Test.QuickCheck 
+
 import Data.List
 import Control.Monad.Reader(runReaderT)
 import Shaker.Reflexivite
@@ -98,5 +100,10 @@ testCollectChangedModulesWithModifiedFiles = TestCase $ do
 prop_filterModMap_include_all :: [ModuleMapping] -> Bool
 prop_filterModMap_include_all modMap = modMap == res
   where res = filterModulesWithPattern (Just ".*") modMap 
+        
+prop_filterModMap_include_some :: [ModuleMapping] -> Property
+prop_filterModMap_include_some modMap = (not . null) modMap ==> head res == head modMap
+  where module_name = (cfModuleName . head) modMap
+        res = filterModulesWithPattern (Just module_name) modMap 
 
 
