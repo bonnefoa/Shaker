@@ -15,24 +15,31 @@ aTimeDiff = TimeDiff { tdYear = 0, tdMonth = 0, tdDay = 0, tdHour =0, tdMin=0, t
 modifyFileInfoClock :: FileInfo -> FileInfo
 modifyFileInfoClock (FileInfo fp cl) = FileInfo fp (addToClockTime aTimeDiff cl)
 
-abstractTestListFiles :: FileListenInfo -> ([FilePath] -> [FilePath] -> Bool) -> Property
-abstractTestListFiles fli predicat = monadicIO action
-  where action = do
-               lstFile <- run $ listFiles fli{ignore= []}
-               r <- run $ listFiles fli
-               assert $ predicat lstFile r 
+abstractHunitTestListFiles :: FileListenInfo -> ([FilePath] -> [FilePath] -> Bool) -> IO Bool
+abstractHunitTestListFiles fli predicat = do 
+  normal_list <- listFiles fli{ignore= []}
+  res <- listFiles fli
+  return $ predicat normal_list res
 
-prop_listFiles :: FileListenInfo -> Property
-prop_listFiles fli = abstractTestListFiles fli{ignore=[]} (\_ b -> length b>2)
+test_listFiles :: Test
+test_listFiles = TestCase $ do 
+  res <- abstractHunitTestListFiles (FileListenInfo "src" [] []) (\_ b -> length b > 2 )
+  res  @? "should have more than 2 files in src/"
 
-prop_listFilesWithIgnoreAll :: FileListenInfo -> Property
-prop_listFilesWithIgnoreAll fli = abstractTestListFiles fli{ignore= [".*"], include=[]} (\_ b -> b==[])
+test_listFilesWithIgnoreAll :: Test
+test_listFilesWithIgnoreAll = TestCase $ do 
+  res <- abstractHunitTestListFiles (FileListenInfo "src" [",*"] []) (\_ b -> b == [] )
+  res  @? "List with ignore all should return an empty list"
 
-prop_listFilesWithIgnore :: FileListenInfo -> Property
-prop_listFilesWithIgnore fli = abstractTestListFiles fli{ignore= ["\\.$"], include=[]} (\a b-> length a == length b + 2)
+test_listFilesWithIgnore :: Test
+test_listFilesWithIgnore = TestCase $ do
+  res <-  abstractHunitTestListFiles (FileListenInfo "src" ["\\.$"] []) (\a b -> length a  ==length b + 2 )
+  res @? "ignore of \\.$ should exclude only . and .."
 
-prop_listFilesWithIncludeAll :: FileListenInfo -> Property
-prop_listFilesWithIncludeAll fli = abstractTestListFiles fli{include=[".*"]} (\a b->length a >= length b)
+test_listFilesWithIncludeAll :: Test
+test_listFilesWithIncludeAll = TestCase $ do 
+  res <- abstractHunitTestListFiles (FileListenInfo "src" [] [".*"]) (\a b->length a == length b)
+  res @? "inclue of .* should should list all files"
 
 testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
 testModifiedFiles fli proc predicat= monadicIO action
