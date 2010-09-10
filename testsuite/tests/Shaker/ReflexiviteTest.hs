@@ -7,6 +7,7 @@ import Control.Monad.Reader(runReaderT)
 import Shaker.Reflexivite
 import Shaker.Type
 import Shaker.CommonTest
+import Shaker.Properties()
 
 import System.Time
 import System.Directory
@@ -94,3 +95,8 @@ testCollectChangedModulesWithModifiedFiles = TestCase $ do
   exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput {modifiedInfoFiles = modFileInfo }
   length exp_one_modules == 1 @? "One module should need compilation"
   
+prop_filterModMap_include_all :: [ModuleMapping] -> Bool
+prop_filterModMap_include_all modMap = modMap == res
+  where res = filterModulesWithPattern (Just ".*") modMap 
+
+

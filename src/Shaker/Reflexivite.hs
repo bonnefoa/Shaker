@@ -1,6 +1,7 @@
 module Shaker.Reflexivite(
   ModuleMapping(..)
   ,RunnableFunction(..)
+  -- * Collect module information functions
   ,collectAllModulesForTest
   ,collectAllModules
   ,collectChangedModules
@@ -11,6 +12,7 @@ module Shaker.Reflexivite(
   ,listProperties
   ,listAllProperties
   ,listAllHunit
+  ,filterModulesWithPattern
 )
  where
 
@@ -19,6 +21,7 @@ import Data.Maybe
 import Shaker.Type 
 import Shaker.Action.Compile
 import Shaker.SourceHelper
+import Shaker.Regex
 
 import Control.Monad.Reader(runReader,runReaderT,asks, Reader, lift, filterM)
 import Control.Arrow
@@ -39,7 +42,7 @@ data ModuleMapping = ModuleMapping {
   ,cfHunitName :: [String] -- ^ Hunit test function names
   ,cfPropName :: [String] -- ^ QuickCheck test function names
  }
- deriving Show
+ deriving (Show,Eq)
 
 data RunnableFunction = RunnableFunction {
   cfModule :: [String]
@@ -197,4 +200,11 @@ listHunit modMaps = return $ ListE $ getHunit modMaps
 
 listAllHunit :: ShakerInput -> ExpQ
 listAllHunit shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listHunit
+
+-- | Include only module matching the given pattern
+filterModulesWithPattern :: Maybe String -> [ModuleMapping] -> [ModuleMapping]
+filterModulesWithPattern Nothing mod_map = mod_map
+filterModulesWithPattern (Just pattern) mod_map = filter (\a -> cfModuleName a `elem` filtered_mod_list) mod_map
+  where mod_list = map cfModuleName mod_map
+        filtered_mod_list = processListWithRegexp mod_list [] [pattern]
 
