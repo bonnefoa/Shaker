@@ -25,7 +25,8 @@ runQuickCheck' :: [ModuleMapping] -> Plugin
 runQuickCheck' modMap  
  | null filteredModMap = lift $ putStrLn "No tests to run"
  | otherwise = do
-     resolvedExp <- lift $ runQ (listProperties filteredModMap)
+     arg <- asks argument
+     resolvedExp <- lift $ runQ $ (listProperties . filterModulesWithPattern arg) filteredModMap
      let function =  filter (/= '\n') $ pprint resolvedExp
      let fullFunction = "sequence_ " ++ function ++ " >> return () "
      lift $ putStrLn fullFunction
@@ -36,10 +37,10 @@ runQuickCheck' modMap
 runHUnit' :: [ModuleMapping] -> Plugin
 runHUnit' mod_map = do 
   arg <- asks argument
-  let filtered_mod_with_hunit = filter (not . null . cfHunitName) mod_map  
-  let filtered_mod = filterModulesWithPattern arg filtered_mod_with_hunit 
+  let filtered_mod = (filterModulesWithPattern arg . filter (not . null . cfHunitName))  mod_map  
   let import_modules = ["Test.HUnit","Prelude" ] ++ map cfModuleName filtered_mod
   resolvedExp <- lift $ runQ (listHunit filtered_mod)
   let function =  filter (/= '\n') $ pprint resolvedExp
   lift $ putStrLn function
   runFunction $ RunnableFunction import_modules ("runTestTT  $ TestList $ " ++ function) 
+
