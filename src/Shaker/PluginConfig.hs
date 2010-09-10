@@ -18,7 +18,9 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
 --                (Execute,runExecute),
                 (QuickCheck,runQuickCheck),
                 (IntelligentQuickCheck,runIntelligentQuickCheck),
-                (IntelligentHunit ,runIntelligentHunit),
+                (IntelligentHUnit ,runIntelligentHUnit),
+                (QuickHUnit, runQuickHUnit),
+                (IntelligentQuickHUnit, runIntelligentQuickHUnit ),
                 (HUnit,runHUnit),
                 (Clean,runClean),
                 (Quit,runExit)
@@ -33,8 +35,10 @@ defaultCommandMap = M.fromList list
 --            ("Execute", Execute),
             ("QuickCheck",QuickCheck),
             ("IQuickCheck",IntelligentQuickCheck),
-            ("IHUnit",IntelligentHunit),
+            ("IHUnit",IntelligentHUnit),
             ("HUnit",HUnit),
+            ("QuickHUnit", QuickHUnit),
+            ("IQuickHUnit", IntelligentQuickHUnit),
             ("Clean",Clean),
             ("q",Quit),
             ("Quit",Quit)
