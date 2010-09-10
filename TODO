@@ -1,6 +1,8 @@
 TODO : 
   Make tests action take pattern as parameters
   Refactor tests
+  configure quickcheck to be faster (less tests)
+  integrate a quickcheck driver
   Big refactoring : Better model for information representation, better separations!
   Optimisation possible by saving the files to listen
   Clean module export
