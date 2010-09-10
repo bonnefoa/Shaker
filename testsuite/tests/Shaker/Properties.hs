@@ -5,6 +5,7 @@ import Control.Monad
 import Test.QuickCheck 
 import System.Time
 import Shaker.Io
+import Shaker.Reflexivite
 
 instance Arbitrary TimeDiff where
    arbitrary =  TimeDiff `liftM` elements tab
@@ -22,11 +23,16 @@ instance Arbitrary ClockTime where
 
 instance Arbitrary FileListenInfo where 
    arbitrary = FileListenInfo `liftM` elements ["src","testsuite"]
-			      `ap` listOf (elements ["\\.$","ab"])
+			      `ap` (listOf . elements) ["\\.$","ab"]
 			      `ap` elements [[],[".*"]]
 
 instance Arbitrary FileInfo where
    arbitrary = arbitrary >>= \cl ->
                elements [".",".."] >>= \ele ->
                return $ FileInfo ele cl
+instance Arbitrary ModuleMapping where 
+  arbitrary = ModuleMapping `liftM` (listOf1 . elements) letters
+                            `ap` (listOf . listOf . elements) letters
+                            `ap` (listOf . listOf . elements) letters
+    where letters = '.' : ['a'..'z'] 
 
