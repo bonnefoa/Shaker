@@ -5,8 +5,6 @@ import Shaker.Io
 import Shaker.Type
 import System.Time
 import Data.List
-import Test.QuickCheck 
-import Test.QuickCheck.Monadic 
 import Test.HUnit hiding (assert)
 
 aTimeDiff :: TimeDiff
@@ -50,13 +48,6 @@ abstractTestModifiedFiles fli proc predicat= do
      (_,newList) <- listModifiedAndCreatedFiles [fli] (proc curList)
      return $ predicat curList newList 
 
-testModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> Property
-testModifiedFiles fli proc predicat= monadicIO action
-  where action = do 
-               curList <- run $ getCurrentFpCl fli 
-               (_,newList) <- run $ listModifiedAndCreatedFiles [fli] (proc curList)
-               assert $ predicat curList newList 
-
 test_listModifiedFiles :: Test
 test_listModifiedFiles = TestCase $ do
   res <- abstractTestModifiedFiles defaultFileListenInfo (map modifyFileInfoClock) (\a b -> length a == length b)
@@ -67,9 +58,10 @@ test_listCreatedFiles = TestCase $ do
   res <- abstractTestModifiedFiles defaultFileListenInfo (init) (\_ b -> length b==1)
   res @? "a created file should be listed "
 
-prop_listModifiedAndCreatedFiles :: FileListenInfo -> Property
-prop_listModifiedAndCreatedFiles fli = 
-  testModifiedFiles fli (map modifyFileInfoClock . init) (\a b -> length a == length b)
+test_listModifiedAndCreatedFiles :: Test
+test_listModifiedAndCreatedFiles = TestCase $ do
+  res <- abstractTestModifiedFiles defaultFileListenInfo (map modifyFileInfoClock . init) (\a b -> length a == length b)
+  res @? "should list modified and created files"
 
 testRecurseListFiles :: Test
 testRecurseListFiles = TestCase $ 
