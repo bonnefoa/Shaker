@@ -1,7 +1,7 @@
 TODO : 
+  Make tests action take pattern as parameters
+  Refactor tests
   Big refactoring : Better model for information representation, better separations!
-  Make action take parameters from command line
-  Implement QuickCheck Action
   Optimisation possible by saving the files to listen
   Clean module export
   Cabal Integration : 
@@ -12,6 +12,8 @@ TODO :
   Use a monad writer for cabal information extraction
 
 Done : 
+  Make action take parameters from command line
+  Implement QuickCheck Action
   bug : ~Compile launche two fork the first time
   Convert InputShaker parameter to Monad
   Support multi action
