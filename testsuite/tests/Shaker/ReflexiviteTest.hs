@@ -106,4 +106,3 @@ prop_filterModMap_include_some modMap = (not . null) modMap ==> head res == head
   where module_name = (cfModuleName . head) modMap
         res = filterModulesWithPattern (Just module_name) modMap 
 
-

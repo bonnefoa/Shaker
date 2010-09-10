@@ -2,6 +2,7 @@ module Shaker.IoTest
  where
 
 import Shaker.Io
+import Shaker.Type
 import System.Time
 import Data.List
 import Test.QuickCheck 
@@ -85,4 +86,3 @@ testIsFileConductorNotContainingMain = TestCase $ do
   res <- isFileContainingMain "src/Shaker/Conductor.hs"
   assertBool "File Config.hs should not contain main methods" $ not res
 
- 

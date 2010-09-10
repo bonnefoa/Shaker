@@ -3,8 +3,8 @@ module Shaker.Properties
 
 import Control.Monad
 import Test.QuickCheck 
+import Shaker.Type
 import System.Time
-import Shaker.Io
 import Shaker.Reflexivite
 
 instance Arbitrary TimeDiff where
