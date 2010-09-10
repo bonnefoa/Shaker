@@ -16,13 +16,19 @@ modifyFileInfoClock (FileInfo fp cl) = FileInfo fp (addToClockTime aTimeDiff cl)
 defaultFileListenInfo :: FileListenInfo
 defaultFileListenInfo = FileListenInfo "src" [] [] 
 
-abstractHunitTestListFiles :: FileListenInfo -> ([FilePath] -> [FilePath] -> Bool) -> IO Bool
+type ExpectedFiles = [FilePath]
+type PresentFiles = [FilePath]
+
+abstractHunitTestListFiles :: FileListenInfo -> (PresentFiles -> ExpectedFiles -> Bool) -> IO Bool
 abstractHunitTestListFiles fli predicat = do 
   normal_list <- listFiles fli{ignore= []}
   res <- listFiles fli
   return $ predicat normal_list res
 
-abstractTestModifiedFiles :: FileListenInfo -> ([FileInfo] -> [FileInfo]) -> ([FileInfo] -> [FileInfo] ->Bool) -> IO Bool
+type ModifyFileInfo = [FileInfo] -> [FileInfo]
+type Predicat = [FileInfo] -> [FileInfo] ->Bool
+
+abstractTestModifiedFiles :: FileListenInfo -> ModifyFileInfo -> Predicat -> IO Bool
 abstractTestModifiedFiles fli proc predicat= do
      curList <- getCurrentFpCl fli 
      (_,newList) <- listModifiedAndCreatedFiles [fli] (proc curList)
