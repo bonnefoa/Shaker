@@ -30,11 +30,10 @@ initThread inputState = do
 mainThread :: InputState -> Shaker IO()
 mainThread st@(InputState inputMv tokenMv) = do
   _ <- lift $ tryPutMVar tokenMv 42
-  cmd <- lift $ takeMVar inputMv
-  executeCommand cmd  
-  case cmd of
-       Command _ [Action Quit] -> return ()
-       _ ->  mainThread st
+  maybe_cmd <- lift $ takeMVar inputMv 
+  continue <- executeCommand maybe_cmd
+  if continue then mainThread st 
+              else return ()
 
 data ConductorData = ConductorData {
   coKillChannel :: MVar [ThreadId]
@@ -83,9 +82,12 @@ threadExecutor cdtData@(ConductorData _ _ endProcess listenState fun) = do
   forkIO (fun modFiles `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData
   
 -- | Execute Given Command in a new thread
-executeCommand :: Command -> Shaker IO()
-executeCommand (Command OneShot act) = executeAction act 
-executeCommand (Command Continuous act) = listenManager ( executeAction act ) >> return () 
+executeCommand :: Maybe Command -> Shaker IO(Bool)
+executeCommand Nothing = executeAction [Action InvalidAction] >> return True
+executeCommand (Just (Command OneShot act_list)) 
+  | (Action Quit) `elem` act_list = return False 
+  | otherwise = executeAction act_list >> return True
+executeCommand (Just (Command Continuous act)) = listenManager ( executeAction act ) >> return True
 
 -- | Execute given action
 executeAction :: [Action] -> Shaker IO()

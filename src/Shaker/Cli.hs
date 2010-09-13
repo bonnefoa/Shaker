@@ -19,7 +19,7 @@ import Data.List
 import Control.Monad.Reader
  
 -- | The input mvar is used to push the parsed command
-type Input = MVar Command
+type Input = MVar (Maybe Command)
 -- | Token is used to manage the token between action executor and command-line listener
 type Token = MVar Int
 
@@ -36,19 +36,13 @@ getInput inSt = do
 
 -- | Execute the entered command 
 processInput :: ShakerInput ->  InputState -> InputT IO()
-processInput shIn inp@(InputState inputMv tokenMv) = do
+processInput shIn (InputState inputMv tokenMv) = do
   _ <- lift $ takeMVar tokenMv 
   minput <- getInputLine "% "
   case minput of 
      Nothing -> return()
-     Just str -> lift $ processInput' shIn str inp
-
-processInput' :: ShakerInput -> String -> InputState ->IO()
-processInput' shIn str (InputState inputMv tokenMv) = do
-  case parseCommand shIn str of
-       Just command -> tryPutMVar inputMv (command) >> return()
-       Nothing -> return() 
-
+     Just str -> lift $ tryPutMVar inputMv (parseCommand shIn str) >> return()
+       
 -- * Auto-completion management 
 
 -- | Settings for haskeline

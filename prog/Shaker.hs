@@ -16,5 +16,5 @@ main = do
   cab <- defaultCabalInput 
   if null args 
     then runReaderT (initThread inputState) cab
-    else runReaderT ( executeCommand . parseCommand cab $ concat args)  cab 
+    else runReaderT ( executeCommand . parseCommand cab $ concat args) cab >> return ()
   
