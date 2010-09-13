@@ -37,6 +37,7 @@ data ShakerAction =
 	| IntelligentHUnit -- ^ Execute changed hunit tests 
         | QuickHUnit -- ^ Execute both quickcheck and hunit 
         | IntelligentQuickHUnit -- ^ Execute both quickcheck and hunit on modified modules
+        | InvalidAction -- ^ Display an error when invalid action is inputed
 	| Help -- ^ Display the help
         | Execute -- ^ Execute a command
 	| Quit -- ^ Exit shaker

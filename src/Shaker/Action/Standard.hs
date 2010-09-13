@@ -40,3 +40,8 @@ runClean = do
                  ex <- doesDirectoryExist toClean
                  if ex then removeDirectoryRecursive toClean  
                        else putStrLn "" 
+
+runInvalidAction :: Plugin 
+runInvalidAction = lift $
+  putStrLn "Action invalid, use help to display available actions"
+
