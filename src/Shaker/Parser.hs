@@ -9,11 +9,11 @@ import Shaker.Type
 import qualified Data.Map as M
 
 -- | Parse the given string to a Command
-parseCommand :: ShakerInput -> String -> Command
+parseCommand :: ShakerInput -> String -> Maybe Command
 parseCommand shIn str = 
   case (parse (typeCommand $ commandMap shIn) "parseCommand" str) of
-    Left _ -> Command OneShot [Action Help] 
-    Right val -> val
+    Left _ -> Nothing
+    Right val -> Just val
 
 -- | Parse a Command
 typeCommand :: CommandMap -> GenParser Char st Command
@@ -22,10 +22,7 @@ typeCommand cmMap = typeDuration >>= \dur ->
   return (Command dur acts)
 
 typeMultipleAction :: CommandMap -> GenParser Char st [Action]
-typeMultipleAction cmMap = many (typeAction cmMap) >>= \res ->
-  case res of 
-       [] -> return [Action Help]
-       _ -> return res
+typeMultipleAction cmMap = many1 (typeAction cmMap)
 
 -- | Parse to an action
 typeAction :: CommandMap -> GenParser Char st Action
