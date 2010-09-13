@@ -42,6 +42,5 @@ runClean = do
                        else putStrLn "" 
 
 runInvalidAction :: Plugin 
-runInvalidAction = lift $
-  putStrLn "Action invalid, use help to display available actions"
+runInvalidAction = lift $ putStrLn "Invalid action,  use help to display available actions"
 
