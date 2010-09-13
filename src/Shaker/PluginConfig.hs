@@ -15,6 +15,7 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
                 (Compile,runCompile ),
                 (FullCompile,runFullCompile ),
                 (Help,runHelp),
+                (InvalidAction,runInvalidAction),
 --                (Execute,runExecute),
                 (QuickCheck,runQuickCheck),
                 (IntelligentQuickCheck,runIntelligentQuickCheck),
