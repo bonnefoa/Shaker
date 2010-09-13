@@ -1,6 +1,8 @@
 module Shaker.ParserTest
  where
 
+import Control.Arrow 
+
 import Test.QuickCheck
 import Shaker.Type
 import Shaker.Parser
@@ -31,12 +33,17 @@ data ActionString = ActionString {
        ,cfAction :: Action
 } deriving (Show)
 
+constructActionString :: (String, ShakerAction) -> ActionString
+constructActionString (key, value) = ActionString key (Action value)
+
 instance Arbitrary ActionString where
   arbitrary = do 
         str <- listOf $ elements ['a'..'p'] 
         proc str 
-        where proc "" = elements $ map (\(key,value) -> ActionString key (Action value)) (toList defaultCommandMap)
-              proc str = elements $ map (\(key,value) -> ActionString (key ++ " " ++ trim str) (ActionWithArg value str)  ) (toList defaultCommandMap)
+        where proc "" = oneof [elements $ map (constructActionString . first (map toUpper)) listCommandMap 
+                        ,elements $ map constructActionString listCommandMap ]
+              proc str = elements $ map (\(key,value) -> ActionString (key ++ " " ++ trim str) (ActionWithArg value str)  ) listCommandMap 
+              listCommandMap = toList defaultCommandMap 
 
 trim :: String -> String
 trim = reverse . dropWhile isSpace . reverse
