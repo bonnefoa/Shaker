@@ -1,5 +1,4 @@
 TODO : 
-  Make tests action take pattern as parameters
   Refactor tests
   configure quickcheck to be faster (less tests)
   integrate a quickcheck driver
@@ -13,9 +12,9 @@ TODO :
   Correct import module (only import necessary functions)
   Create action command
   Use a monad writer for cabal information extraction
-  Change parse result if there is invalid action
   Correct alignement when launching test
   command case insensitive
+  Test changes are not taken loaded when using ~QuickCheck
 
 Done : 
   Make action take parameters from command line
@@ -36,4 +35,6 @@ Done :
   Exclude main methods from fullCompile 
   If no source dir is specified, an error is throwed
   correct fullcompile. Concat source dir from all artifacts (currently only use the first)
+  Make tests action take pattern as parameters
+  Change parse result if there is invalid action
 
