@@ -19,7 +19,7 @@ TODO :
 Done : 
   Make action take parameters from command line
   Implement QuickCheck Action
-  bug : ~Compile launche two fork the first time
+  bug : ~Compile launch two fork the first time
   Convert InputShaker parameter to Monad
   Support multi action
   Implement Clean

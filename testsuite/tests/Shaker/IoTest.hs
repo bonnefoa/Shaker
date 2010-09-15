@@ -61,7 +61,7 @@ testListModifiedFiles = TestCase $ do
 
 testListCreatedFiles :: Test
 testListCreatedFiles = TestCase $ do
-  res <- abstractTestModifiedFiles defaultFileListenInfo (init) (\_ b -> length b==1)
+  res <- abstractTestModifiedFiles defaultFileListenInfo init (\_ b -> length b==1)
   res @? "a created file should be listed "
 
 testListModifiedAndCreatedFiles :: Test
