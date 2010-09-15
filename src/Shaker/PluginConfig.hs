@@ -30,18 +30,17 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
 defaultCommandMap :: CommandMap 
 defaultCommandMap = M.fromList list
   where list = [
-            ("Compile",Compile),
-            ("FullCompile",FullCompile),
-            ("Help", Help),
+            ("compile",Compile),
+            ("fullcompile",FullCompile),
+            ("help", Help),
 --            ("Execute", Execute),
-            ("QuickCheck",QuickCheck),
-            ("IQuickCheck",IntelligentQuickCheck),
-            ("IHUnit",IntelligentHUnit),
-            ("HUnit",HUnit),
-            ("QuickHUnit", QuickHUnit),
-            ("IQuickHUnit", IntelligentQuickHUnit),
-            ("Clean",Clean),
-            ("q",Quit),
-            ("Quit",Quit)
+            ("quickcheck",QuickCheck),
+            ("iquickcheck",IntelligentQuickCheck),
+            ("ihUnit",IntelligentHUnit),
+            ("hunit",HUnit),
+            ("quickhunit", QuickHUnit),
+            ("iquickhunit", IntelligentQuickHUnit),
+            ("clean",Clean),
+            ("quit",Quit)
           ]
 
