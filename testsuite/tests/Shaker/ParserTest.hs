@@ -12,12 +12,12 @@ import Data.Map (toList)
 import Data.Char
  
 prop_parseDefaultAction :: String -> Bool
-prop_parseDefaultAction act = res == Nothing
+prop_parseDefaultAction act = either (\_ -> True) (\_ -> False) res
   where res = parseCommand defaultInput ('x' :act )
 
 prop_parseCommand :: CommandString -> Bool
-prop_parseCommand (CommandString str expCom) = parsed == expCom 
-  where (Just parsed) = parseCommand defaultInput str
+prop_parseCommand (CommandString str expCom) = either (\_ -> False) (== expCom) res
+  where res = parseCommand defaultInput str
 
 -- * Arbitrary instances 
 

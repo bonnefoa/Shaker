@@ -4,16 +4,15 @@ module Shaker.Parser(
 )
  where
 
+import Data.Char
+
 import Text.ParserCombinators.Parsec
 import Shaker.Type
 import qualified Data.Map as M
 
 -- | Parse the given string to a Command
-parseCommand :: ShakerInput -> String -> Maybe Command
-parseCommand shIn str = 
-  case (parse (typeCommand $ commandMap shIn) "parseCommand" str) of
-    Left _ -> Nothing
-    Right val -> Just val
+parseCommand :: ShakerInput -> String -> Either ParseError Command
+parseCommand shIn str = parse (typeCommand $ commandMap shIn) "parseCommand" (map toLower str) 
 
 -- | Parse a Command
 typeCommand :: CommandMap -> GenParser Char st Command
