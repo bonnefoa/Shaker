@@ -1,6 +1,8 @@
 module Shaker.CliTest
  where
 
+import Data.Char
+
 import Control.Monad
 import Test.QuickCheck 
 import Test.QuickCheck.Monadic
@@ -25,7 +27,7 @@ instance Arbitrary ActionInt where
 checkRes :: Monad m => String -> String -> PropertyM m ()
 checkRes incomplete expected = do
   proposedActions <- listActions defaultInput incomplete
-  assert $ any (\a -> replacement a == expected) proposedActions
+  assert $ any (\a -> replacement a == map toLower expected ) proposedActions
 
 prop_completeWord :: Action -> Property
 prop_completeWord act = monadicIO $ checkRes str str 

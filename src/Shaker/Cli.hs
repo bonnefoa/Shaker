@@ -9,13 +9,14 @@ module Shaker.Cli(
 )
  where
 
+import Data.Char
+import Data.List
 import Shaker.Parser
 import Shaker.Type
 import Control.Concurrent
 import Control.Monad.Trans
 import System.Console.Haskeline
 import qualified Data.Map as M
-import Data.List
 import Control.Monad.Reader
  
 -- | The input mvar is used to push the parsed command
@@ -41,7 +42,9 @@ processInput shIn (InputState inputMv tokenMv) = do
   minput <- getInputLine "% "
   case minput of 
      Nothing -> return()
-     Just str -> lift $ tryPutMVar inputMv (parseCommand shIn str) >> return()
+     Just str -> either error_action normal_action (parseCommand shIn str)
+                 where error_action err = lift $ print err >> tryPutMVar inputMv Nothing >> return()
+                       normal_action val = lift $ tryPutMVar inputMv (Just val) >> return()
        
 -- * Auto-completion management 
 
@@ -62,7 +65,7 @@ listActions shIn str = return $ autocompleteFunction (commandMap shIn) str
 autocompleteFunction :: CommandMap  -> String -> [Completion]
 autocompleteFunction cmdMap [] = map simpleCompletion $ M.keys cmdMap
 autocompleteFunction cmdMap cliInput = map simpleCompletion  compleListProp
-  where inpWords = words cliInput
+  where inpWords = (words . map toLower) cliInput
         lastWord = last inpWords 
         listProp = filter (lastWord `isPrefixOf`) $ M.keys cmdMap
         commonPref = unwords (init inpWords)
