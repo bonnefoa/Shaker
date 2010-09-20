@@ -33,15 +33,16 @@ data InputState = InputState {
 getInput :: InputState -> Shaker IO()
 getInput inSt = do
         shIn <- ask 
-        lift $ runInputT (myDefaultSettings shIn) $ processInput shIn inSt
+        lift $ runInputT (myDefaultSettings shIn) $ withInterrupt $ processInput shIn inSt
 
 -- | Execute the entered command 
 processInput :: ShakerInput ->  InputState -> InputT IO()
 processInput shIn (InputState inputMv tokenMv) = do
   _ <- lift $ takeMVar tokenMv 
-  minput <- getInputLine "% "
+  minput <-  handleInterrupt (return (Just "quit"))
+               $ getInputLine "% "
   case minput of 
-     Nothing -> return()
+     Nothing -> lift $ tryPutMVar inputMv (Just exitCommand ) >> return () 
      Just str -> either error_action normal_action (parseCommand str shIn)
                  where error_action err = lift $ print err >> tryPutMVar inputMv Nothing >> return()
                        normal_action val = lift $ tryPutMVar inputMv (Just val) >> return()

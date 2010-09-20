@@ -2,7 +2,7 @@
 module Shaker.Type
  where
 
-import DynFlags
+import DynFlags hiding (OneShot)
 import qualified Data.Map as M
 import Control.Monad.Reader
 import System.Time(ClockTime)
@@ -144,3 +144,7 @@ defaultHaskellPatterns = [".*\\.hs$", ".*\\.lhs"]
 -- | Default exclude pattern : Setup.hs
 defaultExclude :: [String]
 defaultExclude =  [".*Setup\\.hs$"]
+
+exitCommand :: Command
+exitCommand = Command OneShot [Action Quit]
+
