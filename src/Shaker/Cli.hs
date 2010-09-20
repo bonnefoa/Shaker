@@ -42,7 +42,7 @@ processInput shIn (InputState inputMv tokenMv) = do
   minput <- getInputLine "% "
   case minput of 
      Nothing -> return()
-     Just str -> either error_action normal_action (parseCommand shIn str)
+     Just str -> either error_action normal_action (parseCommand str shIn)
                  where error_action err = lift $ print err >> tryPutMVar inputMv Nothing >> return()
                        normal_action val = lift $ tryPutMVar inputMv (Just val) >> return()
        
