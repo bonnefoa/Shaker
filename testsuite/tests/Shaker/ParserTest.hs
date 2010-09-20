@@ -13,11 +13,11 @@ import Data.Char
  
 prop_parseDefaultAction :: String -> Bool
 prop_parseDefaultAction act = either (\_ -> True) (\_ -> False) res
-  where res = parseCommand defaultInput ('x' :act )
+  where res = parseCommand ('x' :act) defaultInput 
 
 prop_parseCommand :: CommandString -> Bool
 prop_parseCommand (CommandString str expCom) = either (\_ -> False) (== expCom) res
-  where res = parseCommand defaultInput str
+  where res = parseCommand str defaultInput
 
 -- * Arbitrary instances 
 
@@ -38,10 +38,15 @@ constructActionString (key, value) = ActionString key (Action value)
 
 instance Arbitrary ActionString where
   arbitrary = do 
-        str <- listOf $ elements ['a'..'p'] 
+        str <- listOf $ elements ['a'..'z'] 
         proc str 
-        where proc "" = oneof [elements $ map (constructActionString . first (map toUpper)) listCommandMap 
-                        ,elements $ map constructActionString listCommandMap ]
+        where 
+              -- Build action string without arg
+              proc "" = oneof [
+                         elements $ map (constructActionString . first (map toUpper)) listCommandMap 
+                         ,elements $ map constructActionString listCommandMap
+                        ]
+              -- build action string with args
               proc str = elements $ map (\(key,value) -> ActionString (key ++ " " ++ trim str) (ActionWithArg value str)  ) listCommandMap 
               listCommandMap = toList defaultCommandMap 
 
@@ -51,11 +56,13 @@ trim = reverse . dropWhile isSpace . reverse
 instance Arbitrary CommandString where
   arbitrary = do 
     dur <- elements [Continuous,OneShot]
-    actionStrings <- listOf1 arbitrary
-    return CommandString {
-        comStr = getStringFromDurationAndAction dur actionStrings
-        ,command = Command dur (map cfAction actionStrings) 
-    }
+    spaces <- listOf $ elements [' ']
+    actionString_list <- listOf1 arbitrary
+    elements [
+        CommandString { comStr = getStringFromDurationAndAction dur actionString_list
+          ,command = Command dur (map cfAction actionString_list) }
+        , CommandString spaces $ Command OneShot [Action Empty]
+        ]
 
 getStringFromDurationAndAction :: Duration -> [ActionString] -> String
 getStringFromDurationAndAction dur acts  =
