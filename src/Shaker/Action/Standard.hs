@@ -26,6 +26,9 @@ runStartAction :: Plugin
 runStartAction = lift $ 
   putStrLn "---------- Begin action -------------------------"
 
+runEmpty :: Plugin
+runEmpty = return ()
+
 -- | Print an end action notification
 runEndAction :: Plugin
 runEndAction = lift $ 

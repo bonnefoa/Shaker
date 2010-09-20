@@ -10,6 +10,8 @@ import System.Time(ClockTime)
 -- | Environnement containing the project configuration.
 -- It is generated at startup and won't change
 type Shaker  = ReaderT ShakerInput 
+type ShakerR  = Reader ShakerInput 
+
 -- | Environnement for the project compilation
 -- This environnement can change depending on the compile 
 -- action called
@@ -40,6 +42,7 @@ data ShakerAction =
         | InvalidAction -- ^ Display an error when invalid action is inputed
 	| Help -- ^ Display the help
         | Execute -- ^ Execute a command
+        | Empty -- ^ Nothing to execute 
 	| Quit -- ^ Exit shaker
 	| Clean -- ^ Delete generated 
   deriving (Show,Eq,Ord)
