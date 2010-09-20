@@ -28,7 +28,7 @@ typeCommandNonEmpty cmMap = typeDuration >>= \dur ->
 typeEmpty :: GenParser Char st Command
 typeEmpty = spaces >> 
   notFollowedBy anyChar >>
-  return (Command OneShot [Action Empty] ) 
+  return emptyCommand
 
 typeMultipleAction :: CommandMap -> GenParser Char st [Action]
 typeMultipleAction cmMap = many1 (typeAction cmMap)

@@ -148,3 +148,6 @@ defaultExclude =  [".*Setup\\.hs$"]
 exitCommand :: Command
 exitCommand = Command OneShot [Action Quit]
 
+emptyCommand :: Command 
+emptyCommand = Command OneShot [Action Empty] 
+
