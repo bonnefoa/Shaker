@@ -11,14 +11,24 @@ import Shaker.Type
 import qualified Data.Map as M
 
 -- | Parse the given string to a Command
-parseCommand :: ShakerInput -> String -> Either ParseError Command
-parseCommand shIn str = parse (typeCommand $ commandMap shIn) "parseCommand" (map toLower str) 
+parseCommand :: String -> ShakerInput -> Either ParseError Command
+parseCommand str shIn = parse (typeCommand cmd_map) "parseCommand" process_input
+  where cmd_map = commandMap shIn
+        process_input = map toLower str
 
 -- | Parse a Command
 typeCommand :: CommandMap -> GenParser Char st Command
-typeCommand cmMap = typeDuration >>= \dur ->
+typeCommand cmMap = choice [try typeEmpty, typeCommandNonEmpty cmMap] 
+
+typeCommandNonEmpty :: CommandMap -> GenParser Char st Command 
+typeCommandNonEmpty cmMap = typeDuration >>= \dur ->
   typeMultipleAction cmMap >>= \acts ->
   return (Command dur acts)
+
+typeEmpty :: GenParser Char st Command
+typeEmpty = spaces >> 
+  notFollowedBy anyChar >>
+  return (Command OneShot [Action Empty] ) 
 
 typeMultipleAction :: CommandMap -> GenParser Char st [Action]
 typeMultipleAction cmMap = many1 (typeAction cmMap)
