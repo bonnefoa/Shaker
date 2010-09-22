@@ -66,10 +66,10 @@ cleanThreads :: Shaker IO()
 cleanThreads = asks ( threadIdListenList . threadData ) >>= lift . readMVar >>= lift . mapM_ killThread
 
 addThreadIdToListenMVar :: ThreadId -> Shaker IO()
-addThreadIdToListenMVar b = asks (threadIdListenList . threadData) >>= \a -> addThreadIdToMVar a b
+addThreadIdToListenMVar thrdId = asks (threadIdListenList . threadData) >>= flip addThreadIdToMVar thrdId
 
 addThreadIdToQuitMVar :: ThreadId -> Shaker IO()
-addThreadIdToQuitMVar b = asks (threadIdQuitList . threadData) >>= \a -> addThreadIdToMVar a b
+addThreadIdToQuitMVar thrdId = asks (threadIdQuitList . threadData) >>= flip addThreadIdToMVar thrdId
 
 -- | Add the given threadId to the 
 addThreadIdToMVar :: ThreadIdList -> ThreadId -> Shaker IO ()
