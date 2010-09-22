@@ -22,8 +22,8 @@ import Control.Monad.Reader
 -- | Listen to keyboard input and parse command
 getInput :: Shaker IO( IO() )
 getInput = do
-        shIn <- ask 
-        return $ runInputT (myDefaultSettings shIn) $ withInterrupt $ processInput shIn 
+  shIn <- ask 
+  return $ runInputT (myDefaultSettings shIn) $ withInterrupt $ processInput shIn 
 
 -- | Execute the entered command 
 processInput :: ShakerInput -> InputT IO()
