@@ -20,14 +20,15 @@ import qualified Data.Map as M
 import Control.Monad.Reader
 
 -- | Listen to keyboard input and parse command
-getInput :: InputState -> Shaker IO()
-getInput inSt = do
+getInput :: Shaker IO( IO() )
+getInput = do
         shIn <- ask 
-        lift $ runInputT (myDefaultSettings shIn) $ withInterrupt $ processInput shIn inSt
+        return $ runInputT (myDefaultSettings shIn) $ withInterrupt $ processInput shIn 
 
 -- | Execute the entered command 
-processInput :: ShakerInput ->  InputState -> InputT IO()
-processInput shIn (InputState inputMv tokenMv) = do
+processInput :: ShakerInput -> InputT IO()
+processInput shIn  = do
+  let (InputState inputMv tokenMv) = inputState shIn
   _ <- lift $ takeMVar tokenMv 
   minput <-  handleInterrupt (return (Just "quit"))
                $ getInputLine "% "

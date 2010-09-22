@@ -18,21 +18,22 @@ import qualified Control.Exception as C
  
 -- | Initialize the master thread 
 -- Once the master thread is finished, all input threads are killed
-initThread :: InputState -> Shaker IO()
-initThread inputState = do
-  act <- asks $ runReaderT (getInput inputState) 
+initThread :: Shaker IO()
+initThread = do
+  act <- getInput 
   procId <- lift $ forkIO $ forever act
-  mainThread inputState 
+  mainThread 
   lift $ killThread procId
  
 -- | The main thread. 
 -- Loop until a Quit action is called
-mainThread :: InputState -> Shaker IO()
-mainThread st@(InputState inputMv tokenMv) = do
+mainThread :: Shaker IO()
+mainThread = do
+  (InputState inputMv tokenMv) <- asks inputState
   _ <- lift $ tryPutMVar tokenMv 42
   maybe_cmd <- lift $ takeMVar inputMv 
   continue <- executeCommand maybe_cmd
-  when continue $ mainThread st 
+  when continue $ mainThread 
 
 data ConductorData = ConductorData {
   coKillChannel :: MVar [ThreadId]

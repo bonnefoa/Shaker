@@ -12,10 +12,9 @@ import System( getArgs )
 main :: IO()
 main = do
   args <- getArgs
-  inputState <- defaultInputState
   cab <- defaultCabalInput 
   if null args 
-    then runReaderT (initThread inputState) cab
+    then runReaderT initThread cab
     else 
          runReaderT ( runArgumentAction $ concat args) cab >> return ()
   
