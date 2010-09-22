@@ -15,13 +15,17 @@ defaultInput = ShakerInput {
   commandMap = defaultCommandMap
   ,argument = Nothing
   ,modifiedInfoFiles = []
+  ,threadData = undefined
+  ,inputState = undefined
   }
 
 defaultInputInitialized :: IO ShakerInput 
 defaultInputInitialized = do 
   defThrdData <- defaultThreadData
+  input_state <- defaultInputState 
   return defaultInput { 
     threadData = defThrdData 
+    ,inputState = input_state 
  }
 
 defaultThreadData :: IO ThreadData 
