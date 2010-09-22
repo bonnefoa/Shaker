@@ -20,10 +20,14 @@ import qualified Control.Exception as C
 -- Once the master thread is finished, all input threads are killed
 initThread :: Shaker IO()
 initThread = do
-  act <- getInput 
-  procId <- lift . forkIO $ forever act
-  mainThread 
-  lift $ killThread procId
+  input_action <- getInput 
+  lift ( forkIO ( forever input_action) ) >>= addThreadIdToQuitMVar 
+  shIn <- ask
+  let main_loop = runReaderT mainThread shIn 
+  lift ( forkIO (forever main_loop) ) >>= addThreadIdToQuitMVar
+  quit_token <- asks (quitToken . threadData)
+  _ <- lift $ takeMVar quit_token
+  cleanAllThreads 
  
 -- | The main thread. 
 -- Loop until a Quit action is called
@@ -32,8 +36,7 @@ mainThread = do
   (InputState inputMv tokenMv) <- asks inputState
   _ <- lift $ tryPutMVar tokenMv 42
   maybe_cmd <- lift $ takeMVar inputMv 
-  continue <- executeCommand maybe_cmd
-  when continue mainThread 
+  executeCommand maybe_cmd
 
 data ConductorData = ConductorData {
   coListenState :: ListenState
@@ -51,8 +54,8 @@ listenManager fun = do
   lift ( forkIO (getChar >>= putMVar keyboard_token ) ) >>= addThreadIdToListenMVar 
   -- Run the action
   lift ( forkIO (forever action ) ) >>= addThreadIdToListenMVar
-  _ <- lift $ readMVar keyboard_token 
-  cleanThreads 
+  _ <- lift $ takeMVar keyboard_token 
+  cleanListenerThreads 
 
 initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
 initializeConductorData fun = do
@@ -62,16 +65,26 @@ initializeConductorData fun = do
   let theFun = \a -> runReaderT fun shIn {modifiedInfoFiles = a}
   return $ ConductorData lstState theFun
   
-cleanThreads :: Shaker IO()
-cleanThreads = asks ( threadIdListenList . threadData ) >>= lift . readMVar >>= lift . mapM_ killThread
+cleanListenerThreads :: Shaker IO ()
+cleanListenerThreads = asks ( threadIdListenList . threadData ) >>= cleanThreads
 
+cleanAllThreads :: Shaker IO ()
+cleanAllThreads = do 
+  asks ( threadIdListenList . threadData ) >>= cleanThreads
+  asks ( threadIdQuitList . threadData ) >>= cleanThreads
+
+cleanThreads :: ThreadIdList -> Shaker IO()
+cleanThreads thrdList = lift (readMVar thrdList)  >>= lift . mapM_ killThread 
+
+-- | Add the given threadId to the listener thread list
 addThreadIdToListenMVar :: ThreadId -> Shaker IO()
 addThreadIdToListenMVar thrdId = asks (threadIdListenList . threadData) >>= flip addThreadIdToMVar thrdId
 
+-- | Add the given threadId to the quit thread list
 addThreadIdToQuitMVar :: ThreadId -> Shaker IO()
 addThreadIdToQuitMVar thrdId = asks (threadIdQuitList . threadData) >>= flip addThreadIdToMVar thrdId
 
--- | Add the given threadId to the 
+-- | Add the given threadId to the mvar list
 addThreadIdToMVar :: ThreadIdList -> ThreadId -> Shaker IO ()
 addThreadIdToMVar thrdList thrId = lift $ modifyMVar_ thrdList (\b -> return $ thrId:b) 
 
@@ -85,12 +98,10 @@ threadExecutor (ConductorData listenState fun) = do
   addThreadIdToListenMVar procId
   
 -- | Execute Given Command in a new thread
-executeCommand :: Maybe Command -> Shaker IO Bool
-executeCommand Nothing = executeAction [Action InvalidAction] >> return True
-executeCommand (Just (Command OneShot act_list)) 
-  | Action Quit `elem` act_list = return False 
-  | otherwise = executeAction act_list >> return True
-executeCommand (Just (Command Continuous act)) = listenManager ( executeAction act ) >> return True
+executeCommand :: Maybe Command -> Shaker IO ()
+executeCommand Nothing = executeAction [Action InvalidAction] 
+executeCommand (Just (Command OneShot act_list)) = executeAction act_list 
+executeCommand (Just (Command Continuous act)) = listenManager ( executeAction act ) 
 
 -- | Execute given action
 executeAction :: [Action] -> Shaker IO()
