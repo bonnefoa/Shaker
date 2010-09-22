@@ -52,20 +52,21 @@ listenManager fun = do
   -- Run the action
   lift ( forkIO (forever action ) ) >>= addThreadIdToMVar 
   _ <- lift $ readMVar (coEndToken conductorData)
-  cleanThreads conductorData
+  cleanThreads 
 
 initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
 initializeConductorData fun = do
   shIn <- ask
   lstState <- initializeListener 
+  mapM_ addThreadIdToMVar $ threadIds lstState 
   endToken <- lift newEmptyMVar 
   let theFun = \a -> runReaderT fun shIn {modifiedInfoFiles = a}
   return $ ConductorData endToken lstState theFun
   
-cleanThreads :: ConductorData -> Shaker IO()
-cleanThreads (ConductorData _ lsState _) = do 
+cleanThreads :: Shaker IO()
+cleanThreads = do 
   killList <- asks ( threadIdListenList . threadData ) >>= lift . readMVar
-  lift $ mapM_ killThread $ killList ++ threadIds lsState
+  lift $ mapM_ killThread $ killList 
 
 addThreadIdToMVar :: ThreadId -> Shaker IO ()
 addThreadIdToMVar thrId = do
@@ -74,7 +75,7 @@ addThreadIdToMVar thrId = do
 
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ConductorData -> Shaker IO ()
-threadExecutor cdtData@(ConductorData _ listenState fun) = do 
+threadExecutor (ConductorData _ listenState fun) = do 
   process_token <- asks (processToken . threadData ) 
   modFiles <- lift $ takeMVar (mvModifiedFiles listenState)
   _ <- lift $ takeMVar process_token 
