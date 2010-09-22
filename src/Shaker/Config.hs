@@ -15,8 +15,6 @@ defaultInput = ShakerInput {
   commandMap = defaultCommandMap
   ,argument = Nothing
   ,modifiedInfoFiles = []
-  ,threadData = undefined
-  ,inputState = undefined
   }
 
 defaultInputInitialized :: IO ShakerInput 

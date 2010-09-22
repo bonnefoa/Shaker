@@ -29,15 +29,16 @@ import Control.Monad
 
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
-defaultCabalInput = readConf >>=
- checkInvalidMain . localBuildInfoToShakerInput
+defaultCabalInput = readConf >>= localBuildInfoToShakerInput >>= checkInvalidMain 
 
 readConf :: IO LocalBuildInfo
 readConf = getPersistBuildConfig "dist"
 
 -- | Extract useful information from localBuildInfo to a ShakerInput
-localBuildInfoToShakerInput :: LocalBuildInfo -> ShakerInput
-localBuildInfoToShakerInput lbi = defaultInput {
+localBuildInfoToShakerInput :: LocalBuildInfo -> IO ShakerInput
+localBuildInfoToShakerInput lbi = do 
+  defInput <- defaultInputInitialized 
+  return defInput {
     compileInputs = cplInputs
     ,listenerInput = compileInputsToListenerInput cplInputs
   }
