@@ -18,16 +18,6 @@ import Control.Monad.Trans
 import System.Console.Haskeline
 import qualified Data.Map as M
 import Control.Monad.Reader
- 
--- | The input mvar is used to push the parsed command
-type Input = MVar (Maybe Command)
--- | Token is used to manage the token between action executor and command-line listener
-type Token = MVar Int
-
-data InputState = InputState {  
-  input :: Input,
-  token :: Token
-}
 
 -- | Listen to keyboard input and parse command
 getInput :: InputState -> Shaker IO()

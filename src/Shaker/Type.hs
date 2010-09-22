@@ -6,11 +6,16 @@ import DynFlags hiding (OneShot)
 import qualified Data.Map as M
 import Control.Monad.Reader
 import System.Time(ClockTime)
+import Control.Concurrent.MVar
+import Control.Concurrent
 
 -- | Environnement containing the project configuration.
 -- It is generated at startup and won't change
 type Shaker  = ReaderT ShakerInput 
 type ShakerR  = Reader ShakerInput 
+
+type ThreadIdList = MVar [ThreadId]
+type Token = MVar Int
 
 -- | Environnement for the project compilation
 -- This environnement can change depending on the compile 
@@ -28,6 +33,15 @@ data Action =
   Action ShakerAction
   | ActionWithArg ShakerAction String
   deriving (Show,Eq,Ord)
+ 
+-- | The input mvar is used to push the parsed command
+type Input = MVar (Maybe Command)
+
+
+data InputState = InputState {  
+  input :: Input,
+  token :: Token -- ^ Token is used to manage the token between action executor and command-line listener
+}
 
 -- | ShakerAction represents the differents actions realisable by shaker
 data ShakerAction = 
@@ -59,7 +73,19 @@ data ShakerInput = ShakerInput {
   ,commandMap :: CommandMap
   ,argument :: Maybe String
   ,modifiedInfoFiles :: [FileInfo]
-}
+  ,threadData :: ThreadData 
+  ,inputState :: InputState 
+ }  
+ 
+data ThreadData = ThreadData {
+    listenToken :: Token 
+    ,quitToken :: Token 
+    ,threadIdListenList :: ThreadIdList
+    ,threadIdQuitList :: ThreadIdList
+ }
+     
+getListenThreadList :: ShakerInput -> ThreadIdList 
+getListenThreadList = threadIdListenList . threadData
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
