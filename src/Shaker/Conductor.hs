@@ -33,7 +33,7 @@ mainThread = do
   _ <- lift $ tryPutMVar tokenMv 42
   maybe_cmd <- lift $ takeMVar inputMv 
   continue <- executeCommand maybe_cmd
-  when continue $ mainThread 
+  when continue mainThread 
 
 data ConductorData = ConductorData {
   coListenState :: ListenState
@@ -48,9 +48,9 @@ listenManager fun = do
   keyboard_token <- asks (keyboardToken . threadData)
   let action = runReaderT (threadExecutor conductorData) shIn
   -- Setup keyboard listener
-  lift ( forkIO (getChar >>= putMVar keyboard_token ) ) >>= addThreadIdToMVar 
+  lift ( forkIO (getChar >>= putMVar keyboard_token ) ) >>= addThreadIdToListenMVar 
   -- Run the action
-  lift ( forkIO (forever action ) ) >>= addThreadIdToMVar 
+  lift ( forkIO (forever action ) ) >>= addThreadIdToListenMVar
   _ <- lift $ readMVar keyboard_token 
   cleanThreads 
 
@@ -58,19 +58,22 @@ initializeConductorData :: Shaker IO () -> Shaker IO ConductorData
 initializeConductorData fun = do
   shIn <- ask
   lstState <- initializeListener 
-  mapM_ addThreadIdToMVar $ threadIds lstState 
+  mapM_ addThreadIdToListenMVar $ threadIds lstState 
   let theFun = \a -> runReaderT fun shIn {modifiedInfoFiles = a}
   return $ ConductorData lstState theFun
   
 cleanThreads :: Shaker IO()
-cleanThreads = do 
-  killList <- asks ( threadIdListenList . threadData ) >>= lift . readMVar
-  lift $ mapM_ killThread $ killList 
+cleanThreads = asks ( threadIdListenList . threadData ) >>= lift . readMVar >>= lift . mapM_ killThread
 
-addThreadIdToMVar :: ThreadId -> Shaker IO ()
-addThreadIdToMVar thrId = do
-  killList <- asks $ threadIdListenList . threadData  
-  lift $ modifyMVar_ killList (\b -> return $ thrId:b) 
+addThreadIdToListenMVar :: ThreadId -> Shaker IO()
+addThreadIdToListenMVar b = asks (threadIdListenList . threadData) >>= \a -> addThreadIdToMVar a b
+
+addThreadIdToQuitMVar :: ThreadId -> Shaker IO()
+addThreadIdToQuitMVar b = asks (threadIdQuitList . threadData) >>= \a -> addThreadIdToMVar a b
+
+-- | Add the given threadId to the 
+addThreadIdToMVar :: ThreadIdList -> ThreadId -> Shaker IO ()
+addThreadIdToMVar thrdList thrId = lift $ modifyMVar_ thrdList (\b -> return $ thrId:b) 
 
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ConductorData -> Shaker IO ()
@@ -79,7 +82,7 @@ threadExecutor (ConductorData listenState fun) = do
   modFiles <- lift $ takeMVar (mvModifiedFiles listenState)
   _ <- lift $ takeMVar process_token 
   procId <- lift $ forkIO (fun modFiles `C.finally` putMVar process_token 42) 
-  addThreadIdToMVar procId
+  addThreadIdToListenMVar procId
   
 -- | Execute Given Command in a new thread
 executeCommand :: Maybe Command -> Shaker IO Bool
