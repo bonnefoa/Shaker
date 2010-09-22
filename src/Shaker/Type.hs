@@ -37,7 +37,6 @@ data Action =
 -- | The input mvar is used to push the parsed command
 type Input = MVar (Maybe Command)
 
-
 data InputState = InputState {  
   input :: Input,
   token :: Token -- ^ Token is used to manage the token between action executor and command-line listener
@@ -80,6 +79,7 @@ data ShakerInput = ShakerInput {
 data ThreadData = ThreadData {
     listenToken :: Token 
     ,quitToken :: Token 
+    ,processToken :: Token -- ^ token aimed to launch a process during continuous launch
     ,threadIdListenList :: ThreadIdList
     ,threadIdQuitList :: ThreadIdList
  }

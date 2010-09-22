@@ -32,9 +32,11 @@ defaultThreadData = do
   thread_quit <- newMVar [] :: IO ( ThreadIdList )
   listen_token <- newEmptyMVar 
   quit_token <- newEmptyMVar  
+  process_token <- newMVar 42 
   return ThreadData {
       listenToken = listen_token
       ,quitToken = quit_token
+      ,processToken = process_token
       ,threadIdListenList = thread_listen
       ,threadIdQuitList = thread_quit
     } 

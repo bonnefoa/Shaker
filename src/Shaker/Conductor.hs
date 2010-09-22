@@ -37,8 +37,8 @@ mainThread = do
 
 data ConductorData = ConductorData {
   coKillChannel :: MVar [ThreadId]
-  ,coEndToken :: MVar Char
-  ,coEndProcess :: MVar Int
+  ,coEndToken :: MVar Char -- For keyboard listen
+--  ,coEndProcess :: MVar Int -- for listen process end
   ,coListenState :: ListenState
   ,coFun :: [FileInfo] -> IO ()
  }
@@ -47,14 +47,14 @@ data ConductorData = ConductorData {
 listenManager :: Shaker IO() -> Shaker IO()
 listenManager fun = do
   conductorData <- initializeConductorData fun 
-  lift $ action conductorData
-  where action conductorData = do
-         -- Setup keyboard listener
-         forkIO (getChar >>= putMVar (coEndToken conductorData) ) >>= addThreadIdToMVar conductorData
-         -- Run the action
-         forkIO (forever $ threadExecutor conductorData) >>= addThreadIdToMVar conductorData
-         _ <- readMVar (coEndToken conductorData)
-         cleanThreads conductorData
+  shIn <- ask
+  let action = runReaderT (threadExecutor conductorData) shIn
+  -- Setup keyboard listener
+  lift ( forkIO (getChar >>= putMVar (coEndToken conductorData) ) ) >>= addThreadIdToMVar conductorData
+  -- Run the action
+  lift ( forkIO (forever action ) ) >>= addThreadIdToMVar conductorData
+  _ <- lift $ readMVar (coEndToken conductorData)
+  cleanThreads conductorData
 
 initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
 initializeConductorData fun = do
@@ -62,24 +62,25 @@ initializeConductorData fun = do
   lstState <- initializeListener 
   killChannel <- lift $ newMVar [] 
   endToken <- lift newEmptyMVar 
-  endProcess <- lift ( newMVar 42 :: IO ( MVar Int ) )
   let theFun = \a -> runReaderT fun shIn {modifiedInfoFiles = a}
-  return $ ConductorData killChannel endToken endProcess lstState theFun
+  return $ ConductorData killChannel endToken lstState theFun
   
-cleanThreads :: ConductorData -> IO()
-cleanThreads (ConductorData chan _ _ lsState _) = do 
-  lstChan <- readMVar chan
-  mapM_ killThread $ lstChan ++ threadIds lsState
+cleanThreads :: ConductorData -> Shaker IO()
+cleanThreads (ConductorData chan _ lsState _) = do 
+  lstChan <- lift $ readMVar chan
+  lift $ mapM_ killThread $ lstChan ++ threadIds lsState
 
-addThreadIdToMVar :: ConductorData -> ThreadId -> IO ()
-addThreadIdToMVar conductorData thrId = modifyMVar_ (coKillChannel conductorData) (\b -> return $ thrId:b) 
+addThreadIdToMVar :: ConductorData -> ThreadId -> Shaker IO ()
+addThreadIdToMVar conductorData thrId = lift $ modifyMVar_ (coKillChannel conductorData) (\b -> return $ thrId:b) 
 
 -- | Execute the given action when the modified MVar is filled
-threadExecutor :: ConductorData -> IO ()
-threadExecutor cdtData@(ConductorData _ _ endProcess listenState fun) = do 
-  modFiles <- takeMVar (mvModifiedFiles listenState)
-  _ <- takeMVar endProcess
-  forkIO (fun modFiles `C.finally` putMVar endProcess 42) >>= addThreadIdToMVar cdtData
+threadExecutor :: ConductorData -> Shaker IO ()
+threadExecutor cdtData@(ConductorData _ _ listenState fun) = do 
+  process_token <- asks (processToken . threadData ) 
+  modFiles <- lift $ takeMVar (mvModifiedFiles listenState)
+  _ <- lift $ takeMVar process_token 
+  procId <- lift $ forkIO (fun modFiles `C.finally` putMVar process_token 42) 
+  addThreadIdToMVar cdtData procId
   
 -- | Execute Given Command in a new thread
 executeCommand :: Maybe Command -> Shaker IO Bool
