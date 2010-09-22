@@ -21,7 +21,7 @@ import qualified Control.Exception as C
 initThread :: Shaker IO()
 initThread = do
   act <- getInput 
-  procId <- lift $ forkIO $ forever act
+  procId <- lift . forkIO $ forever act
   mainThread 
   lift $ killThread procId
  
@@ -36,8 +36,7 @@ mainThread = do
   when continue $ mainThread 
 
 data ConductorData = ConductorData {
-  coEndToken :: MVar Char -- For keyboard listen
-  ,coListenState :: ListenState
+  coListenState :: ListenState
   ,coFun :: [FileInfo] -> IO ()
  }
 
@@ -46,12 +45,13 @@ listenManager :: Shaker IO() -> Shaker IO()
 listenManager fun = do
   conductorData <- initializeConductorData fun 
   shIn <- ask
+  keyboard_token <- asks (keyboardToken . threadData)
   let action = runReaderT (threadExecutor conductorData) shIn
   -- Setup keyboard listener
-  lift ( forkIO (getChar >>= putMVar (coEndToken conductorData) ) ) >>= addThreadIdToMVar 
+  lift ( forkIO (getChar >>= putMVar keyboard_token ) ) >>= addThreadIdToMVar 
   -- Run the action
   lift ( forkIO (forever action ) ) >>= addThreadIdToMVar 
-  _ <- lift $ readMVar (coEndToken conductorData)
+  _ <- lift $ readMVar keyboard_token 
   cleanThreads 
 
 initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
@@ -59,9 +59,8 @@ initializeConductorData fun = do
   shIn <- ask
   lstState <- initializeListener 
   mapM_ addThreadIdToMVar $ threadIds lstState 
-  endToken <- lift newEmptyMVar 
   let theFun = \a -> runReaderT fun shIn {modifiedInfoFiles = a}
-  return $ ConductorData endToken lstState theFun
+  return $ ConductorData lstState theFun
   
 cleanThreads :: Shaker IO()
 cleanThreads = do 
@@ -75,7 +74,7 @@ addThreadIdToMVar thrId = do
 
 -- | Execute the given action when the modified MVar is filled
 threadExecutor :: ConductorData -> Shaker IO ()
-threadExecutor (ConductorData _ listenState fun) = do 
+threadExecutor (ConductorData listenState fun) = do 
   process_token <- asks (processToken . threadData ) 
   modFiles <- lift $ takeMVar (mvModifiedFiles listenState)
   _ <- lift $ takeMVar process_token 

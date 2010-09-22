@@ -77,7 +77,8 @@ data ShakerInput = ShakerInput {
  }  
  
 data ThreadData = ThreadData {
-    listenToken :: Token 
+    keyboardToken :: MVar Char
+    ,listenToken :: Token 
     ,quitToken :: Token 
     ,processToken :: Token -- ^ token aimed to launch a process during continuous launch
     ,threadIdListenList :: ThreadIdList
