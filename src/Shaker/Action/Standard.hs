@@ -7,6 +7,7 @@ import qualified Data.Map as M
 import Control.Monad.Trans
 import Control.Monad.Reader
 import System.Directory
+import Control.Concurrent
 
 -- | Print the list of available actions
 runHelp ::  Plugin
@@ -19,7 +20,10 @@ runHelp = do
  
 -- | Print exit. The real exit management is made in conductor
 runExit :: Plugin
-runExit = lift $ putStrLn "Exiting"
+runExit = do
+  lift $ putStrLn "Exiting"
+  quit_token <- asks (quitToken . threadData)
+  lift $ putMVar quit_token 42
 
 -- | Print a begin action notification
 runStartAction :: Plugin
