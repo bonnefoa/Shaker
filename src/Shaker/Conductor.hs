@@ -48,9 +48,9 @@ listenManager fun = do
   shIn <- ask
   let action = runReaderT (threadExecutor conductorData) shIn
   -- Setup keyboard listener
-  lift ( forkIO (getChar >>= putMVar (coEndToken conductorData) ) ) >>= addThreadIdToMVar conductorData
+  lift ( forkIO (getChar >>= putMVar (coEndToken conductorData) ) ) >>= addThreadIdToMVar 
   -- Run the action
-  lift ( forkIO (forever action ) ) >>= addThreadIdToMVar conductorData
+  lift ( forkIO (forever action ) ) >>= addThreadIdToMVar 
   _ <- lift $ readMVar (coEndToken conductorData)
   cleanThreads conductorData
 
@@ -67,8 +67,8 @@ cleanThreads (ConductorData _ lsState _) = do
   killList <- asks ( threadIdListenList . threadData ) >>= lift . readMVar
   lift $ mapM_ killThread $ killList ++ threadIds lsState
 
-addThreadIdToMVar :: ConductorData -> ThreadId -> Shaker IO ()
-addThreadIdToMVar conductorData thrId = do
+addThreadIdToMVar :: ThreadId -> Shaker IO ()
+addThreadIdToMVar thrId = do
   killList <- asks $ threadIdListenList . threadData  
   lift $ modifyMVar_ killList (\b -> return $ thrId:b) 
 
@@ -79,7 +79,7 @@ threadExecutor cdtData@(ConductorData _ listenState fun) = do
   modFiles <- lift $ takeMVar (mvModifiedFiles listenState)
   _ <- lift $ takeMVar process_token 
   procId <- lift $ forkIO (fun modFiles `C.finally` putMVar process_token 42) 
-  addThreadIdToMVar cdtData procId
+  addThreadIdToMVar procId
   
 -- | Execute Given Command in a new thread
 executeCommand :: Maybe Command -> Shaker IO Bool
