@@ -56,7 +56,7 @@ trim = reverse . dropWhile isSpace . reverse
 instance Arbitrary CommandString where
   arbitrary = do 
     dur <- elements [Continuous,OneShot]
-    spaces <- listOf $ elements [' ']
+    spaces <- listOf $ elements " "
     actionString_list <- listOf1 arbitrary
     elements [
         CommandString { comStr = getStringFromDurationAndAction dur actionString_list

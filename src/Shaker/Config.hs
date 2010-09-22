@@ -28,8 +28,8 @@ defaultInputInitialized = do
 
 defaultThreadData :: IO ThreadData 
 defaultThreadData = do 
-  thread_listen <- newMVar [] :: IO ( ThreadIdList ) 
-  thread_quit <- newMVar [] :: IO ( ThreadIdList )
+  thread_listen <- newMVar [] :: IO  ThreadIdList 
+  thread_quit <- newMVar [] :: IO ThreadIdList 
   listen_token <- newEmptyMVar 
   quit_token <- newEmptyMVar  
   keyboard_token <- newEmptyMVar
