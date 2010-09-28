@@ -6,6 +6,7 @@ module Shaker.Conductor(
 )
   where
 
+import System.Exit
 import Shaker.Type
 import Control.Monad
 import Control.Concurrent
@@ -17,12 +18,12 @@ import Data.Maybe
 import qualified Control.Exception as C
  
 -- | Initialize the master thread 
--- Once the master thread is finished, all input threads are killed
+-- Once quit is called, all threads are killed
 initThread :: Shaker IO()
 initThread = do
+  shIn <- ask
   input_action <- getInput 
   lift ( forkIO ( forever input_action) ) >>= addThreadIdToQuitMVar 
-  shIn <- ask
   let main_loop = runReaderT mainThread shIn 
   lift ( forkIO (forever main_loop) ) >>= addThreadIdToQuitMVar
   quit_token <- asks (quitToken . threadData)
@@ -30,7 +31,6 @@ initThread = do
   cleanAllThreads 
  
 -- | The main thread. 
--- Loop until a Quit action is called
 mainThread :: Shaker IO()
 mainThread = do
   (InputState inputMv tokenMv) <- asks inputState
@@ -51,11 +51,27 @@ listenManager fun = do
   keyboard_token <- asks (keyboardToken . threadData)
   let action = runReaderT (threadExecutor conductorData) shIn
   -- Setup keyboard listener
-  lift ( forkIO (getChar >>= putMVar keyboard_token ) ) >>= addThreadIdToListenMVar 
+  lift ( forkIO $ getChar >>= putMVar keyboard_token ) >>= addThreadIdToListenMVar 
   -- Run the action
-  lift ( forkIO (forever action ) ) >>= addThreadIdToListenMVar
+  lift ( forkIO $ forever action ) >>= addThreadIdToListenMVar
   _ <- lift $ takeMVar keyboard_token 
-  cleanListenerThreads 
+  cleanListenerThreads  
+
+errorHandler :: MVar Char -> C.SomeException -> IO ()
+errorHandler keyboard_token e = do 
+  putStrLn $ "Caught listener exception : " ++ show e 
+  putMVar keyboard_token 'a'
+
+handleActionInterrupt :: IO() -> IO()
+handleActionInterrupt =  C.handle catchUserInterrupt . C.handle catchExitFailure 
+
+catchUserInterrupt :: C.AsyncException -> IO()
+catchUserInterrupt C.UserInterrupt = return ()
+catchUserInterrupt e = C.throw e
+
+catchExitFailure :: ExitCode -> IO()
+catchExitFailure (ExitFailure code) = putStrLn $ "Caught exit failure " ++ show code
+catchExitFailure e = C.throw e
 
 initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
 initializeConductorData fun = do
@@ -105,15 +121,18 @@ executeCommand (Just (Command Continuous act)) = listenManager ( executeAction a
 
 -- | Execute given action
 executeAction :: [Action] -> Shaker IO()
-executeAction acts = do
-   mapM_ executeAction' acts 
-   return () 
+executeAction acts = do 
+  shIn <- ask
+  let allActs = runReaderT (mapM_ executeAction'  acts) shIn
+  lift $ handleActionInterrupt allActs
+  return () 
 
 executeAction' :: Action -> Shaker IO()
-executeAction' (ActionWithArg act arg) = do 
-  plMap<- asks pluginMap 
-  local (\shIn -> shIn {argument = Just arg} ) $ fromJust $ act `M.lookup` plMap
-executeAction' (Action act) = do
+executeAction' (ActionWithArg actKey arg) = do 
   plMap <- asks pluginMap 
-  fromJust $ act `M.lookup` plMap
+  local (\shIn -> shIn {argument = Just arg} ) $ fromJust $ actKey `M.lookup` plMap
+
+executeAction' (Action actKey) = do
+  plMap <- asks pluginMap 
+  fromJust $ actKey `M.lookup` plMap
 
