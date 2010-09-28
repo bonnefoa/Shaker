@@ -3,7 +3,6 @@ module Main
 
 import Shaker.Type
 import Shaker.Conductor
-import Shaker.Config
 import Shaker.Parser
 import Shaker.Cabal.CabalInfo
 import Control.Monad.Reader
