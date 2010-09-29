@@ -38,40 +38,7 @@ mainThread = do
   maybe_cmd <- lift $ takeMVar inputMv 
   executeCommand maybe_cmd
 
-data ConductorData = ConductorData {
-  coListenState :: ListenState
-  ,coFun :: [FileInfo] -> IO ()
- }
-
--- | Continuously execute the given action until a keyboard input is done
-listenManager :: Shaker IO() -> Shaker IO()
-listenManager fun = do
-  conductorData <- initializeConductorData fun 
-  shIn <- ask
-  keyboard_token <- asks (keyboardToken . threadData)
-  let action = runReaderT (threadExecutor conductorData) shIn
-  -- Setup keyboard listener
-  lift ( forkIO $ getChar >>= putMVar keyboard_token ) >>= addThreadIdToListenMVar 
-  -- Run the action
-  lift ( forkIO $ forever action ) >>= addThreadIdToListenMVar
-  _ <- lift $ takeMVar keyboard_token 
-  cleanListenerThreads  
-
-errorHandler :: MVar Char -> C.SomeException -> IO ()
-errorHandler keyboard_token e = do 
-  putStrLn $ "Caught listener exception : " ++ show e 
-  putMVar keyboard_token 'a'
-
-handleActionInterrupt :: IO() -> IO()
-handleActionInterrupt =  C.handle catchUserInterrupt . C.handle catchExitFailure 
-
-catchUserInterrupt :: C.AsyncException -> IO()
-catchUserInterrupt C.UserInterrupt = return ()
-catchUserInterrupt e = C.throw e
-
-catchExitFailure :: ExitCode -> IO()
-catchExitFailure (ExitFailure code) = putStrLn $ "Caught exit failure " ++ show code
-catchExitFailure e = C.throw e
+data ConductorData = ConductorData ListenState ([FileInfo] -> IO () )
 
 initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
 initializeConductorData fun = do
@@ -81,9 +48,6 @@ initializeConductorData fun = do
   let theFun = \a -> runReaderT fun shIn {modifiedInfoFiles = a}
   return $ ConductorData lstState theFun
   
-cleanListenerThreads :: Shaker IO ()
-cleanListenerThreads = asks ( threadIdListenList . threadData ) >>= cleanThreads
-
 cleanAllThreads :: Shaker IO ()
 cleanAllThreads = do 
   asks ( threadIdListenList . threadData ) >>= cleanThreads
@@ -91,6 +55,59 @@ cleanAllThreads = do
 
 cleanThreads :: ThreadIdList -> Shaker IO()
 cleanThreads thrdList = lift (readMVar thrdList)  >>= lift . mapM_ killThread 
+
+-- | Execute the given action when the modified MVar is filled
+threadExecutor :: ConductorData -> Shaker IO ()  
+threadExecutor conductorData = do 
+  shIn <- ask
+  res <- lift $  handleContinuousInterrupt $ runReaderT (threadExecutor' conductorData) shIn
+  when res $ threadExecutor conductorData
+  
+threadExecutor' :: ConductorData -> Shaker IO Bool
+threadExecutor' (ConductorData listenState fun) = lift $ takeMVar (mvModifiedFiles listenState) >>= fun >> return True
+
+-- | Execute Given Command in a new thread
+executeCommand :: Maybe Command -> Shaker IO ()
+executeCommand Nothing = executeAction [Action InvalidAction] 
+executeCommand (Just (Command OneShot act_list)) = executeAction act_list 
+executeCommand (Just (Command Continuous act)) = initializeConductorData ( executeAction act )  >>= threadExecutor 
+
+-- | Execute given action
+executeAction :: [Action] -> Shaker IO()
+executeAction acts = do 
+  shIn <- ask
+  let allActs = runReaderT (mapM_ executeAction'  acts) shIn
+  lift $ handleActionInterrupt allActs
+  return () 
+
+-- | Execute a single action with argument
+executeAction' :: Action -> Shaker IO()
+executeAction' (ActionWithArg actKey arg) = do 
+  plMap <- asks pluginMap 
+  local (\shIn -> shIn {argument = Just arg} ) $ fromJust $ actKey `M.lookup` plMap
+
+-- | Execute a single action without argument
+executeAction' (Action actKey) = do
+  plMap <- asks pluginMap 
+  fromJust $ actKey `M.lookup` plMap
+
+-- * Handlers 
+
+handleContinuousInterrupt :: IO Bool -> IO Bool
+handleContinuousInterrupt = C.handle catchAll 
+  where catchAll :: C.SomeException -> IO Bool
+        catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return False
+
+handleActionInterrupt :: IO() -> IO()
+handleActionInterrupt =  C.handle catchUserInterrupt . C.handle catchExitFailure 
+  where catchUserInterrupt :: C.AsyncException -> IO()
+        catchUserInterrupt C.UserInterrupt = return ()
+        catchUserInterrupt e = C.throw e
+        catchExitFailure :: ExitCode -> IO()
+        catchExitFailure (ExitFailure code) = putStrLn $ "Shaker caught exit failure " ++ show code
+        catchExitFailure e = C.throw e
+
+-- * Mvar with threadId list management
 
 -- | Add the given threadId to the listener thread list
 addThreadIdToListenMVar :: ThreadId -> Shaker IO()
@@ -103,36 +120,3 @@ addThreadIdToQuitMVar thrdId = asks (threadIdQuitList . threadData) >>= flip add
 -- | Add the given threadId to the mvar list
 addThreadIdToMVar :: ThreadIdList -> ThreadId -> Shaker IO ()
 addThreadIdToMVar thrdList thrId = lift $ modifyMVar_ thrdList (\b -> return $ thrId:b) 
-
--- | Execute the given action when the modified MVar is filled
-threadExecutor :: ConductorData -> Shaker IO ()
-threadExecutor (ConductorData listenState fun) = do 
-  process_token <- asks (processToken . threadData ) 
-  modFiles <- lift $ takeMVar (mvModifiedFiles listenState)
-  _ <- lift $ takeMVar process_token 
-  procId <- lift $ forkIO (fun modFiles `C.finally` putMVar process_token 42) 
-  addThreadIdToListenMVar procId
-  
--- | Execute Given Command in a new thread
-executeCommand :: Maybe Command -> Shaker IO ()
-executeCommand Nothing = executeAction [Action InvalidAction] 
-executeCommand (Just (Command OneShot act_list)) = executeAction act_list 
-executeCommand (Just (Command Continuous act)) = listenManager ( executeAction act ) 
-
--- | Execute given action
-executeAction :: [Action] -> Shaker IO()
-executeAction acts = do 
-  shIn <- ask
-  let allActs = runReaderT (mapM_ executeAction'  acts) shIn
-  lift $ handleActionInterrupt allActs
-  return () 
-
-executeAction' :: Action -> Shaker IO()
-executeAction' (ActionWithArg actKey arg) = do 
-  plMap <- asks pluginMap 
-  local (\shIn -> shIn {argument = Just arg} ) $ fromJust $ actKey `M.lookup` plMap
-
-executeAction' (Action actKey) = do
-  plMap <- asks pluginMap 
-  fromJust $ actKey `M.lookup` plMap
-
