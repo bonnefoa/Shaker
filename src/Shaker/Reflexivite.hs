@@ -13,6 +13,7 @@ module Shaker.Reflexivite(
   ,listAllProperties
   ,listAllHunit
   ,filterModulesWithPattern
+  ,listTestFrameworkGroupList 
 )
  where
 
@@ -63,7 +64,7 @@ collectAllModulesForTest = do
   (cpIn, cfFlList) <- initializeFilesForCompilation 
   lift $ runGhc (Just libdir) $ do 
         _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-        collectAllModulesForTest' 
+        collectAllModules' >>= mapM getModuleMapping 
 
 -- | Collect all non-main modules 
 collectAllModules :: Shaker IO [ModSummary]
@@ -100,8 +101,6 @@ collectAllModules' = do
   let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
   return sort_mss
          
-collectAllModulesForTest' :: GhcMonad m => m [ModuleMapping] 
-collectAllModulesForTest' = collectAllModules' >>= mapM getModuleMapping 
 
 collectChangedModules' :: GhcMonad m => [FilePath] -> m [ModSummary] 
 collectChangedModules' modFilePaths = collectAllModules' >>= filterM (isModuleNeedCompilation modFilePaths) 
@@ -167,26 +166,16 @@ getIdList modInfo = mapMaybe tyThingToId $ modInfoTyThings modInfo
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
- 
-getQuickCheckProperty :: [ModuleMapping] -> [Exp]
-getQuickCheckProperty = concatMap getQuickCheckProperty'
-
-getQuickCheckProperty' :: ModuleMapping -> [Exp]
-getQuickCheckProperty' modMap = map getSingleQuickCheck $ cfPropName modMap
 
 getSingleQuickCheck :: String -> Exp
 getSingleQuickCheck propName = InfixE (Just printName) (VarE $ mkName ">>") (Just quickCall)
   where quickCall = (AppE (VarE $ mkName "quickCheck" ) . VarE . mkName) propName
         printName = AppE (VarE $ mkName "putStrLn") (LitE (StringL propName)) 
 
-getHunit :: [ModuleMapping] -> [Exp]
-getHunit = concatMap getHunit'
-
-getHunit' :: ModuleMapping -> [Exp]
-getHunit' modMap = map (VarE . mkName) $ cfHunitName modMap
-
 listProperties :: [ModuleMapping] -> ExpQ
 listProperties modMaps = return $ ListE $ getQuickCheckProperty modMaps
+  where getQuickCheckProperty :: [ModuleMapping] -> [Exp]
+        getQuickCheckProperty = concatMap (\modMap -> map getSingleQuickCheck $ cfPropName modMap)
 
 -- | List the quickeck properties of the project.
 -- see "Shaker.TestTH"
@@ -197,9 +186,36 @@ listAllProperties shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= li
 -- see "Shaker.TestTH"
 listHunit :: [ModuleMapping] -> ExpQ
 listHunit modMaps = return $ ListE $ getHunit modMaps
+  where getHunit :: [ModuleMapping] -> [Exp]
+        getHunit = concatMap (\modMap -> map (VarE . mkName) $ cfHunitName modMap) 
 
 listAllHunit :: ShakerInput -> ExpQ
 listAllHunit shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listHunit
+
+listTestFrameworkGroupList :: [ModuleMapping] -> ExpQ
+listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
+
+-- * Test framework integration 
+
+getSingleTestFrameworkGroup :: ModuleMapping -> Exp
+getSingleTestFrameworkGroup modMap = AppE first_arg second_arg
+  where first_arg = AppE (VarE .mkName $ "testGroup") (LitE (StringL $ cfModuleName modMap))
+        second_arg = ListE $ list_prop ++ list_hunit 
+        list_prop = map getSingleFrameworkQuickCheck $ cfPropName modMap
+        list_hunit = map getSingleFrameworkHunit $ cfHunitName modMap
+
+getSingleFrameworkHunit :: String -> Exp 
+getSingleFrameworkHunit hunitName = AppE first_arg second_arg 
+  where first_arg = AppE ( VarE $ mkName "testCase") (LitE $ StringL hunitName)
+        second_arg = VarE . mkName $ hunitName
+
+getSingleFrameworkQuickCheck :: String -> Exp
+getSingleFrameworkQuickCheck propName = AppE first_arg second_arg 
+  where canonical_name = tail . dropWhile (/= '_') $ propName 
+        first_arg = AppE ( VarE $ mkName "testProperty") (LitE $ StringL canonical_name)
+        second_arg = VarE . mkName $ propName
+
+-- * utility functions 
 
 -- | Include only module matching the given pattern
 filterModulesWithPattern :: Maybe String -> [ModuleMapping] -> [ModuleMapping]
@@ -207,4 +223,3 @@ filterModulesWithPattern Nothing mod_map = mod_map
 filterModulesWithPattern (Just pattern) mod_map = filter (\a -> cfModuleName a `elem` filtered_mod_list) mod_map
   where mod_list = map cfModuleName mod_map
         filtered_mod_list = processListWithRegexp mod_list [] [pattern]
-
