@@ -104,52 +104,58 @@ Library
     Shaker.Cabal.CabalInfo
     Shaker.Type
     Shaker.Listener
-  build-depends: base >= 4.1
+  build-depends: base == 4.*
                  ,Cabal >= 1.8.0.6
-                 ,containers >= 0.3
-                 ,haskeline >= 0.6.2.2 
-                 ,directory >= 1.0.1.0
-                 ,filepath >= 1.1
-                 ,ghc >= 6
-                 ,ghc-paths >= 0.1
-                 ,haskell98 >= 1.0
-                 ,mtl >= 1.0
-                 ,parsec >= 3.0
-                 ,regex-posix >= 0.94.1
+                 ,containers == 0.3.*
+                 ,haskeline == 0.6.*
+                 ,directory == 1.0.*
+                 ,filepath == 1.1.*
+                 ,ghc == 6.*
+                 ,ghc-paths == 0.1.*
+                 ,haskell98 == 1.0.*
+                 ,mtl == 1.1.*
+                 ,parsec == 3.*
+                 ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
                  ,bytestring >= 0.9.1.5
-                 ,HUnit >= 1.2.2.1
-                 ,QuickCheck >= 2.1.1.1
+                 ,HUnit == 1.2.*
+                 ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
+                 ,test-framework == 0.3.*
+                 ,test-framework-hunit == 0.2.*
+                 ,test-framework-quickcheck2 == 0.2.*
 
 Executable shaker
   Main-Is: Shaker.hs
   ghc-options: -Wall -fno-warn-orphans 
-  hs-source-dirs: prog
-  build-depends: base >= 4.1 && < 5 
-                 ,shaker
+  hs-source-dirs: prog src
+  build-depends: base == 4.*
                  ,Cabal >= 1.8.0.6
-                 ,containers >= 0.3
-                 ,haskeline >= 0.6.2.2 
-                 ,directory >= 1.0.1.0
-                 ,filepath >= 1.1
-                 ,ghc >= 6
-                 ,ghc-paths >= 0.1
-                 ,haskell98 >= 1.0
-                 ,mtl >= 1.0
-                 ,parsec >= 3.0
-                 ,regex-posix >= 0.94.1
+                 ,containers == 0.3.*
+                 ,haskeline == 0.6.*
+                 ,directory == 1.0.*
+                 ,filepath == 1.1.*
+                 ,ghc == 6.*
+                 ,ghc-paths == 0.1.*
+                 ,haskell98 == 1.0.*
+                 ,mtl == 1.1.*
+                 ,parsec == 3.*
+                 ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
                  ,bytestring >= 0.9.1.5
-                 ,HUnit >= 1.2.2.1
-                 ,QuickCheck >= 2.1.1.1
+                 ,HUnit == 1.2.*
+                 ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
+                 ,test-framework == 0.3.*
+                 ,test-framework-hunit == 0.2.*
+                 ,test-framework-quickcheck2 == 0.2.*
+
 flag test
   description: Build test program.
   default:     False
 
 Executable test
-  hs-source-dirs:  testsuite/tests 
+  hs-source-dirs:  testsuite/tests src 
   main-is:         RunTestTH.hs
   ghc-options: -Wall -fno-warn-orphans
   other-modules: 
@@ -166,23 +172,22 @@ Executable test
     Shaker.ListenerTest
     Shaker.ReflexiviteTest
     Shaker.ConductorTest
-  build-depends: base >= 4.1
-                 ,shaker >= 0.3.2
+  build-depends: base == 4.*
                  ,Cabal >= 1.8.0.6
-                 ,containers >= 0.3
-                 ,haskeline >= 0.6.2.2 
-                 ,directory >= 1.0.1.0
-                 ,filepath >= 1.1
-                 ,ghc >= 6
-                 ,ghc-paths >= 0.1
-                 ,haskell98 >= 1.0
-                 ,mtl >= 1.0
-                 ,parsec >= 3.0
-                 ,regex-posix >= 0.94.1
+                 ,containers == 0.3.*
+                 ,haskeline == 0.6.*
+                 ,directory == 1.0.*
+                 ,filepath == 1.1.*
+                 ,ghc == 6.*
+                 ,ghc-paths == 0.1.*
+                 ,haskell98 == 1.0.*
+                 ,mtl == 1.1.*
+                 ,parsec == 3.*
+                 ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
                  ,bytestring >= 0.9.1.5
-                 ,HUnit >= 1.2.2.1
-                 ,QuickCheck >= 2.1.1.1
+                 ,HUnit == 1.2.*
+                 ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
   if !flag(test)
     buildable:     False
