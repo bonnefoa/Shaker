@@ -1,1 +1,2 @@
 find src testsuite  -iname "*.hs" |xargs hasktags
+sed -i '/^(/d' TAGS 
