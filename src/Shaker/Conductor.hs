@@ -6,7 +6,6 @@ module Shaker.Conductor(
 )
   where
 
-import System.Exit
 import Shaker.Type
 import Control.Monad
 import Control.Concurrent
@@ -99,13 +98,9 @@ handleContinuousInterrupt = C.handle catchAll
         catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return False
 
 handleActionInterrupt :: IO() -> IO()
-handleActionInterrupt =  C.handle catchUserInterrupt . C.handle catchExitFailure 
-  where catchUserInterrupt :: C.AsyncException -> IO()
-        catchUserInterrupt C.UserInterrupt = return ()
-        catchUserInterrupt e = C.throw e
-        catchExitFailure :: ExitCode -> IO()
-        catchExitFailure (ExitFailure code) = putStrLn $ "Shaker caught exit failure " ++ show code
-        catchExitFailure e = C.throw e
+handleActionInterrupt =  C.handle catchAll
+  where catchAll :: C.SomeException -> IO ()
+        catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return ()
 
 -- * Mvar with threadId list management
 
@@ -120,3 +115,4 @@ addThreadIdToQuitMVar thrdId = asks (threadIdQuitList . threadData) >>= flip add
 -- | Add the given threadId to the mvar list
 addThreadIdToMVar :: ThreadIdList -> ThreadId -> Shaker IO ()
 addThreadIdToMVar thrdList thrId = lift $ modifyMVar_ thrdList (\b -> return $ thrId:b) 
+
