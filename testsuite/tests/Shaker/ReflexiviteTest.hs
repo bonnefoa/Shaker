@@ -15,8 +15,8 @@ import System.Time
 import System.Directory
 import System.FilePath 
 
-testRunReflexivite ::Test
-testRunReflexivite = TestCase $ do
+testRunReflexivite :: Assertion
+testRunReflexivite =  do
   modMapLst <- runReaderT collectAllModulesForTest testShakerInput
   length modMapLst > 1 @? "Should have more than one module, got : "++ show (length modMapLst)
   any ( \(ModuleMapping nm _ _) -> nm == "Shaker.ReflexiviteTest") modMapLst @? 
@@ -38,21 +38,21 @@ aFun tempFp = do
   where proc True fp = removeDirectory fp >> createDirectory fp
         proc _ fp = createDirectory fp
 
-testRunFunction :: Test
+testRunFunction :: Assertion
 testRunFunction = templateTestRunFunction ["Shaker.ReflexiviteTest"]
 
-testRunFunctionWithEmptyModule :: Test
+testRunFunctionWithEmptyModule :: Assertion
 testRunFunctionWithEmptyModule = templateTestRunFunction [] 
 
-templateTestRunFunction :: [String] -> Test 
-templateTestRunFunction modules= TestCase $ do 
+templateTestRunFunction :: [String] -> Assertion
+templateTestRunFunction modules=  do 
   tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
   let run = RunnableFunction modules $ "aFun " ++ show tempFp
   runReaderT (runFunction run) testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
   
-testCollectChangedModules :: Test
-testCollectChangedModules = TestCase $ do
+testCollectChangedModules :: Assertion
+testCollectChangedModules =  do
   (cpIn,_) <- compileProject
   exp_no_modules <- runReaderT collectChangedModules testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
@@ -62,13 +62,13 @@ testCollectChangedModules = TestCase $ do
   exp_one_modules <- runReaderT collectChangedModules testShakerInput 
   length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
 
-testCollectChangedModulesForTestNoRecomp :: Test
-testCollectChangedModulesForTestNoRecomp = TestCase $ do
+testCollectChangedModulesForTestNoRecomp :: Assertion
+testCollectChangedModulesForTestNoRecomp =  do
   exp_no_modules <- runReaderT collectChangedModulesForTest testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
 
-testCollectChangedModulesForTestHunit:: Test
-testCollectChangedModulesForTestHunit = TestCase $ do
+testCollectChangedModulesForTestHunit:: Assertion
+testCollectChangedModulesForTestHunit =  do
   (cpIn,_) <- compileProject
   let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
   removeFile target
@@ -78,8 +78,8 @@ testCollectChangedModulesForTestHunit = TestCase $ do
   cfModuleName module_mapping == "Shaker.SourceHelperTest" @? "module SourceHelperTest should need recompilation, got " ++ cfModuleName module_mapping 
   length (cfHunitName module_mapping) >2  @? "module SourceHelperTest should have hunit test" 
   
-testCollectChangedModulesForTestQuickCheck :: Test
-testCollectChangedModulesForTestQuickCheck = TestCase $ do
+testCollectChangedModulesForTestQuickCheck :: Assertion
+testCollectChangedModulesForTestQuickCheck =  do
   (cpIn,_) <- compileProject
   let target = cfCompileTarget cpIn </> "Shaker" </> "RegexTest.hi"
   removeFile target
@@ -89,8 +89,8 @@ testCollectChangedModulesForTestQuickCheck = TestCase $ do
   cfModuleName module_mapping == "Shaker.RegexTest" @? "module RegexTest should need recompilation, got " ++ cfModuleName module_mapping 
   length (cfPropName module_mapping) >2  @? "module RegexTest should have properties" 
 
-testCollectChangedModulesWithModifiedFiles :: Test
-testCollectChangedModulesWithModifiedFiles = TestCase $ do
+testCollectChangedModulesWithModifiedFiles :: Assertion
+testCollectChangedModulesWithModifiedFiles =  do
   (cpIn,_) <- compileProject
   let sources = map (</> "Shaker" </> "SourceHelperTest.hs") (cfSourceDirs cpIn)
   let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources

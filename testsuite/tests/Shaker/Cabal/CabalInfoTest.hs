@@ -12,8 +12,8 @@ import Shaker.Cabal.CabalInfo
 import DynFlags( DynFlags, packageFlags, importPaths ,PackageFlag (ExposePackage) , defaultDynFlags
         )
 
-testParseCabalConfig :: Test
-testParseCabalConfig = TestCase $ runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
+testParseCabalConfig :: Assertion
+testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
   shIn <- defaultCabalInput
   let cplInps@(cplLib:cplExe:[]) = compileInputs shIn
   length cplInps == 2 @? "Should have two compile input, one executable and one library, got "++ show ( length cplInps)
@@ -27,14 +27,14 @@ testParseCabalConfig = TestCase $ runTestOnDirectory "testsuite/tests/resources/
   let (ListenerInput (flLib:[]) _) = listenerInput shIn
   dir flLib == "src" @? "Expected : src, got " ++ show  flLib
 
-testInvalidMainShouldBeExcluded :: Test
-testInvalidMainShouldBeExcluded = TestCase $ runTestOnDirectory "testsuite/tests/resources/invalidMain" $ do
+testInvalidMainShouldBeExcluded :: Assertion
+testInvalidMainShouldBeExcluded =  runTestOnDirectory "testsuite/tests/resources/invalidMain" $ do
  shIn <- defaultCabalInput
  let (cplExe:[]) = compileInputs shIn
  cfTargetFiles cplExe == ["src/Main.hs"] @? "since tests/Main.hs is invalid, should have only src/Main.hs, got " ++ show (cfTargetFiles cplExe)
 
-testCompileWithLocalSource :: Test
-testCompileWithLocalSource = TestCase $ runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
+testCompileWithLocalSource :: Assertion
+testCompileWithLocalSource =  runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
  shIn <- defaultCabalInput
  runReaderT runCompile shIn
  ex <- doesFileExist "target/Main.o" 
@@ -43,8 +43,8 @@ testCompileWithLocalSource = TestCase $ runTestOnDirectory "testsuite/tests/reso
  ex && not ex2 @? "file main should exist and be cleaned"
 
 
-testProjectCabalContentWithLocalSource :: Test
-testProjectCabalContentWithLocalSource = TestCase $
+testProjectCabalContentWithLocalSource :: Assertion
+testProjectCabalContentWithLocalSource = 
     runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
     shIn <- defaultCabalInput
     let cplInps@(cplInp:_) = compileInputs shIn
