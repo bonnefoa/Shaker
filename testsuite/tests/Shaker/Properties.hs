@@ -31,8 +31,22 @@ instance Arbitrary FileInfo where
                elements [".",".."] >>= \ele ->
                return $ FileInfo ele cl
 instance Arbitrary ModuleMapping where 
-  arbitrary = ModuleMapping `liftM` (listOf1 . elements) letters
-                            `ap` (listOf . listOf . elements) letters
-                            `ap` (listOf . listOf . elements) letters
-    where letters = '.' : ['a'..'z'] 
+  arbitrary = do 
+              name <- createShortName
+              listHunitName <- listOf createShortName 
+              listPropName <- listOf createShortName 
+              return $ ModuleMapping name listHunitName listPropName
+
+createListName :: Gen [String]
+createListName = do 
+ sizeList <- number
+ vectorOf sizeList createShortName
+ where number = elements [0..10]
+
+createShortName :: Gen String
+createShortName = do
+ sizeName <- number
+ vectorOf sizeName letters
+ where number = elements [0..10]
+       letters = elements $ '.' : ['a'..'z'] 
 
