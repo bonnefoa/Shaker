@@ -143,7 +143,7 @@ getQuickCheckFunction :: Maybe ModuleInfo -> [String]
 getQuickCheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`) 
 
 getHunitFunctions :: Maybe ModuleInfo -> [String]
-getHunitFunctions = getFunctionTypeWithPredicate (== "Test.HUnit.Base.Test") 
+getHunitFunctions = getFunctionTypeWithPredicate (== "Test.HUnit.Lang.Assertion") 
 
 getFunctionTypeWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionTypeWithPredicate _ Nothing = []
