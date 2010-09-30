@@ -25,8 +25,13 @@ processListWithRegexp list ignore include =
 
 getExcluded :: [String] -> [String] -> [String]
 getExcluded list patterns = filter funExclude list
- where funExclude el = any (el =~) patterns
+ where funExclude el = any (\a -> el =~+ (a,compIgnoreCase, execBlank) ) patterns
 
 getIncluded :: [String] -> [String] -> [String]
 getIncluded list patterns = filter funInclude list
-  where funInclude el = any (el =~) patterns
+  where funInclude el = any (\a -> el =~+ (a,compIgnoreCase, execBlank) ) patterns
+
+(=~+) :: ( RegexMaker regex compOpt execOpt source, RegexContext regex source1 target ) => source1 -> (source, compOpt, execOpt) -> target
+source1 =~+ (source, compOpt, execOpt) = match (makeRegexOpts compOpt execOpt source) source1
+
+
