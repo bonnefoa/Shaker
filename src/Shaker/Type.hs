@@ -46,13 +46,8 @@ data InputState = InputState {
 data ShakerAction = 
 	Compile -- ^ Compile sources with ghc
 	| FullCompile -- ^ Compile all hs sources with ghc
-	| QuickCheck -- ^ Execute quickcheck properties
-	| IntelligentQuickCheck -- ^ Execute quickcheck properties only on necessary properties
-	| HUnit -- ^ Execute hunit tests
-	| IntelligentHUnit -- ^ Execute changed hunit tests 
-        | QuickHUnit -- ^ Execute both quickcheck and hunit 
-        | IntelligentQuickHUnit -- ^ Execute both quickcheck and hunit on modified modules
         | TestFramework -- ^ Execute both quickcheck and hunit using test framework
+        | IntelligentTestFramework -- ^ Execute both quickcheck and hunit using test framework on recompiled modules
         | InvalidAction -- ^ Display an error when invalid action is inputed
 	| Help -- ^ Display the help
         | Execute -- ^ Execute a command
