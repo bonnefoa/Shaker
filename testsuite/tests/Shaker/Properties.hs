@@ -8,28 +8,31 @@ import System.Time
 import Shaker.Reflexivite
 
 instance Arbitrary TimeDiff where
-   arbitrary =  TimeDiff `liftM` elements tab
-			 `ap` elements tab
-			 `ap` elements tab
-			 `ap` elements tab
-			 `ap` elements tab
-			 `ap` elements tab
-			 `ap` elements (map fromIntegral tab)
-     where tab = [1..10] 
+   arbitrary =  TimeDiff `liftM` genSmallNumber
+			 `ap` genSmallNumber 
+			 `ap` genSmallNumber 
+			 `ap` genSmallNumber 
+			 `ap` genSmallNumber 
+			 `ap` genSmallNumber 
+			 `ap` elements [1..10] 
 
 instance Arbitrary ClockTime where
    arbitrary = TOD `liftM` elements [1..1000]
 		   `ap` elements [1..1000]
 
 instance Arbitrary FileListenInfo where 
-   arbitrary = FileListenInfo `liftM` elements ["src","testsuite"]
-			      `ap` (listOf . elements) ["\\.$","ab"]
-			      `ap` elements [[],[".*"]]
+   arbitrary = do
+     gen_dir <- elements ["src","testsuite"]
+     sizeIgnore <- genSmallNumber
+     gen_ignore <- vectorOf sizeIgnore $ elements ["\\.$","ab"]
+     gen_include <- elements [[],[".*"]]
+     return $ FileListenInfo gen_dir gen_ignore gen_include
 
 instance Arbitrary FileInfo where
    arbitrary = arbitrary >>= \cl ->
                elements [".",".."] >>= \ele ->
                return $ FileInfo ele cl
+
 instance Arbitrary ModuleMapping where 
   arbitrary = do 
               name <- createShortName
@@ -37,16 +40,17 @@ instance Arbitrary ModuleMapping where
               listPropName <- listOf createShortName 
               return $ ModuleMapping name listHunitName listPropName
 
+genSmallNumber :: Gen Int
+genSmallNumber = elements [0..10]
+
 createListName :: Gen [String]
 createListName = do 
- sizeList <- number
+ sizeList <- genSmallNumber
  vectorOf sizeList createShortName
- where number = elements [0..10]
 
 createShortName :: Gen String
 createShortName = do
- sizeName <- number
+ sizeName <- genSmallNumber
  vectorOf sizeName letters
- where number = elements [0..10]
-       letters = elements $ '.' : ['a'..'z'] 
+ where letters = elements $ '.' : ['a'..'z'] 
 

@@ -3,36 +3,38 @@ where
 
 import Control.Concurrent
 import Shaker.Listener
-import Shaker.Properties()
-import Test.QuickCheck 
-import Test.QuickCheck.Monadic 
+import Test.HUnit 
 import Shaker.Type
 import Shaker.Io
+import System.Time
 
-prop_updateFileStat :: [FileInfo] ->[FileInfo] -> Property
-prop_updateFileStat curF curM = not (null curM) ==>
-  monadicIO $ do
-          mC <- run $ newMVar []
-          mM <- run newEmptyMVar 
-          run (updateFileStat mC mM curF curM) 
-          mCurF <- run $ readMVar mC
-          assert $  curF == mCurF
+testUpdateFileStat :: Assertion
+testUpdateFileStat = do
+  let clockTime = TOD 100 100
+  let curF = [FileInfo "." clockTime]
+  let curM = [FileInfo ".." clockTime]
+  mC <- newMVar []
+  mM <- newEmptyMVar 
+  (updateFileStat mC mM curF curM) 
+  mCurF <- readMVar mC
+  curF == mCurF @? "current file should be equal to the file in mvar"
 
-prop_schedule :: FileListenInfo -> Property
-prop_schedule fli = monadicIO $ do 
-                   mJ <- run newEmptyMVar 
-  		   run $ schedule (ListenerInput [fli] 0) mJ
-  		   res <- run (tryTakeMVar mJ)
-		   assert $ res == Just [fli]
+testSchedule :: Assertion
+testSchedule = do
+  let fli = FileListenInfo "." [] []
+  mJ <- newEmptyMVar 
+  schedule (ListenerInput [fli] 0) mJ
+  res <- (tryTakeMVar mJ)
+  res == Just [fli] @? "scheduled fileListenInfo should be put in the job mvar"
 
-prop_listen :: FileListenInfo -> Property
-prop_listen fli = monadicIO $ do
-        expected <- run $ getCurrentFpCl fli
-	mC <- run $ newMVar []
-	mM <- run newEmptyMVar 
-	mJ <- run $ newMVar [fli]
-	run $ listen mC mM mJ
-	Just res <- run $ tryTakeMVar mC
-	assert $ expected == res
-
+testListen :: Assertion
+testListen = do 
+  let fli = FileListenInfo "." [] []
+  expected <- getCurrentFpCl fli
+  mC <- newMVar []
+  mM <- newEmptyMVar 
+  mJ <- newMVar [fli]
+  listen mC mM mJ
+  Just res <- tryTakeMVar mC
+  expected == res @? "listen should processe the FileListenInfo in the job box"
 
