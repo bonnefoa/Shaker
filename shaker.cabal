@@ -37,31 +37,27 @@ description:
   .
   /Available actions/
   .
-  [@Compile@] Compile the project. Targets of the compilation are main file (in case of executable) or exposed modules (in case of library).
+  [@compile@] Compile the project. Targets of the compilation are main file (in case of executable) or exposed modules (in case of library).
   .
-  [@FullCompile@] Compile all hs files found in source directory. It is usefull to compile test sources.
+  [@fullcompile@] Compile all hs files found in source directory. It is usefull to compile test sources.
   .
-  [@Clean@] Clean the directory containing .o and .hi files.
+  [@clean@] Clean the directory containing .o and .hi files.
   .
-  [@QuickCheck@] Launch all QuickCheck properties of the project.
+  [@testframework@] Launch quickcheck and hunit tests using test-framework.
   .
-  [@IQuickCheck@] Intelligent QuickCheck launch. Only launch necessary properties (beta). 
+  [@itestframework@] Launch quickcheck and hunit tests using test-framework ony when test module is recompiled.
   .
-  [@HUnit@] Launch all HUnit tests of the project.
-  .
-  [@IHUnit@] Intelligent HUnit launch. Only launch necessary tests (beta).
-  .
-  [@Quit@] Exit the application.
+  [@quit@] Exit the application.
   . 
   /Examples/
   .
-  [@% Compile@] Simply compile the project
+  [@% compile@] Simply compile the project
   .
-  [@% Clean Compile@] Clean and compile the project
+  [@% clean compile@] Clean and compile the project
   .
-  [@% ~Compile@] Switch to continuous mode and will compile the project when sources are modified.
+  [@% ~compile@] Switch to continuous mode and will compile the project when sources are modified.
   .
-  [@% ~Clean Compile@] Switch to continuous mode and will clean and compile the project when sources are modified.
+  [@% ~clean compile@] Switch to continuous mode and will clean and compile the project when sources are modified.
 extra-source-files: README TODO testsuite/tests/resources/invalidMain/dist/setup-config
     testsuite/tests/resources/invalidMain/src/Main.hs
     testsuite/tests/resources/invalidMain/tests/Dummy.hs
