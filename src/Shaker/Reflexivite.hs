@@ -9,10 +9,6 @@ module Shaker.Reflexivite(
   ,runFunction
   ,removeNonTestModule
   -- * Template haskell generator
-  ,listHunit
-  ,listProperties
-  ,listAllProperties
-  ,listAllHunit
   ,listAllTestFrameworkGroupList
   ,filterModulesWithPattern
   ,listTestFrameworkGroupList 
@@ -175,43 +171,23 @@ tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
 
-getSingleQuickCheck :: String -> Exp
-getSingleQuickCheck propName = InfixE (Just printName) (VarE $ mkName ">>") (Just quickCall)
-  where quickCall = (AppE (VarE $ mkName "quickCheck" ) . VarE . mkName) propName
-        printName = AppE (VarE $ mkName "putStrLn") (LitE (StringL propName)) 
-
-listProperties :: [ModuleMapping] -> ExpQ
-listProperties modMaps = return $ ListE $ getQuickCheckProperty modMaps
-  where getQuickCheckProperty :: [ModuleMapping] -> [Exp]
-        getQuickCheckProperty = concatMap (map getSingleQuickCheck .  cfPropName)
-
--- | List the quickeck properties of the project.
--- see "Shaker.TestTH"
-listAllProperties :: ShakerInput -> ExpQ
-listAllProperties shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= listProperties
-
--- | List all test case of the project.
--- see "Shaker.TestTH"
-listHunit :: [ModuleMapping] -> ExpQ
-listHunit modMaps = return $ ListE $ getHunit modMaps
-  where getHunit :: [ModuleMapping] -> [Exp]
-        getHunit = concatMap $ map (VarE . mkName) . cfHunitName 
-
-listAllHunit :: ShakerInput -> ExpQ
-listAllHunit shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listHunit
-
+-- List all test group of the project.
+-- see "Shaker.TestTH" 
 listAllTestFrameworkGroupList :: ShakerInput -> ExpQ
 listAllTestFrameworkGroupList shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= listTestFrameworkGroupList . removeNonTestModule
 
+-- | List all test group for test-framework from the list of modules
 listTestFrameworkGroupList :: [ModuleMapping] -> ExpQ
 listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
 
+-- | Remove all modules which does not contain test
 removeNonTestModule :: [ModuleMapping] -> [ModuleMapping]
 removeNonTestModule = filter (\modMap -> notEmpty (cfHunitName modMap) || notEmpty (cfPropName modMap) )
   where notEmpty = not.null
 
 -- * Test framework integration 
 
+-- | Generate a test group for a given module
 getSingleTestFrameworkGroup :: ModuleMapping -> Exp
 getSingleTestFrameworkGroup modMap = AppE first_arg second_arg
   where first_arg = AppE (VarE .mkName $ "testGroup") (LitE (StringL $ cfModuleName modMap))
@@ -219,11 +195,13 @@ getSingleTestFrameworkGroup modMap = AppE first_arg second_arg
         list_prop = map getSingleFrameworkQuickCheck $ cfPropName modMap
         list_hunit = map getSingleFrameworkHunit $ cfHunitName modMap
 
+-- | Generate an expression for a single hunit test
 getSingleFrameworkHunit :: String -> Exp 
 getSingleFrameworkHunit hunitName = AppE first_arg second_arg 
   where first_arg = AppE ( VarE $ mkName "testCase") (LitE $ StringL hunitName)
         second_arg = VarE . mkName $ hunitName
 
+-- | Generate an expression for a single quickcheck property
 getSingleFrameworkQuickCheck :: String -> Exp
 getSingleFrameworkQuickCheck propName = AppE first_arg second_arg 
   where canonical_name = tail . dropWhile (/= '_') $ propName 
