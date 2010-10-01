@@ -28,6 +28,7 @@ import Control.Monad.Reader(ask, Reader)
 import LazyUniqFM
 import MkIface 
 import HscTypes
+import Linker
 
 import System.Directory
 
@@ -106,6 +107,8 @@ fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= remove
 ghcCompile :: GhcMonad m => CompileInput -> m SuccessFlag
 ghcCompile cpIn = do   
      initializeGhc cpIn
+     dflags <- getSessionDynFlags
+     liftIO $ unload dflags []
      load LoadAllTargets
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
