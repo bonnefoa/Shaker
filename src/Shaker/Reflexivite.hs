@@ -12,6 +12,7 @@ module Shaker.Reflexivite(
   ,listProperties
   ,listAllProperties
   ,listAllHunit
+  ,listAllTestFrameworkGroupList
   ,filterModulesWithPattern
   ,listTestFrameworkGroupList 
 )
@@ -197,6 +198,9 @@ listHunit modMaps = return $ ListE $ getHunit modMaps
 
 listAllHunit :: ShakerInput -> ExpQ
 listAllHunit shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listHunit
+
+listAllTestFrameworkGroupList :: ShakerInput -> ExpQ
+listAllTestFrameworkGroupList shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listTestFrameworkGroupList 
 
 listTestFrameworkGroupList :: [ModuleMapping] -> ExpQ
 listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
