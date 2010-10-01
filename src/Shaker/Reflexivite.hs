@@ -31,7 +31,6 @@ import Control.Exception as C
 import Digraph
 import Language.Haskell.TH
 import GHC
-import HscTypes
 import GHC.Paths
 import Unsafe.Coerce
 import Outputable
@@ -127,7 +126,7 @@ runFunction (RunnableFunction importModuleList fun) = do
          do let value' = unsafeCoerce value :: a
             return value'
   _ <- lift $ handleActionInterrupt dynFun
-  return () 
+  return ()
   where 
         configureContext [] = getModuleGraph >>= \mGraph ->  setContext [] $ map ms_mod mGraph
         configureContext imports = mapM (\a -> findModule (mkModuleName a)  Nothing ) imports >>= \m -> setContext [] m
