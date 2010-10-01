@@ -171,7 +171,7 @@ tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
 
--- List all test group of the project.
+-- | List all test group of the project.
 -- see "Shaker.TestTH" 
 listAllTestFrameworkGroupList :: ShakerInput -> ExpQ
 listAllTestFrameworkGroupList shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= listTestFrameworkGroupList . removeNonTestModule
