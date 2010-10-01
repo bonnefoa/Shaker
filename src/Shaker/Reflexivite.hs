@@ -26,10 +26,12 @@ import Shaker.Regex
 
 import Control.Monad.Reader(runReader,runReaderT,asks, Reader, lift, filterM)
 import Control.Arrow
+import Control.Exception as C
 
 import Digraph
 import Language.Haskell.TH
 import GHC
+import HscTypes
 import GHC.Paths
 import Unsafe.Coerce
 import Outputable
@@ -116,19 +118,24 @@ collectChangedModulesForTest' modFilePaths cpIn = do
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
-runFunction (RunnableFunction funModuleName fun) = do
+runFunction (RunnableFunction importModuleList fun) = do
   (cpIn, cfFlList) <- initializeFilesForCompilation 
   dynFun <- lift $ runGhc (Just libdir) $ do
          _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-         configureContext funModuleName
+         configureContext importModuleList
          value <- compileExpr fun
          do let value' = unsafeCoerce value :: a
             return value'
-  _ <- lift dynFun
+  _ <- lift $ handleActionInterrupt dynFun
   return () 
   where 
         configureContext [] = getModuleGraph >>= \mGraph ->  setContext [] $ map ms_mod mGraph
         configureContext imports = mapM (\a -> findModule (mkModuleName a)  Nothing ) imports >>= \m -> setContext [] m
+
+handleActionInterrupt :: IO() -> IO()
+handleActionInterrupt =  C.handle catchAll
+  where catchAll :: C.SomeException -> IO ()
+        catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return () 
 
 -- | Collect module name and tests name for the given module
 getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping
