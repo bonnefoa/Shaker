@@ -7,6 +7,7 @@ module Shaker.Reflexivite(
   ,collectChangedModules
   ,collectChangedModulesForTest 
   ,runFunction
+  ,removeNonTestModule
   -- * Template haskell generator
   ,listHunit
   ,listProperties
@@ -200,10 +201,14 @@ listAllHunit :: ShakerInput -> ExpQ
 listAllHunit shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listHunit
 
 listAllTestFrameworkGroupList :: ShakerInput -> ExpQ
-listAllTestFrameworkGroupList shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listTestFrameworkGroupList 
+listAllTestFrameworkGroupList shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= listTestFrameworkGroupList . removeNonTestModule
 
 listTestFrameworkGroupList :: [ModuleMapping] -> ExpQ
 listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
+
+removeNonTestModule :: [ModuleMapping] -> [ModuleMapping]
+removeNonTestModule = filter (\modMap -> notEmpty (cfHunitName modMap) || notEmpty (cfPropName modMap) )
+  where notEmpty = not.null
 
 -- * Test framework integration 
 
