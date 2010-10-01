@@ -2,10 +2,7 @@
 module Main
  where
 
-import Test.HUnit
-import Control.Monad.Trans
 import Shaker.TestTH
-import Test.QuickCheck
 import Shaker.Cabal.CabalInfoTest
 import Shaker.Action.CompileTest
 import Shaker.CliTest
@@ -15,17 +12,10 @@ import Shaker.RegexTest
 import Shaker.IoTest
 import Shaker.ReflexiviteTest
 import Shaker.SourceHelperTest
+import Test.Framework
+import Test.Framework.Providers.HUnit
+import Test.Framework.Providers.QuickCheck2
 
 main :: IO()
-main = do 
-  mapM_ liftIO propLists
-  _ <- testLists
-  return () 
-
-propLists :: [IO()]
-propLists = $(thListProperties)
-
-testLists :: IO Counts
-testLists = runTestTT  $ TestList $(thListHunit)
-
+main = defaultMain $(thListTestFramework)
 
