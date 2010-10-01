@@ -43,9 +43,9 @@ description:
   .
   [@clean@] Clean the directory containing .o and .hi files.
   .
-  [@testframework@] Launch quickcheck and hunit tests using test-framework.
+  [@test@] Launch quickcheck and hunit tests using test-framework.
   .
-  [@itestframework@] Launch quickcheck and hunit tests using test-framework ony when test module is recompiled.
+  [@itest@] Launch quickcheck and hunit tests using test-framework ony when test module is recompiled.
   .
   [@quit@] Exit the application.
   . 

@@ -31,8 +31,8 @@ defaultCommandMap = M.fromList list
             ("fullcompile",FullCompile),
             ("help", Help),
 --            ("Execute", Execute),
-            ("testframework", TestFramework ),
-            ("itestframework", IntelligentTestFramework ),
+            ("test", TestFramework ),
+            ("itest", IntelligentTestFramework ),
             ("clean",Clean),
             ("quit",Quit)
           ]
