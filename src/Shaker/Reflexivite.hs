@@ -183,7 +183,7 @@ getSingleQuickCheck propName = InfixE (Just printName) (VarE $ mkName ">>") (Jus
 listProperties :: [ModuleMapping] -> ExpQ
 listProperties modMaps = return $ ListE $ getQuickCheckProperty modMaps
   where getQuickCheckProperty :: [ModuleMapping] -> [Exp]
-        getQuickCheckProperty = concatMap (\modMap -> map getSingleQuickCheck $ cfPropName modMap)
+        getQuickCheckProperty = concatMap (map getSingleQuickCheck .  cfPropName)
 
 -- | List the quickeck properties of the project.
 -- see "Shaker.TestTH"
@@ -195,7 +195,7 @@ listAllProperties shIn = runIO (runReaderT collectAllModulesForTest shIn) >>= li
 listHunit :: [ModuleMapping] -> ExpQ
 listHunit modMaps = return $ ListE $ getHunit modMaps
   where getHunit :: [ModuleMapping] -> [Exp]
-        getHunit = concatMap (\modMap -> map (VarE . mkName) $ cfHunitName modMap) 
+        getHunit = concatMap $ map (VarE . mkName) . cfHunitName 
 
 listAllHunit :: ShakerInput -> ExpQ
 listAllHunit shIn = runIO ( runReaderT collectAllModulesForTest shIn ) >>= listHunit
