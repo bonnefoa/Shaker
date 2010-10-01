@@ -185,5 +185,8 @@ Executable test
                  ,HUnit == 1.2.*
                  ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
+                 ,test-framework == 0.3.*
+                 ,test-framework-hunit == 0.2.*
+                 ,test-framework-quickcheck2 == 0.2.*
   if !flag(test)
     buildable:     False
