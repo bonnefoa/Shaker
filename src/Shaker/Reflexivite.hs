@@ -187,7 +187,7 @@ listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
 
 -- | Remove all modules which does not contain test
 removeNonTestModule :: [ModuleMapping] -> [ModuleMapping]
-removeNonTestModule = filter (\modMap -> notEmpty (cfHunitName modMap) || notEmpty (cfPropName modMap) )
+removeNonTestModule = filter (\modMap -> notEmpty (cfHunitName modMap) || notEmpty (cfPropName modMap) || notEmpty (cfHunitTest modMap) )
   where notEmpty = not.null
 
 -- * Test framework integration 
