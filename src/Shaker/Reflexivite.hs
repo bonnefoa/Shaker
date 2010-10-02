@@ -194,24 +194,29 @@ removeNonTestModule = filter (\modMap -> notEmpty (cfHunitName modMap) || notEmp
 
 -- | Generate a test group for a given module
 getSingleTestFrameworkGroup :: ModuleMapping -> Exp
-getSingleTestFrameworkGroup modMap = AppE first_arg second_arg
-  where first_arg = AppE (VarE .mkName $ "testGroup") (LitE (StringL $ cfModuleName modMap))
-        second_arg = ListE $ list_prop ++ list_hunit 
-        list_prop = map getSingleFrameworkQuickCheck $ cfPropName modMap
-        list_hunit = map getSingleFrameworkHunit $ cfHunitName modMap
+getSingleTestFrameworkGroup modMap = foldl1 AppE [process_to_group_exp, test_case_tuple_list, list_assertion, list_prop]
+  where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ cfModuleName modMap))
+        -- list_test = AppE (AppE (VarE $ mkName "++") testcase_exp)  (ListE $ list_prop ++ list_assertion)
+        list_prop = ListE $ map getSingleFrameworkQuickCheck $ cfPropName modMap
+        list_assertion = ListE $ map getSingleFrameworkHunit $ cfHunitName modMap
+        test_case_tuple_list = convertHunitTestCaseToTuples (cfHunitTest modMap)
+
+convertHunitTestCaseToTuples :: [String] -> Exp
+convertHunitTestCaseToTuples = ListE . map convertToTuple 
+  where convertToTuple name = TupE [LitE (StringL name), VarE $ mkName name ]
 
 -- | Generate an expression for a single hunit test
 getSingleFrameworkHunit :: String -> Exp 
-getSingleFrameworkHunit hunitName = AppE first_arg second_arg 
-  where first_arg = AppE ( VarE $ mkName "testCase") (LitE $ StringL hunitName)
-        second_arg = VarE . mkName $ hunitName
+getSingleFrameworkHunit hunitName = AppE testcase_with_name_exp assertion_exp
+  where testcase_with_name_exp = AppE ( VarE $ mkName "testCase") (LitE $ StringL hunitName)
+        assertion_exp = VarE . mkName $ hunitName
 
 -- | Generate an expression for a single quickcheck property
 getSingleFrameworkQuickCheck :: String -> Exp
-getSingleFrameworkQuickCheck propName = AppE first_arg second_arg 
+getSingleFrameworkQuickCheck propName = AppE testproperty_with_name_exp property_exp 
   where canonical_name = tail . dropWhile (/= '_') $ propName 
-        first_arg = AppE ( VarE $ mkName "testProperty") (LitE $ StringL canonical_name)
-        second_arg = VarE . mkName $ propName
+        testproperty_with_name_exp = AppE ( VarE $ mkName "testProperty") (LitE $ StringL canonical_name)
+        property_exp = VarE . mkName $ propName
 
 -- * utility functions 
 

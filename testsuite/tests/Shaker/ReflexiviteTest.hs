@@ -15,6 +15,7 @@ import Shaker.Properties()
 import System.Time
 import System.Directory
 import System.FilePath 
+import Language.Haskell.TH
 
 -- * Module mapping construction test
 
@@ -55,17 +56,15 @@ testReflexiviteTestShouldContainTestCase :: Assertion
 testReflexiviteTestShouldContainTestCase = abstractModuleMappingReflexiviteTest predicat
   where predicat reflexiviteModule = any (== "testHunitTestCaseDetection") (cfHunitTest reflexiviteModule) 
           @? "ReflexiviteModule should contain testCase testHunitTestCaseDetection, got " ++ show (cfHunitTest reflexiviteModule)
-
-testReflexiviteTestShouldNotContainTestList :: Assertion
-testReflexiviteTestShouldNotContainTestList = abstractModuleMappingReflexiviteTest predicat
-  where predicat reflexiviteModule = (not . any (== "testHunitTestListDetection"))  (cfHunitTest reflexiviteModule) 
-          @? "ReflexiviteModule should not contain testList testHunitTestListDetection, got " ++ show (cfHunitTest reflexiviteModule)
   
 testHunitTestCaseDetection :: Test
-testHunitTestCaseDetection = TestCase $ do True @? "Trivial"
+testHunitTestCaseDetection = TestCase $ True @? "Trivial"
 
-testHunitTestListDetection :: Test
-testHunitTestListDetection = TestList []
+testListAllTestFrameworkGroupList :: Assertion
+testListAllTestFrameworkGroupList = do
+  resolved_exp <- runQ $ listAllTestFrameworkGroupList testShakerInput
+  let function =  filter (/= '\n') $ pprint resolved_exp
+  "processToTestGroup \"Shaker.ReflexiviteTest\" [(\"testHunitTestCaseDetection\"" `isInfixOf` function @? "listAllTestFrameworkGroupList should have correctly setted hunit to test framework conversion"
 
 aFun :: String -> IO ()
 aFun tempFp = do

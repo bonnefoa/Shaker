@@ -22,5 +22,5 @@ runTestFramework' modules = do
   lift $ putStrLn function
   runFunction $ RunnableFunction import_modules ("defaultMain $ " ++ function) 
   return () 
-  where base_modules =["Test.Framework", "Test.Framework.Providers.HUnit", "Test.Framework.Providers.QuickCheck2", "Test.QuickCheck", "Test.HUnit", "Prelude" ] 
+  where base_modules =["Data.Maybe","Shaker.SourceHelper","Test.Framework", "Test.Framework.Providers.HUnit", "Test.Framework.Providers.QuickCheck2", "Test.QuickCheck", "Test.HUnit", "Prelude" ] 
 
