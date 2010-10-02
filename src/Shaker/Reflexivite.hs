@@ -134,18 +134,6 @@ handleActionInterrupt =  C.handle catchAll
   where catchAll :: C.SomeException -> IO ()
         catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return () 
 
-{-
-getReflexiviteModuleInfo :: Shaker IO (ModuleInfo)
-getReflexiviteModuleInfo = do
-  (cpIn, cfFlList) <- initializeFilesForCompilation 
-  (Just mI) <- lift $ runGhc (Just libdir) $ do
-        _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-        modSumList <- collectAllModules'
-        let modSum = ms_mod . head $ filter (\a -> (moduleNameString . moduleName . ms_mod) a == "Shaker.ReflexiviteTest") modSumList
-        getModuleInfo $ modSum 
-  return $ mI 
--}
-
 -- | Collect module name and tests name for the given module
 getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping
 getModuleMapping  modSum = do 
