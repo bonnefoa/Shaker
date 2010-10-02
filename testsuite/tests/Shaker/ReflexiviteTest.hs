@@ -5,6 +5,7 @@ import Test.HUnit
 import Test.QuickCheck 
 
 import Data.List
+
 import Control.Monad.Reader(runReaderT)
 import Shaker.Reflexivite
 import Shaker.Type
@@ -15,21 +16,56 @@ import System.Time
 import System.Directory
 import System.FilePath 
 
-testRunReflexivite :: Assertion
-testRunReflexivite =  do
-  modMapLst <- runReaderT collectAllModulesForTest testShakerInput
-  length modMapLst > 1 @? "Should have more than one module, got : "++ show (length modMapLst)
-  any ( \(ModuleMapping nm _ _) -> nm == "Shaker.ReflexiviteTest") modMapLst @? 
-    "Should have module Shaker.ReflexiviteTest, got " ++ show modMapLst
-  let (Just regexpModMap)  = find (\(ModuleMapping nm _ _) -> nm == "Shaker.RegexTest" ) modMapLst
-  any (== "prop_filterListAll") (cfPropName regexpModMap) @? "Should contain regexp module with quickechck properties prop_filterListAll, got "
-    ++ show (cfPropName regexpModMap)
-  let (Just reflexiviteModMap)  = find (\(ModuleMapping nm _ _) -> nm == "Shaker.ReflexiviteTest" ) modMapLst
-  any (== "testRunReflexivite") (cfHunitName reflexiviteModMap) @? "Should contain reflexivite test module with hunit test testRunReflexivite, got "
-    ++ show (cfHunitName reflexiviteModMap)
-  not ( any (== "testShakerInput") (cfHunitName reflexiviteModMap) ) @? "Should not contain function testShakerInput, got "
-    ++ show (cfHunitName reflexiviteModMap)
-  not (any (\a ->cfModuleName a == "Shaker.RunTestTH") modMapLst) @? "Should have excluded RunTestTH, got " ++ show modMapLst
+-- * Module mapping construction test
+
+abstractTestModuleMapping :: ([ModuleMapping] -> Assertion) -> Assertion
+abstractTestModuleMapping predicat = runReaderT collectAllModulesForTest testShakerInput >>= predicat
+
+testModuleMappingLength :: Assertion
+testModuleMappingLength = abstractTestModuleMapping predicat
+  where predicat modMapLst = length modMapLst > 1 @? "Should have more than one module, got : "++ show (length modMapLst) 
+
+testModuleMappingContainReflexiviteTest :: Assertion
+testModuleMappingContainReflexiviteTest = abstractTestModuleMapping predicat
+  where predicat modMapLst = any ( \mm -> cfModuleName mm == "Shaker.ReflexiviteTest") modMapLst @?  "Should have module Shaker.ReflexiviteTest, got " ++ show modMapLst
+
+testModuleMappingShouldNotContainRunTestTH :: Assertion
+testModuleMappingShouldNotContainRunTestTH = abstractTestModuleMapping predicat
+  where predicat modMapLst = not (any (\a ->cfModuleName a == "Shaker.RunTestTH") modMapLst) @? "Should have excluded RunTestTH, got " ++ show modMapLst
+
+-- * Reflexivite module Test 
+
+abstractModuleMappingReflexiviteTest :: (ModuleMapping -> Assertion) -> Assertion
+abstractModuleMappingReflexiviteTest predicat = do
+  modMapLst <- runReaderT collectAllModulesForTest testShakerInput 
+  let (Just reflexiviteModMap)  = find (\mm -> cfModuleName mm == "Shaker.ReflexiviteTest" ) modMapLst
+  predicat reflexiviteModMap
+
+testReflexiviteTestContainQuickcheckProperty :: Assertion
+testReflexiviteTestContainQuickcheckProperty = abstractModuleMappingReflexiviteTest predicat
+  where predicat reflexiviteModule = any (== "prop_filterModMap_include_all") (cfPropName reflexiviteModule) 
+          @? "ReflexiviteModule should contains quickechck properties prop_filterModMap_include_all, got " ++ show (cfPropName reflexiviteModule)
+
+testReflexiviteTestContainHunitAssertion :: Assertion
+testReflexiviteTestContainHunitAssertion = abstractModuleMappingReflexiviteTest predicat
+  where predicat reflexiviteModule = any (== "testReflexiviteTestContainHunitAssertion") (cfHunitName reflexiviteModule) 
+          @? "ReflexiviteModule should contain hunit assertion testReflexiviteTestContainHunitAssertion, got " ++ show (cfHunitName reflexiviteModule)
+
+testReflexiviteTestShouldContainTestCase :: Assertion
+testReflexiviteTestShouldContainTestCase = abstractModuleMappingReflexiviteTest predicat
+  where predicat reflexiviteModule = any (== "testHunitTestCaseDetection") (cfHunitTest reflexiviteModule) 
+          @? "ReflexiviteModule should contain testCase testHunitTestCaseDetection, got " ++ show (cfHunitTest reflexiviteModule)
+
+testReflexiviteTestShouldNotContainTestList :: Assertion
+testReflexiviteTestShouldNotContainTestList = abstractModuleMappingReflexiviteTest predicat
+  where predicat reflexiviteModule = (not . any (== "testHunitTestListDetection"))  (cfHunitTest reflexiviteModule) 
+          @? "ReflexiviteModule should not contain testList testHunitTestListDetection, got " ++ show (cfHunitTest reflexiviteModule)
+  
+testHunitTestCaseDetection :: Test
+testHunitTestCaseDetection = TestCase $ do True @? "Trivial"
+
+testHunitTestListDetection :: Test
+testHunitTestListDetection = TestList []
 
 aFun :: String -> IO ()
 aFun tempFp = do
@@ -96,7 +132,7 @@ testCollectChangedModulesWithModifiedFiles =  do
   let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources
   exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput {modifiedInfoFiles = modFileInfo }
   length exp_one_modules == 1 @? "One module should need compilation"
-  
+
 prop_filterModMap_include_all :: [ModuleMapping] -> Bool
 prop_filterModMap_include_all modMap = modMap == res
   where res = filterModulesWithPattern (Just ".*") modMap 

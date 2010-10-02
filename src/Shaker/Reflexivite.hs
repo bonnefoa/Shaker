@@ -1,4 +1,4 @@
-module Shaker.Reflexivite(
+module Shaker.Reflexivite (
   ModuleMapping(..)
   ,RunnableFunction(..)
   -- * Collect module information functions
@@ -12,7 +12,7 @@ module Shaker.Reflexivite(
   ,listAllTestFrameworkGroupList
   ,filterModulesWithPattern
   ,listTestFrameworkGroupList 
-)
+  )
  where
 
 import Data.List
@@ -39,7 +39,8 @@ import Var (varName)
 -- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
   cfModuleName :: String -- ^ Complete name of the module 
-  ,cfHunitName :: [String] -- ^ Hunit test function names
+  ,cfHunitName :: [String] -- ^ Hunit assertions
+  ,cfHunitTest :: [String] -- ^ Hunit test case to process for test-framework
   ,cfPropName :: [String] -- ^ QuickCheck test function names
  }
  deriving (Show,Eq)
@@ -100,7 +101,6 @@ collectAllModules' = do
   let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
   return sort_mss
          
-
 collectChangedModules' :: GhcMonad m => [FilePath] -> m [ModSummary] 
 collectChangedModules' modFilePaths = collectAllModules' >>= filterM (isModuleNeedCompilation modFilePaths) 
 
@@ -134,20 +134,36 @@ handleActionInterrupt =  C.handle catchAll
   where catchAll :: C.SomeException -> IO ()
         catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return () 
 
+{-
+getReflexiviteModuleInfo :: Shaker IO (ModuleInfo)
+getReflexiviteModuleInfo = do
+  (cpIn, cfFlList) <- initializeFilesForCompilation 
+  (Just mI) <- lift $ runGhc (Just libdir) $ do
+        _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+        modSumList <- collectAllModules'
+        let modSum = ms_mod . head $ filter (\a -> (moduleNameString . moduleName . ms_mod) a == "Shaker.ReflexiviteTest") modSumList
+        getModuleInfo $ modSum 
+  return $ mI 
+-}
+
 -- | Collect module name and tests name for the given module
 getModuleMapping :: (GhcMonad m) => ModSummary -> m ModuleMapping
 getModuleMapping  modSum = do 
   mayModuleInfo <- getModuleInfo $  ms_mod modSum
   let props = getQuickCheckFunction mayModuleInfo
-  let hunits = getHunitFunctions mayModuleInfo
-  return $ ModuleMapping modName hunits props
+  let hunits = getHunitAssertions mayModuleInfo
+  let testCases = getHunitTestCase mayModuleInfo
+  return $ ModuleMapping modName hunits testCases props
   where modName = (moduleNameString . moduleName . ms_mod) modSum        
        
 getQuickCheckFunction :: Maybe ModuleInfo -> [String]
 getQuickCheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`) 
 
-getHunitFunctions :: Maybe ModuleInfo -> [String]
-getHunitFunctions = getFunctionTypeWithPredicate (== "Test.HUnit.Lang.Assertion") 
+getHunitAssertions :: Maybe ModuleInfo -> [String]
+getHunitAssertions = getFunctionTypeWithPredicate (== "Test.HUnit.Lang.Assertion") 
+
+getHunitTestCase :: Maybe ModuleInfo -> [String]
+getHunitTestCase = getFunctionTypeWithPredicate (== "Test.HUnit.Base.Test") 
 
 getFunctionTypeWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionTypeWithPredicate _ Nothing = []
@@ -157,7 +173,8 @@ getFunctionTypeWithPredicate predicat (Just modInfo) = map snd $ filter ( predic
 
 getFunctionNameWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionNameWithPredicate _ Nothing = []
-getFunctionNameWithPredicate predicat (Just modInfo) = filter predicat nameList
+getFunctionNameWithPredicate predicat (Just modInfo) = 
+  filter predicat nameList
    where idList = getIdList modInfo
          nameList = map getFunctionNameFromId idList 
 

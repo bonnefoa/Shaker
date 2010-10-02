@@ -38,7 +38,8 @@ instance Arbitrary ModuleMapping where
               name <- createShortName
               listHunitName <- listOf createShortName 
               listPropName <- listOf createShortName 
-              return $ ModuleMapping name listHunitName listPropName
+              listTestCases <- listOf createShortName 
+              return $ ModuleMapping name listHunitName listTestCases listPropName
 
 genSmallNumber :: Gen Int
 genSmallNumber = elements [0..10]
