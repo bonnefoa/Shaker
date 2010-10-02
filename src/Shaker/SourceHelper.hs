@@ -9,6 +9,7 @@ module Shaker.SourceHelper(
   ,removeFileWithMain
   ,removeFileWithTemplateHaskell
   ,fillCompileInputWithStandardTarget
+  ,processToTestGroup 
   -- * GHC Compile management
   ,initializeGhc
   ,ghcCompile
@@ -20,6 +21,7 @@ module Shaker.SourceHelper(
 
 import GHC
 import Data.List
+import Data.Maybe
 import Shaker.Io
 import Shaker.Type
 
@@ -31,6 +33,10 @@ import HscTypes
 import Linker
 
 import System.Directory
+
+import Test.HUnit as H
+import Test.Framework.Providers.API as T (Test, testGroup)
+import Test.Framework.Providers.HUnit 
 
 type CompileR = Reader [CompileFile]
 
@@ -101,6 +107,14 @@ removeFileWithPredicate predicate cpIn = do
 -- containing main and template haskell
 fillCompileInputWithStandardTarget :: CompileInput -> CompileR CompileInput 
 fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell
+
+processToTestGroup :: String -> [(String, H.Test)] -> [T.Test] -> [T.Test] -> T.Test
+processToTestGroup testName testCaseList assertionList propertyList = testGroup testName $ concat [listHunitTestCase, assertionList, propertyList]
+    where listHunitTestCase = mapMaybe convertTestCaseToTestFrameworkTestCase testCaseList
+    
+convertTestCaseToTestFrameworkTestCase :: (String, H.Test) -> Maybe T.Test
+convertTestCaseToTestFrameworkTestCase (name, TestCase assertion) = Just $ testCase name assertion
+convertTestCaseToTestFrameworkTestCase _ = Nothing
 
 -- | Configure and load targets of compilation. 
 -- It is possible to exploit the compilation result after this step.
