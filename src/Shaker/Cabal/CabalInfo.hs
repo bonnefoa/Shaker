@@ -61,10 +61,8 @@ localBuildInfoToCompileInputs lbi = executableAndLibToCompileInput (library pkgD
 
 -- | Dispatch the processing depending of the library content
 executableAndLibToCompileInput :: Maybe Library -> [Executable] -> [CompileInput]
-executableAndLibToCompileInput Nothing exes = 
-  map executableToCompileInput exes
-executableAndLibToCompileInput (Just lib) exes = 
-  libraryToCompileInput lib : map executableToCompileInput exes
+executableAndLibToCompileInput Nothing exes = map executableToCompileInput exes
+executableAndLibToCompileInput (Just lib) exes = libraryToCompileInput lib : map executableToCompileInput exes
 
 -- | Convert a cabal executable to a compileInput
 -- The target of compilation will the main file
@@ -77,7 +75,7 @@ executableToCompileInput executable = defaultCompileInput {
   ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
   }
   where bldInfo = buildInfo executable
-        mySourceDir = hsSourceDirs bldInfo
+        mySourceDir = "dist/build/autogen" : hsSourceDirs bldInfo
 
 -- | Convert a cabal library to a compileInput
 -- The target of compilation will be all exposed modules
@@ -91,7 +89,7 @@ libraryToCompileInput lib = defaultCompileInput {
  }
  where bldInfo = libBuildInfo lib
        myModules = map convertModuleNameToString $ exposedModules lib
-       mySourceDir = hsSourceDirs bldInfo
+       mySourceDir = "dist/build/autogen": hsSourceDirs bldInfo 
 
 -- | Create a dynFlags for ghc from a source directory and 
 -- a liste of packages

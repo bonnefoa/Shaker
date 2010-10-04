@@ -17,15 +17,15 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   shIn <- defaultCabalInput
   let cplInps@(cplLib:cplExe:[]) = compileInputs shIn
   length cplInps == 2 @? "Should have two compile input, one executable and one library, got "++ show ( length cplInps)
-  cfSourceDirs cplLib == ["src"] @? "source dir should be src, got " ++ show (cfSourceDirs cplLib)
+  cfSourceDirs cplLib == ["dist/build/autogen","src"] @? "source dir should be src, got " ++ show (cfSourceDirs cplLib)
   cfCommandLineFlags cplLib == ["-Wall"] @? "command line flags should be -Wall, got " ++ show ( cfCommandLineFlags cplLib)
   cfTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( cfTargetFiles cplLib)
   cfTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( cfTargetFiles cplExe)
   let dFlags = cfDynFlags cplExe defaultDynFlags
-  importPaths dFlags == ["src"] @? "importPaths should be src, got "++ show (importPaths dFlags)
+  importPaths dFlags == ["dist/build/autogen","src"] @? "importPaths should be src, got "++ show (importPaths dFlags)
   packageFlags dFlags == [ExposePackage "ghc"] @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
-  let (ListenerInput (flLib:[]) _) = listenerInput shIn
-  dir flLib == "src" @? "Expected : src, got " ++ show  flLib
+  let (ListenerInput (_:srcLib:[]) _) = listenerInput shIn
+  dir srcLib == "src" @? "Expected : src, got " ++ show srcLib
 
 testInvalidMainShouldBeExcluded :: Assertion
 testInvalidMainShouldBeExcluded =  runTestOnDirectory "testsuite/tests/resources/invalidMain" $ do

@@ -133,7 +133,7 @@ type Plugin = Shaker IO()
 -- Wall is activated by default
 defaultCompileInput :: CompileInput
 defaultCompileInput = CompileInput {
-  cfSourceDirs= ["src/","testsuite/tests/"]
+  cfSourceDirs= ["src/","testsuite/tests/", "dist/build/autogen"]
   ,cfDescription = "Default Compilation"
   ,cfCompileTarget =  "dist/shakerTarget"  
   ,cfDynFlags = defaultCompileFlags  
