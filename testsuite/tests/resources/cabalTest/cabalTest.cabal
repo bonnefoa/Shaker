@@ -8,11 +8,14 @@ Executable cabalTest
   ghc-options: -Wall
   hs-source-dirs: src
   build-depends: ghc >= 6
+                 ,base >=4
 
 Library 
   exposed-modules: CabalTest
+  other-modules: Paths_cabalTest
   ghc-options: -Wall
   hs-source-dirs: src 
   build-depends: ghc >= 6
+                 ,base >=4
 
 
