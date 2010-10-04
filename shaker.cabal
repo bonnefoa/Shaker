@@ -109,7 +109,6 @@ Library
     Shaker.Parser
     Shaker.Action.Standard
     Shaker.Action.Test
-    Shaker.Action.Execute
     Shaker.Action.Compile
     Shaker.Conductor
     Shaker.Config
