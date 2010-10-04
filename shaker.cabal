@@ -43,15 +43,19 @@ description:
   .
   [@compile@] Compile the project. Targets of the compilation are main files (in case of executable) and exposed modules (in case of library).
   .
-  [@fullcompile@] Compile all hs files found in source directory. It is usefull to compile test sources. Since it is not possible to compile multiple modules with main, all modules with a main function are excluded.
+  [@fullcompile@] Compile all hs files found in source directory. It is usefull to compile sources not declared in cabal. Since it is not possible to compile multiple modules with main, all modules with a main function are excluded.
   .
   [@help@] Print all available action.
   .
   [@clean@] Clean the directory containing .o and .hi files.
   .
-  [@test@] Launch all quickcheck properties and hunit tests of the project using test-framework. You can provide a regexp as argument and shaker will execute all tests located in modules matching the regexp. Quickcheck properties and HUnit tests are automatically discovered using GHC Api. All functions begining with “prop_” are considered as quickcheck properties and all functions of type Test.HUnit.Lang.Assertion are considered as HUnit tests. 
+  [@test@] Launch all quickcheck properties and hunit tests of the project using test-framework. You can provide one or several regexps as argument and shaker will execute all tests matching one regexp. Quickcheck properties and HUnit tests are automatically discovered using GHC Api. All functions begining with “prop_” are considered as quickcheck properties and all functions of type Test.HUnit.Lang.Assertion and TestCase are considered as HUnit tests. 
+  .
+  [@test-module@] Same as test but test-module takes one or several module patterns as arguments.
   .
   [@itest@] Launch all quickcheck properties and hunit tests using test-framework on compiled modules. Same as test, you can give a regexp as argument. This action is only useful when used with continuous action. 
+  .
+  [@itest-module@] Same as itest but itest-module takes one or several module patterns as arguments.
   .
   [@quit@] Exit the application. You can also use ^C or ^D to exit shaker.
   . 
@@ -69,9 +73,13 @@ description:
   .
   [@% ~itest@] Switch to continuous mode and execute tests on compiled modules.
   .
-  [@% test Regex@] Launch all tests in modules containing Regex
+  [@% test prop_.*@] Execute all quickcheck properties of the project. 
   .
-  [@% ~itest Regex@] Launch all tests in modules containing Regex only when Regex is build.
+  [@% test testExecute.* testFilter.* @] Execute all tests matching testExecute.* or testFilter.*
+  .
+  [@% test-module Regex Refle@] Launch all tests in modules matching Regex.* or Refle.*
+  .
+  [@% ~itest-module Regex Refle@] Launch all tests in modules matching Regex.* or Refle.* only when they are build.
   . 
   /Examples with command-line/
   .
