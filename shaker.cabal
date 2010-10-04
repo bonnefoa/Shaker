@@ -131,7 +131,7 @@ Library
     Shaker.Type
     Shaker.Listener
   build-depends: base == 4.*
-                 ,Cabal >= 1.8.0.6
+                 ,Cabal == 1.8.*
                  ,containers == 0.3.*
                  ,haskeline == 0.6.*
                  ,directory == 1.0.*
@@ -143,7 +143,7 @@ Library
                  ,parsec == 3.*
                  ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
-                 ,bytestring >= 0.9.1.5
+                 ,bytestring >= 0.9.1.0
                  ,HUnit == 1.2.*
                  ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
@@ -156,7 +156,7 @@ Executable shaker
   ghc-options: -Wall -fno-warn-orphans 
   hs-source-dirs: prog src
   build-depends: base == 4.*
-                 ,Cabal >= 1.8.0.6
+                 ,Cabal == 1.8.*
                  ,containers == 0.3.*
                  ,haskeline == 0.6.*
                  ,directory == 1.0.*
@@ -168,7 +168,7 @@ Executable shaker
                  ,parsec == 3.*
                  ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
-                 ,bytestring >= 0.9.1.5
+                 ,bytestring >= 0.9.1.0
                  ,HUnit == 1.2.*
                  ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
@@ -199,7 +199,7 @@ Executable test
     Shaker.ReflexiviteTest
     Shaker.ConductorTest
   build-depends: base == 4.*
-                 ,Cabal >= 1.8.0.6
+                 ,Cabal == 1.8.*
                  ,containers == 0.3.*
                  ,haskeline == 0.6.*
                  ,directory == 1.0.*
@@ -211,7 +211,7 @@ Executable test
                  ,parsec == 3.*
                  ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
-                 ,bytestring >= 0.9.1.5
+                 ,bytestring >= 0.9.1.0
                  ,HUnit == 1.2.*
                  ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
