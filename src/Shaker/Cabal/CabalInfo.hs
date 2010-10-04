@@ -7,6 +7,8 @@ module Shaker.Cabal.CabalInfo(
 
 import Shaker.Type
 import Shaker.Config
+import Distribution.Simple.Build
+import Distribution.Verbosity
 import Distribution.Simple.Configure (getPersistBuildConfig)
 import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
 import Distribution.ModuleName
@@ -29,7 +31,12 @@ import Control.Monad
 
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
-defaultCabalInput = readConf >>= localBuildInfoToShakerInput >>= checkInvalidMain 
+defaultCabalInput = readConf >>= \lbi -> 
+  generatePreprocessFile lbi >> 
+  localBuildInfoToShakerInput lbi >>= checkInvalidMain 
+
+generatePreprocessFile :: LocalBuildInfo -> IO ()
+generatePreprocessFile lbi = writeAutogenFiles normal (localPkgDescr lbi) lbi
 
 readConf :: IO LocalBuildInfo
 readConf = getPersistBuildConfig "dist"
