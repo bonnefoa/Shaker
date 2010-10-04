@@ -51,7 +51,7 @@ data CompileFile = CompileFile {
 constructCompileFileList :: CompileInput -> IO [CompileFile] 
 constructCompileFileList cpIn = do
   files <- recurseMultipleListFiles fli
-  mapM constructCompileFile files
+  mapM constructCompileFile $ nub files
   where fli = getFileListenInfoForCompileInput cpIn
   
 -- | Build an individual CompileFile. 

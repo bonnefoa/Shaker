@@ -18,10 +18,12 @@ import System.FilePath
 
 testConstructCompileFileList :: Assertion
 testConstructCompileFileList =  runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do 
-  let cpIn = initializeEmptyCompileInput {cfSourceDirs = ["src"]}
+  let cpIn = initializeEmptyCompileInput {cfSourceDirs = ["dist/build/autogen","src", "."]}
   fileList <- constructCompileFileList cpIn 
   any (\cpFl -> "Main.hs" `isSuffixOf` cfFp cpFl && cfHasMain cpFl) fileList @? "Should have one main file, got " ++ show fileList
   any (\cpFl -> "CabalTest.hs" `isSuffixOf` cfFp cpFl && (not . cfHasMain) cpFl) fileList @? "Should have one main file, got " ++ show fileList
+  let list_compile_file_paths = filter (\cpFl -> "Paths_cabalTest.hs" `isSuffixOf` cfFp cpFl) fileList
+  length list_compile_file_paths== 1 @? "Should have only one Paths_cabalTest, got " ++ show list_compile_file_paths
 
 testConstructConductorCompileFileList :: Assertion
 testConstructConductorCompileFileList =  do
