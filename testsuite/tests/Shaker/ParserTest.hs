@@ -48,7 +48,7 @@ instance Arbitrary ActionString where
                          ,elements $ map constructActionString listCommandMap
                         ]
               -- build action string with args
-              proc list = elements $ map (\(key,value) -> ActionString (key ++ " " ++ (unwords) list) (ActionWithArg value list)  ) listCommandMap 
+              proc list = elements $ map (\(key,value) -> ActionString (key ++ " " ++ unwords list) (ActionWithArg value list)  ) listCommandMap 
               listCommandMap = toList defaultCommandMap 
 
 trim :: String -> String
