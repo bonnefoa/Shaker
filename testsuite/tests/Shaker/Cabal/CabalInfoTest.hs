@@ -37,9 +37,9 @@ testCompileWithLocalSource :: Assertion
 testCompileWithLocalSource =  runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
  shIn <- defaultCabalInput
  runReaderT runCompile shIn
- ex <- doesFileExist "target/Main.o" 
+ ex <- doesFileExist "dist/shakerTarget/Main.o" 
  runReaderT runClean shIn
- ex2 <- doesFileExist "target/Main.o" 
+ ex2 <- doesFileExist "dist/shakerTarget/Main.o" 
  ex && not ex2 @? "file main should exist and be cleaned"
 
 
