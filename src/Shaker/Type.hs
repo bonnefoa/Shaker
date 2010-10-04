@@ -47,7 +47,9 @@ data ShakerAction =
 	Compile -- ^ Compile sources with ghc
 	| FullCompile -- ^ Compile all hs sources with ghc
         | TestFramework -- ^ Execute both quickcheck and hunit using test framework
+        | ModuleTestFramework -- ^ Execute both quickcheck and hunit using test framework with module filtering
         | IntelligentTestFramework -- ^ Execute both quickcheck and hunit using test framework on recompiled modules
+        | IntelligentModuleTestFramework -- ^ Execute both quickcheck and hunit using test framework on recompiled modules
         | InvalidAction -- ^ Display an error when invalid action is inputed
 	| Help -- ^ Display the help
         | Execute -- ^ Execute a command

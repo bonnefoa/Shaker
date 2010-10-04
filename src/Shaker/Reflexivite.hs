@@ -11,6 +11,7 @@ module Shaker.Reflexivite (
   -- * Template haskell generator
   ,listAllTestFrameworkGroupList
   ,filterModulesWithPattern
+  ,filterFunctionsWithPatterns
   ,listTestFrameworkGroupList 
   )
  where
@@ -39,8 +40,8 @@ import Var (varName)
 -- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
   cfModuleName :: String -- ^ Complete name of the module 
-  ,cfHunitName :: [String] -- ^ Hunit assertions
-  ,cfHunitTest :: [String] -- ^ Hunit test case to process for test-framework
+  ,cfHunitAssertion :: [String] -- ^ Hunit assertions
+  ,cfHunitTestCase :: [String] -- ^ Hunit test case to process for test-framework
   ,cfPropName :: [String] -- ^ QuickCheck test function names
  }
  deriving (Show,Eq)
@@ -62,9 +63,10 @@ initializeFilesForCompilation = do
 collectAllModulesForTest :: Shaker IO [ModuleMapping]
 collectAllModulesForTest = do 
   (cpIn, cfFlList) <- initializeFilesForCompilation 
-  lift $ runGhc (Just libdir) $ do 
+  allModules <- lift $ runGhc (Just libdir) $ do 
         _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
         collectAllModules' >>= mapM getModuleMapping 
+  return . removeNonTestModule $ allModules
 
 -- | Collect all non-main modules 
 collectAllModules :: Shaker IO [ModSummary]
@@ -90,10 +92,11 @@ collectChangedModulesForTest = do
   (cpIn, cfFlList) <- initializeFilesForCompilation 
   modInfoFiles <- asks modifiedInfoFiles
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
-  lift $ runGhc (Just libdir) $ do 
+  changed_modules <- lift $ runGhc (Just libdir) $ do 
            let processedCpIn = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
            _ <- initializeGhc processedCpIn
            collectChangedModulesForTest' modFilePaths processedCpIn
+  return . removeNonTestModule $ changed_modules
 
 collectAllModules' :: GhcMonad m => m [ModSummary] 
 collectAllModules' = do 
@@ -187,7 +190,7 @@ listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
 
 -- | Remove all modules which does not contain test
 removeNonTestModule :: [ModuleMapping] -> [ModuleMapping]
-removeNonTestModule = filter (\modMap -> notEmpty (cfHunitName modMap) || notEmpty (cfPropName modMap) || notEmpty (cfHunitTest modMap) )
+removeNonTestModule = filter (\modMap -> notEmpty (cfHunitAssertion modMap) || notEmpty (cfPropName modMap) || notEmpty (cfHunitTestCase modMap) )
   where notEmpty = not.null
 
 -- * Test framework integration 
@@ -198,8 +201,8 @@ getSingleTestFrameworkGroup modMap = foldl1 AppE [process_to_group_exp, test_cas
   where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ cfModuleName modMap))
         -- list_test = AppE (AppE (VarE $ mkName "++") testcase_exp)  (ListE $ list_prop ++ list_assertion)
         list_prop = ListE $ map getSingleFrameworkQuickCheck $ cfPropName modMap
-        list_assertion = ListE $ map getSingleFrameworkHunit $ cfHunitName modMap
-        test_case_tuple_list = convertHunitTestCaseToTuples (cfHunitTest modMap)
+        list_assertion = ListE $ map getSingleFrameworkHunit $ cfHunitAssertion modMap
+        test_case_tuple_list = convertHunitTestCaseToTuples (cfHunitTestCase modMap)
 
 convertHunitTestCaseToTuples :: [String] -> Exp
 convertHunitTestCaseToTuples = ListE . map convertToTuple 
@@ -225,3 +228,17 @@ filterModulesWithPattern :: [ModuleMapping]-> String -> [ModuleMapping]
 filterModulesWithPattern mod_map pattern = filter (\a -> cfModuleName a `elem` filtered_mod_list) mod_map
   where mod_list = map cfModuleName mod_map
         filtered_mod_list = processListWithRegexp mod_list [] [pattern]
+
+filterFunctionsWithPatterns :: [ModuleMapping] -> [String] -> [ModuleMapping]
+filterFunctionsWithPatterns mod_map patterns = map (flip filterFunctionsWithPatterns' patterns) mod_map
+
+filterFunctionsWithPatterns' :: ModuleMapping -> [String] -> ModuleMapping
+filterFunctionsWithPatterns' (ModuleMapping name hunitAssertions hunitTestCases properties) patterns = 
+  ModuleMapping{
+    cfModuleName = name
+    ,cfHunitAssertion = processListWithRegexp hunitAssertions [] patterns
+    ,cfHunitTestCase = processListWithRegexp hunitTestCases [] patterns
+    ,cfPropName = processListWithRegexp properties [] patterns
+  }
+
+

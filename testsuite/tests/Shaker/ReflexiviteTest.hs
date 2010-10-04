@@ -49,13 +49,13 @@ testReflexiviteTestContainQuickcheckProperty = abstractModuleMappingReflexiviteT
 
 testReflexiviteTestContainHunitAssertion :: Assertion
 testReflexiviteTestContainHunitAssertion = abstractModuleMappingReflexiviteTest predicat
-  where predicat reflexiviteModule = any (== "testReflexiviteTestContainHunitAssertion") (cfHunitName reflexiviteModule) 
-          @? "ReflexiviteModule should contain hunit assertion testReflexiviteTestContainHunitAssertion, got " ++ show (cfHunitName reflexiviteModule)
+  where predicat reflexiviteModule = any (== "testReflexiviteTestContainHunitAssertion") (cfHunitAssertion reflexiviteModule) 
+          @? "ReflexiviteModule should contain hunit assertion testReflexiviteTestContainHunitAssertion, got " ++ show (cfHunitAssertion reflexiviteModule)
 
 testReflexiviteTestShouldContainTestCase :: Assertion
 testReflexiviteTestShouldContainTestCase = abstractModuleMappingReflexiviteTest predicat
-  where predicat reflexiviteModule = any (== "testHunitTestCaseDetection") (cfHunitTest reflexiviteModule) 
-          @? "ReflexiviteModule should contain testCase testHunitTestCaseDetection, got " ++ show (cfHunitTest reflexiviteModule)
+  where predicat reflexiviteModule = any (== "testHunitTestCaseDetection") (cfHunitTestCase reflexiviteModule) 
+          @? "ReflexiviteModule should contain testCase testHunitTestCaseDetection, got " ++ show (cfHunitTestCase reflexiviteModule)
   
 testHunitTestCaseDetection :: Test
 testHunitTestCaseDetection = TestCase $ True @? "Trivial"
@@ -111,7 +111,7 @@ testCollectChangedModulesForTestHunit =  do
   length exp_one_modules == 1 @? "One module should need compilation"
   let module_mapping = head exp_one_modules 
   cfModuleName module_mapping == "Shaker.SourceHelperTest" @? "module SourceHelperTest should need recompilation, got " ++ cfModuleName module_mapping 
-  length (cfHunitName module_mapping) >2  @? "module SourceHelperTest should have hunit test" 
+  length (cfHunitAssertion module_mapping) >2  @? "module SourceHelperTest should have hunit test" 
   
 testCollectChangedModulesForTestQuickCheck :: Assertion
 testCollectChangedModulesForTestQuickCheck =  do

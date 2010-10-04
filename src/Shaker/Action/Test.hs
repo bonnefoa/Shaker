@@ -7,18 +7,30 @@ import Control.Monad.Reader
 import Language.Haskell.TH
 
 runTestFramework :: Plugin 
-runTestFramework = collectAllModulesForTest  >>= runTestFramework'
-        
+runTestFramework = collectAllModulesForTest >>= getModulesWithFunctionFiltering  >>= runTestFramework'
+
 runIntelligentTestFramework :: Plugin
-runIntelligentTestFramework = collectChangedModulesForTest >>= runTestFramework'
+runIntelligentTestFramework = collectChangedModulesForTest >>= getModulesWithFunctionFiltering >>= runTestFramework'
+
+runModuleTestFramework :: Plugin 
+runModuleTestFramework = collectAllModulesForTest >>= getModulesWithModuleFiltering >>= runTestFramework' 
+
+runModuleIntelligentTestFramework :: Plugin
+runModuleIntelligentTestFramework = collectChangedModulesForTest >>= getModulesWithModuleFiltering >>= runTestFramework'
+
+getModulesWithModuleFiltering :: [ModuleMapping] -> Shaker IO ( [ModuleMapping] )
+getModulesWithModuleFiltering module_list = asks argument >>= return . process
+  where process [] = module_list
+        process list = concatMap (filterModulesWithPattern module_list) list
+
+getModulesWithFunctionFiltering :: [ModuleMapping] -> Shaker IO ([ModuleMapping] ) 
+getModulesWithFunctionFiltering module_list = asks argument >>= 
+  return . removeNonTestModule . filterFunctionsWithPatterns module_list
 
 runTestFramework' :: [ModuleMapping] -> Plugin
 runTestFramework' modules = do
-  arg_list <- asks argument 
-  let test_modules = removeNonTestModule modules
-  let filtered_mod = concatMap (filterModulesWithPattern test_modules ) arg_list
-  let import_modules = base_modules ++ map cfModuleName filtered_mod
-  resolvedExp <- lift $ runQ (listTestFrameworkGroupList filtered_mod)
+  let import_modules = base_modules ++ map cfModuleName modules
+  resolvedExp <- lift $ runQ (listTestFrameworkGroupList modules)
   let function =  filter (/= '\n') $ pprint resolvedExp
   lift $ putStrLn function
   runFunction $ RunnableFunction import_modules ("defaultMain $ " ++ function) 
