@@ -1,0 +1,28 @@
+0.4.2 : 
+ * More flexibility on package constraints.
+0.4.1 : 
+ * Action can take multiple arguments
+ * test and itest now take function patterns as arguments
+ * Introduced test-module and itest-module actions
+ * Corrected main detection
+0.4 : 
+ * Action can take argument
+ * tests actions can filter modules 
+ * action are now case-insensitives
+ * Integration of test-framework for test-execution
+ * Replaced QuickCheck and HUnit actions by test action
+ * Better exception handling
+
+0.3.1 : 
+ * Created IHUnit and IQuickCheck actions. Those actions reuse ghc compilation avoidance to detects if tests need to be executed.
+0.3 : 
+ * Created QuickCheck and HUnit action
+
+0.2 : 
+ * Added function to collect modules with their tests
+ * Created template-haskell to execute tests
+ * Refactoring : Use of a reader monad 
+
+0.1 : 
+ * Initialized Continuous action system
+ * Created basic actions : compile, clean, quit
