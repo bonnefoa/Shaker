@@ -230,7 +230,7 @@ filterModulesWithPattern mod_map pattern = filter (\a -> cfModuleName a `elem` f
         filtered_mod_list = processListWithRegexp mod_list [] [pattern]
 
 filterFunctionsWithPatterns :: [ModuleMapping] -> [String] -> [ModuleMapping]
-filterFunctionsWithPatterns mod_map patterns = map (flip filterFunctionsWithPatterns' patterns) mod_map
+filterFunctionsWithPatterns mod_map patterns = map (`filterFunctionsWithPatterns'` patterns) mod_map
 
 filterFunctionsWithPatterns' :: ModuleMapping -> [String] -> ModuleMapping
 filterFunctionsWithPatterns' (ModuleMapping name hunitAssertions hunitTestCases properties) patterns = 

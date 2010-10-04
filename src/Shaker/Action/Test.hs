@@ -18,14 +18,16 @@ runModuleTestFramework = collectAllModulesForTest >>= getModulesWithModuleFilter
 runModuleIntelligentTestFramework :: Plugin
 runModuleIntelligentTestFramework = collectChangedModulesForTest >>= getModulesWithModuleFiltering >>= runTestFramework'
 
-getModulesWithModuleFiltering :: [ModuleMapping] -> Shaker IO ( [ModuleMapping] )
-getModulesWithModuleFiltering module_list = asks argument >>= return . process
+getModulesWithModuleFiltering :: [ModuleMapping] -> Shaker IO [ModuleMapping] 
+getModulesWithModuleFiltering module_list = fmap process (asks argument)
   where process [] = module_list
         process list = concatMap (filterModulesWithPattern module_list) list
 
-getModulesWithFunctionFiltering :: [ModuleMapping] -> Shaker IO ([ModuleMapping] ) 
-getModulesWithFunctionFiltering module_list = asks argument >>= 
-  return . removeNonTestModule . filterFunctionsWithPatterns module_list
+getModulesWithFunctionFiltering :: [ModuleMapping] -> Shaker IO [ModuleMapping] 
+getModulesWithFunctionFiltering module_list = fmap 
+  (removeNonTestModule . filterFunctionsWithPatterns module_list)
+  (asks argument)
+  
 
 runTestFramework' :: [ModuleMapping] -> Plugin
 runTestFramework' modules = do
