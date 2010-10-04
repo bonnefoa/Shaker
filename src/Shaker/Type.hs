@@ -31,7 +31,7 @@ data Duration =
 -- | Action represents the differents action with arguments
 data Action = 
   Action ShakerAction
-  | ActionWithArg ShakerAction String
+  | ActionWithArg ShakerAction [String]
   deriving (Show,Eq,Ord)
  
 -- | The input mvar is used to push the parsed command
@@ -66,14 +66,13 @@ data ShakerInput = ShakerInput {
   ,listenerInput :: ListenerInput
   ,pluginMap :: PluginMap
   ,commandMap :: CommandMap
-  ,argument :: Maybe String
+  ,argument :: [String]
   ,modifiedInfoFiles :: [FileInfo]
   ,threadData :: ThreadData 
   ,inputState :: InputState 
  }  
  
 data ThreadData = ThreadData {
-    -- processToken :: Token
     listenToken :: Token 
     ,quitToken :: Token 
     ,threadIdListenList :: ThreadIdList

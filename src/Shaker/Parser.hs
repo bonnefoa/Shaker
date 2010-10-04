@@ -12,9 +12,8 @@ import qualified Data.Map as M
 
 -- | Parse the given string to a Command
 parseCommand :: String -> ShakerInput -> Either ParseError Command
-parseCommand str shIn = parse (typeCommand cmd_map) "parseCommand" process_input
+parseCommand str shIn = parse (typeCommand cmd_map) "parseCommand" str
   where cmd_map = commandMap shIn
-        process_input = map toLower str
 
 -- | Parse a Command
 typeCommand :: CommandMap -> GenParser Char st Command
@@ -37,17 +36,17 @@ typeMultipleAction cmMap = many1 (typeAction cmMap)
 typeAction :: CommandMap -> GenParser Char st Action
 typeAction cmMap = skipMany (char ' ') >>
   typeShakerAction cmMap >>= \shAct -> 
-  optionMaybe (parseArgument cmMap) >>= \arg ->
+  optionMaybe (many $ parseArgument cmMap) >>= \arg ->
   skipMany (char ' ') >> 
   case arg of
        Nothing -> return $ Action shAct
-       Just str -> return $ ActionWithArg shAct str
+       Just [] -> return $ Action shAct 
+       Just list -> return $ ActionWithArg shAct list
 
 parseArgument :: CommandMap -> GenParser Char st String
 parseArgument cmMap = 
   skipMany (char ' ') >>
-  mapM_ (\a -> notFollowedBy $ string (a++" ") ) (M.keys cmMap) >>  
-  mapM_ (\a -> notFollowedBy $ string (a++"\n") ) (M.keys cmMap) >>  
+  mapM_ notFollowedBy (parseMapAction cmMap) >>  
   many1 (noneOf " \n") >>= \str ->
   skipMany (char ' ') >>
   return str 
@@ -59,11 +58,19 @@ typeShakerAction cmMap = skipMany (char ' ') >>
   notFollowedBy (noneOf " \n") >> 
   skipMany (char ' ') >> return res
 
+parseMapAction :: CommandMap -> [GenParser Char st ShakerAction]
+parseMapAction cmMap = map check_key key_list
+  where key_list = M.toList cmMap
+        check_key (key,value) = try (walk key >> notFollowedBy (noneOf " \n" ) ) >> return value
+
+walk :: String -> GenParser Char st ()
+walk [] = return ()
+walk (x:xs) = caseChar x >> walk xs
+  where caseChar c | isAlpha c = char (toLower c) <|> char (toUpper c)
+                   | otherwise = char c
+
 -- | Parse the continuous tag (~)
 typeDuration :: GenParser Char st Duration
 typeDuration = skipMany (char ' ') >>
   option OneShot (char '~' >> return Continuous)
-
-parseMapAction :: CommandMap -> [GenParser Char st ShakerAction]
-parseMapAction cmMap = map (\(k,v) -> try (string k) >> return v) (M.toList cmMap)
 

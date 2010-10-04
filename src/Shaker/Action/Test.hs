@@ -14,8 +14,9 @@ runIntelligentTestFramework = collectChangedModulesForTest >>= runTestFramework'
 
 runTestFramework' :: [ModuleMapping] -> Plugin
 runTestFramework' modules = do
-  arg <- asks argument 
-  let filtered_mod = (filterModulesWithPattern arg . removeNonTestModule) modules 
+  arg_list <- asks argument 
+  let test_modules = removeNonTestModule modules
+  let filtered_mod = concatMap (filterModulesWithPattern test_modules ) arg_list
   let import_modules = base_modules ++ map cfModuleName filtered_mod
   resolvedExp <- lift $ runQ (listTestFrameworkGroupList filtered_mod)
   let function =  filter (/= '\n') $ pprint resolvedExp

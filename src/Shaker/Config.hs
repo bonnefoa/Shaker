@@ -13,7 +13,7 @@ defaultInput = ShakerInput {
   listenerInput = defaultListenerInput,
   pluginMap = defaultPluginMap,
   commandMap = defaultCommandMap
-  ,argument = Nothing
+  ,argument = []
   ,modifiedInfoFiles = []
   }
 

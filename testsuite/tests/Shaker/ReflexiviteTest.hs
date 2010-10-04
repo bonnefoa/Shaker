@@ -134,10 +134,10 @@ testCollectChangedModulesWithModifiedFiles =  do
 
 prop_filterModMap_include_all :: [ModuleMapping] -> Bool
 prop_filterModMap_include_all modMap = modMap == res
-  where res = filterModulesWithPattern (Just ".*") modMap 
+  where res = filterModulesWithPattern modMap ".*"
         
 prop_filterModMap_include_some :: [ModuleMapping] -> Property
 prop_filterModMap_include_some modMap = (not . null) modMap ==> head res == head modMap
   where module_name = (cfModuleName . head) modMap
-        res = filterModulesWithPattern (Just module_name) modMap 
+        res = filterModulesWithPattern modMap module_name
 

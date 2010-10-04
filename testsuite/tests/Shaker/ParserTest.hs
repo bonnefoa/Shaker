@@ -8,6 +8,7 @@ import Shaker.Type
 import Shaker.Parser
 import Shaker.Config
 import Shaker.PluginConfig
+import Shaker.Properties 
 import Data.Map (toList)
 import Data.Char
  
@@ -38,16 +39,16 @@ constructActionString (key, value) = ActionString key (Action value)
 
 instance Arbitrary ActionString where
   arbitrary = do 
-        str <- listOf $ elements ['a'..'z'] 
-        proc str 
+        list_str <- createListName
+        proc (filter (/="") list_str)
         where 
               -- Build action string without arg
-              proc "" = oneof [
+              proc [] = oneof [
                          elements $ map (constructActionString . first (map toUpper)) listCommandMap 
                          ,elements $ map constructActionString listCommandMap
                         ]
               -- build action string with args
-              proc str = elements $ map (\(key,value) -> ActionString (key ++ " " ++ trim str) (ActionWithArg value str)  ) listCommandMap 
+              proc list = elements $ map (\(key,value) -> ActionString (key ++ " " ++ (unwords) list) (ActionWithArg value list)  ) listCommandMap 
               listCommandMap = toList defaultCommandMap 
 
 trim :: String -> String

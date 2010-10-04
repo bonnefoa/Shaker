@@ -221,8 +221,7 @@ getSingleFrameworkQuickCheck propName = AppE testproperty_with_name_exp property
 -- * utility functions 
 
 -- | Include only module matching the given pattern
-filterModulesWithPattern :: Maybe String -> [ModuleMapping] -> [ModuleMapping]
-filterModulesWithPattern Nothing mod_map = mod_map
-filterModulesWithPattern (Just pattern) mod_map = filter (\a -> cfModuleName a `elem` filtered_mod_list) mod_map
+filterModulesWithPattern :: [ModuleMapping]-> String -> [ModuleMapping]
+filterModulesWithPattern mod_map pattern = filter (\a -> cfModuleName a `elem` filtered_mod_list) mod_map
   where mod_list = map cfModuleName mod_map
         filtered_mod_list = processListWithRegexp mod_list [] [pattern]
