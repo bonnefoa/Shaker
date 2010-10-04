@@ -135,7 +135,7 @@ defaultCompileInput :: CompileInput
 defaultCompileInput = CompileInput {
   cfSourceDirs= ["src/","testsuite/tests/"]
   ,cfDescription = "Default Compilation"
-  ,cfCompileTarget =  "target"  
+  ,cfCompileTarget =  "dist/shakerTarget"  
   ,cfDynFlags = defaultCompileFlags  
   ,cfCommandLineFlags = ["-Wall"]
   ,cfTargetFiles = []

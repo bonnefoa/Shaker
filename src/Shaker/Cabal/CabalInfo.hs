@@ -98,9 +98,9 @@ libraryToCompileInput lib = defaultCompileInput {
 toDynFlags :: [String] -> [String] -> DynFlags -> DynFlags
 toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
   importPaths = sourceDirs
-  ,outputFile = Just "target/Main"
-  ,objectDir = Just "target"
-  ,hiDir = Just "target"
+  ,outputFile = Just "dist/shakerTarget/Main"
+  ,objectDir = Just "dist/shakerTarget"
+  ,hiDir = Just "dist/shakerTarget"
   ,verbosity = 1
   ,ghcLink = NoLink
   ,packageFlags = map ExposePackage packagesToExpose 
