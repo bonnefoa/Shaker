@@ -8,4 +8,5 @@ Executable invalidMain
   ghc-options: -Wall
   hs-source-dirs: src tests
   build-depends: ghc >= 6
+                 ,base >= 3.0
 

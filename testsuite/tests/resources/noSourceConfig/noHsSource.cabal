@@ -5,4 +5,5 @@ build-type: Simple
 
 Executable noHsSource
         Main-Is:        noHsSource.hs
+        build-depends: base >= 3.0
 
