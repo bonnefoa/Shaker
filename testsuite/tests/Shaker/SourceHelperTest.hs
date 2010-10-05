@@ -25,6 +25,12 @@ testConstructCompileFileList =  runTestOnDirectory "testsuite/tests/resources/ca
   let list_compile_file_paths = filter (\cpFl -> "Paths_cabalTest.hs" `isSuffixOf` cfFp cpFl) fileList
   length list_compile_file_paths== 1 @? "Should have only one Paths_cabalTest, got " ++ show list_compile_file_paths
 
+testIgnoreEmacsFile :: Assertion
+testIgnoreEmacsFile = runTestOnDirectory "testsuite/tests/resources/tempEmacsFile" $ do
+  cpIn <- testCompileInput
+  fileList <- constructCompileFileList cpIn 
+  not ( any (\cpFl -> ".#TempFile.hs" `isSuffixOf` cfFp cpFl) fileList ) @? "Should ignore all .# files, got " ++ show fileList
+
 testConstructConductorCompileFileList :: Assertion
 testConstructConductorCompileFileList =  do
   list <- constructCompileFileList defaultCompileInput 

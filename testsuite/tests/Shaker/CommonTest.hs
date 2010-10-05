@@ -7,6 +7,7 @@ import Control.Exception
 import Shaker.Type
 import Shaker.Config
 import Shaker.SourceHelper
+import Shaker.Cabal.CabalInfo
 
 import Control.Monad.Reader(runReader)
 
@@ -18,6 +19,9 @@ runTestOnDirectory fp fun = do
   oldDir <- getCurrentDirectory 
   setCurrentDirectory fp
   finally fun (setCurrentDirectory oldDir)
+
+testCompileInput ::IO CompileInput 
+testCompileInput = defaultCabalInput >>= return . mergeCompileInputsSources . compileInputs
 
 initializeEmptyCompileInput :: CompileInput 
 initializeEmptyCompileInput = CompileInput {
