@@ -114,9 +114,10 @@ toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
 -- * Helper methods
 
 getCompileOptions :: BuildInfo -> [String]
-getCompileOptions myLibBuildInfo = ghcOptions ++ ghcExtensions
+getCompileOptions myLibBuildInfo = hideAllPackagesOption : ghcOptions ++ ghcExtensions
  where ghcOptions = fromMaybe [] $ lookup GHC (options myLibBuildInfo)
        ghcExtensions = map (\a -> "-X"++ show a) (extensions myLibBuildInfo)
+       hideAllPackagesOption = "-hide-all-packages"
 
 getLibDependencies :: BuildInfo -> [String]
 getLibDependencies bi = map getPackageName $ targetBuildDepends bi 
