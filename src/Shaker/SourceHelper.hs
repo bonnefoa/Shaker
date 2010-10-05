@@ -67,7 +67,8 @@ mergeCompileInputsSources :: [CompileInput] -> CompileInput
 mergeCompileInputsSources [] = defaultCompileInput 
 mergeCompileInputsSources cplInps@(cpIn:_) = do 
   let srcDirs = nub $ concatMap cfSourceDirs cplInps
-  cpIn {cfSourceDirs = srcDirs, cfDescription ="Full compilation"} 
+  let mergedDynFlags = foldl1 (.) (map cfDynFlags cplInps)
+  cpIn {cfDynFlags = mergedDynFlags, cfSourceDirs = srcDirs, cfDescription ="Full compilation"} 
 
 -- | Configure the CompileInput with all haskell files configured as targets
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput

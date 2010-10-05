@@ -102,14 +102,16 @@ libraryToCompileInput lib = defaultCompileInput {
 -- a liste of packages
 toDynFlags :: [String] -> [String] -> DynFlags -> DynFlags
 toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
-  importPaths = sourceDirs
+  importPaths = nub $ oldImportPaths ++ sourceDirs
   ,outputFile = Just "dist/shakerTarget/Main"
   ,objectDir = Just "dist/shakerTarget"
   ,hiDir = Just "dist/shakerTarget"
   ,verbosity = 1
   ,ghcLink = NoLink
-  ,packageFlags = map ExposePackage packagesToExpose 
+  ,packageFlags = nub $ map ExposePackage packagesToExpose ++ oldPackageFlags
   } 
+  where oldPackageFlags = packageFlags dnFlags
+        oldImportPaths = importPaths dnFlags
 
 -- * Helper methods
 
