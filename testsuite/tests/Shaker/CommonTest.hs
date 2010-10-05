@@ -5,7 +5,6 @@ import System.Directory
 import Test.HUnit
 import Control.Exception
 import Shaker.Type
-import Shaker.Config
 import Shaker.SourceHelper
 import Shaker.Cabal.CabalInfo
 
@@ -33,16 +32,12 @@ initializeEmptyCompileInput = CompileInput {
   ,cfTargetFiles = []
 }
 
-testShakerInput :: ShakerInput
-testShakerInput = defaultInput {
-  compileInputs = [defaultCompileInput {
-       cfCommandLineFlags = ["-package ghc"]
-     }]
-}
+testShakerInput :: IO ShakerInput
+testShakerInput = defaultCabalInput
 
 compileProject :: IO(CompileInput, [CompileFile])
 compileProject = do
-  let cpIn = head . compileInputs $ testShakerInput
+  cpIn <- testCompileInput 
   cfFlList <- constructCompileFileList cpIn
   _ <- runGhc (Just libdir) $ 
       ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList

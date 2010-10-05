@@ -37,15 +37,17 @@ testConstructConductorCompileFileList =  do
   let (Just cpFile) = find (\a ->  "Conductor.hs" `isSuffixOf` cfFp a ) list
   not (cfHasMain cpFile) && not (cfHasTH cpFile) @? "Should have conductor in list, got " ++ show cpFile
 
-testCompileInputConstruction :: Assertion
-testCompileInputConstruction =  do
-  list <- constructCompileFileList defaultCompileInput 
-  let newCpIn = runReader (fillCompileInputWithStandardTarget defaultCompileInput) list 
+testCompileFileListConstruction :: Assertion
+testCompileFileListConstruction =  do
+  cpIn <- testCompileInput 
+  list <- constructCompileFileList cpIn
+  let newCpIn = runReader (fillCompileInputWithStandardTarget cpIn) list 
   any (\a -> "Conductor.hs" `isSuffixOf` a) (cfTargetFiles newCpIn) @?"Should have conductor in list, got " ++ show (cfTargetFiles newCpIn)
 
 testCheckUnchangedSources :: Assertion
 testCheckUnchangedSources =  do
-  cfFlList <- constructCompileFileList cpIn
+  cpIn <- testCompileInput
+  cfFlList <-  constructCompileFileList cpIn
   mss <- runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
             depanal [] False
@@ -56,9 +58,8 @@ testCheckUnchangedSources =  do
   exp_one_false <- filterM ( checkUnchangedSources [head hsSrcs] ) mss 
   length exp_all_true == length hsSrcs @? "checkUnchangedSources with no modified files should be true"
   length exp_all_false == 0 @? "checkUnchangedSources with all modified files should be false" 
-  length exp_one_true == 1 @? "partial checkUnchangedSources should have only one true"
+  length exp_one_true == 1 @? "partial checkUnchangedSources should have only one true, got " ++ show (length exp_one_true)
   length exp_one_false == length hsSrcs - 1 @? "partial checkUnchangedSources should have only one false"
- where cpIn = head . compileInputs $ testShakerInput 
 
 testModuleNeedCompilation :: Assertion
 testModuleNeedCompilation =  do 

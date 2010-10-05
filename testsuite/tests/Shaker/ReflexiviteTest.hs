@@ -20,7 +20,7 @@ import Language.Haskell.TH
 -- * Module mapping construction test
 
 abstractTestModuleMapping :: ([ModuleMapping] -> Assertion) -> Assertion
-abstractTestModuleMapping predicat = runReaderT collectAllModulesForTest testShakerInput >>= predicat
+abstractTestModuleMapping predicat = testShakerInput >>= runReaderT collectAllModulesForTest >>= predicat
 
 testModuleMappingLength :: Assertion
 testModuleMappingLength = abstractTestModuleMapping predicat
@@ -38,7 +38,7 @@ testModuleMappingShouldNotContainRunTestTH = abstractTestModuleMapping predicat
 
 abstractModuleMappingReflexiviteTest :: (ModuleMapping -> Assertion) -> Assertion
 abstractModuleMappingReflexiviteTest predicat = do
-  modMapLst <- runReaderT collectAllModulesForTest testShakerInput 
+  modMapLst <- runReaderT collectAllModulesForTest =<< testShakerInput 
   let (Just reflexiviteModMap)  = find (\mm -> cfModuleName mm == "Shaker.ReflexiviteTest" ) modMapLst
   predicat reflexiviteModMap
 
@@ -62,7 +62,7 @@ testHunitTestCaseDetection = TestCase $ True @? "Trivial"
 
 testListAllTestFrameworkGroupList :: Assertion
 testListAllTestFrameworkGroupList = do
-  resolved_exp <- runQ $ listAllTestFrameworkGroupList testShakerInput
+  resolved_exp <- runQ . listAllTestFrameworkGroupList =<< testShakerInput
   let function =  filter (/= '\n') $ pprint resolved_exp
   "processToTestGroup \"Shaker.ReflexiviteTest\" [(\"testHunitTestCaseDetection\"" `isInfixOf` function @? "listAllTestFrameworkGroupList should have correctly setted hunit to test framework conversion"
 
@@ -83,23 +83,23 @@ templateTestRunFunction :: [String] -> Assertion
 templateTestRunFunction modules=  do 
   tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
   let run = RunnableFunction modules $ "aFun " ++ show tempFp
-  runReaderT (runFunction run) testShakerInput 
+  runReaderT (runFunction run) =<< testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
   
 testCollectChangedModules :: Assertion
 testCollectChangedModules =  do
   (cpIn,_) <- compileProject
-  exp_no_modules <- runReaderT collectChangedModules testShakerInput 
+  exp_no_modules <- runReaderT collectChangedModules =<< testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
   -- Remove a target file 
   let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
   removeFile target
-  exp_one_modules <- runReaderT collectChangedModules testShakerInput 
+  exp_one_modules <- runReaderT collectChangedModules =<< testShakerInput 
   length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
 
 testCollectChangedModulesForTestNoRecomp :: Assertion
 testCollectChangedModulesForTestNoRecomp =  do
-  exp_no_modules <- runReaderT collectChangedModulesForTest testShakerInput 
+  exp_no_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
 
 testCollectChangedModulesForTestHunit:: Assertion
@@ -107,7 +107,7 @@ testCollectChangedModulesForTestHunit =  do
   (cpIn,_) <- compileProject
   let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
   removeFile target
-  exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput 
+  exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_one_modules == 1 @? "One module should need compilation"
   let module_mapping = head exp_one_modules 
   cfModuleName module_mapping == "Shaker.SourceHelperTest" @? "module SourceHelperTest should need recompilation, got " ++ cfModuleName module_mapping 
@@ -118,7 +118,7 @@ testCollectChangedModulesForTestQuickCheck =  do
   (cpIn,_) <- compileProject
   let target = cfCompileTarget cpIn </> "Shaker" </> "RegexTest.hi"
   removeFile target
-  exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput 
+  exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   let module_mapping = head exp_one_modules  
   length exp_one_modules == 1 @? "One module should need compilation"
   cfModuleName module_mapping == "Shaker.RegexTest" @? "module RegexTest should need recompilation, got " ++ cfModuleName module_mapping 
@@ -129,7 +129,8 @@ testCollectChangedModulesWithModifiedFiles =  do
   (cpIn,_) <- compileProject
   let sources = map (</> "Shaker" </> "SourceHelperTest.hs") (cfSourceDirs cpIn)
   let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources
-  exp_one_modules <- runReaderT collectChangedModulesForTest testShakerInput {modifiedInfoFiles = modFileInfo }
+  shIn <- testShakerInput 
+  exp_one_modules <- runReaderT collectChangedModulesForTest shIn {modifiedInfoFiles = modFileInfo }
   length exp_one_modules == 1 @? "One module should need compilation"
 
 prop_filterModMap_include_all :: [ModuleMapping] -> Bool

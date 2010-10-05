@@ -9,7 +9,7 @@ import Shaker.CommonTest
   
 testRunCompileProject :: Assertion
 testRunCompileProject = 
-  runReaderT runCompile  testShakerInput >> 
+  testShakerInput >>= runReaderT runCompile  >> 
   getDirectoryContents "dist/shakerTarget/Shaker" >>= \cont ->
   doesFileExist "dist/shakerTarget/Shaker/Action/CompileTest.o" >>= \ex ->
   doesFileExist "dist/shakerTarget/Shaker/Action/CompileTest.hi" >>= \ex2 ->
@@ -17,7 +17,7 @@ testRunCompileProject =
 
 testRunFullCompile :: Assertion
 testRunFullCompile = do
-  runReaderT runFullCompile testShakerInput
+  testShakerInput >>= runReaderT runFullCompile 
   cont <- getDirectoryContents "dist/shakerTarget/Shaker" 
   ex <- doesFileExist "dist/shakerTarget/Shaker/Conductor.o" 
   assertBool ("Conductor.o should exist, got "++show cont) ex
