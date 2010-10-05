@@ -1,3 +1,7 @@
+0.4.3 : 
+ * Include autogen directory as source directory
+ * Ignore files begining with . 
+ * Handle IO exception on the listener manager 
 0.4.2 : 
  * More flexibility on package constraints.
 0.4.1 : 

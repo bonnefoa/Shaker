@@ -29,7 +29,6 @@ initThread = do
   lift ( forkIO (forever main_loop) ) >>= addThreadIdToQuitMVar
   quit_token <- asks (quitToken . threadData)
   _ <- lift $ takeMVar quit_token
-  lift $ putStrLn "DGAAG"
   cleanAllThreads 
  
 -- | The main thread. 
