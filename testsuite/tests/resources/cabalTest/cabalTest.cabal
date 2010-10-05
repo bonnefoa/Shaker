@@ -9,6 +9,7 @@ Executable cabalTest
   hs-source-dirs: src
   build-depends: ghc >= 6
                  ,base >=4
+                 ,mtl >= 0.1
 
 Library 
   exposed-modules: CabalTest
@@ -17,5 +18,6 @@ Library
   hs-source-dirs: src 
   build-depends: ghc >= 6
                  ,base >=4
+                 ,bytestring >= 0.1
 
 
