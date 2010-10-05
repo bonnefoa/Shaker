@@ -61,6 +61,7 @@ threadExecutor conductorData = do
   shIn <- ask
   res <- lift $  handleContinuousInterrupt $ runReaderT (threadExecutor' conductorData) shIn
   when res $ threadExecutor conductorData
+  asks ( threadIdListenList . threadData ) >>= cleanThreads
   
 threadExecutor' :: ConductorData -> Shaker IO Bool
 threadExecutor' (ConductorData listenState fun) = lift $ takeMVar (mvModifiedFiles listenState) >>= fun >> return True
