@@ -6,13 +6,15 @@ module Shaker.Conductor(
 )
   where
 
-import Shaker.Type
 import Control.Monad
+import Control.Monad.Reader
 import Control.Concurrent
+
+import Shaker.Type
+import Shaker.Io
 import Shaker.Listener
 import Shaker.Cli
 import qualified Data.Map as M
-import Control.Monad.Reader
 import Data.Maybe
 import qualified Control.Exception as C
  
@@ -27,6 +29,7 @@ initThread = do
   lift ( forkIO (forever main_loop) ) >>= addThreadIdToQuitMVar
   quit_token <- asks (quitToken . threadData)
   _ <- lift $ takeMVar quit_token
+  lift $ putStrLn "DGAAG"
   cleanAllThreads 
  
 -- | The main thread. 
@@ -97,11 +100,6 @@ handleContinuousInterrupt :: IO Bool -> IO Bool
 handleContinuousInterrupt = C.handle catchAll 
   where catchAll :: C.SomeException -> IO Bool
         catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return False
-
-handleActionInterrupt :: IO() -> IO()
-handleActionInterrupt =  C.handle catchAll
-  where catchAll :: C.SomeException -> IO ()
-        catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return ()
 
 -- * Mvar with threadId list management
 

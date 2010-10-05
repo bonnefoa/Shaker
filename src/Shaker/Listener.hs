@@ -13,6 +13,7 @@ import Control.Monad
 import Control.Monad.Reader
 import Control.Concurrent.MVar
 import Control.Concurrent
+
 import Shaker.Type
 import Shaker.Io
 
@@ -41,8 +42,8 @@ initialize lstInput = do
   mC <- newMVar [] 
   mM <- newEmptyMVar
   mJ <- newEmptyMVar 
-  idLst <- forkIO $ forever $ listen mC mM mJ
-  idSch <- forkIO $ forever $ schedule lstInput mJ
+  idLst <- forkIO $ forever . handleIOException $ listen mC mM mJ 
+  idSch <- forkIO $ forever . handleIOException $ schedule lstInput mJ
   return $ ListenState mC mM [idLst,idSch]
 
 -- | manage the job box. Fill it with a job every delay
@@ -53,12 +54,12 @@ schedule lstInput mJ = do
   return ()
      
 -- | listen to the job box and process the job
-listen :: CurrentFiles -> MvModifiedFiles -> Job -> IO ()
+listen :: CurrentFiles -> MvModifiedFiles -> Job -> IO () 
 listen mC mM mJ = do 
   job <- takeMVar mJ
   curFiles <- readMVar mC 
   (newFiles,modFiles) <- listModifiedAndCreatedFiles job curFiles
-  updateFileStat mC mM newFiles modFiles 
+  updateFileStat mC mM newFiles modFiles  
   return ()
 
 -- | Update the files status

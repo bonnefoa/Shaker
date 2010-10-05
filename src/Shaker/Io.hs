@@ -13,6 +13,9 @@ module Shaker.Io(
   -- * Default patterns
   ,defaultHaskellPatterns
   ,defaultExclude
+  -- * Exception handling
+  ,handleActionInterrupt
+  ,handleIOException
 )
  where
  
@@ -22,6 +25,8 @@ import System.Directory
 import Data.List
 import Shaker.Regex
 import Shaker.Type
+
+import qualified Control.Exception as C
 
 -- |Get the tuples of (newFiles,modifiedFiles) from given list of directory
 listModifiedAndCreatedFiles :: [FileListenInfo] -> [FileInfo] -> IO ([FileInfo],[FileInfo])
@@ -81,4 +86,14 @@ convertToFullPath absDir = map (\a-> concat [absDir, "/",a])
 
 removeDotDirectory :: [String] -> [String]
 removeDotDirectory = filter (not . isSuffixOf "."  ) 
+
+handleActionInterrupt :: IO() -> IO()
+handleActionInterrupt =  C.handle catchAll
+  where catchAll :: C.SomeException -> IO ()
+        catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return ()
+
+handleIOException :: IO() -> IO()
+handleIOException = C.handle catchIO
+  where catchIO :: C.IOException -> IO()
+        catchIO e = putStrLn ("Shaker caught " ++ show e ) >>  return ()
 
