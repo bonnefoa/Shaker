@@ -122,7 +122,7 @@ runFunction (RunnableFunction importModuleList fun) = do
   cpIn <- getFullCompileCompileInput
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
-         _ <- setSessionDynFlags (addShakerLibraryAsImport dflags)
+         _ <- setSessionDynFlags (addShakerLibraryAsImport (dopt_set dflags Opt_HideAllPackages))
          _ <- ghcCompile cpIn 
          configureContext importModuleList
          value <- compileExpr fun
@@ -136,7 +136,7 @@ runFunction (RunnableFunction importModuleList fun) = do
 
 addShakerLibraryAsImport :: DynFlags -> DynFlags
 addShakerLibraryAsImport dflags = dflags {
-    packageFlags = nub $ HidePackage "monads-fd" : ExposePackage "shaker" : oldPackageFlags
+    packageFlags = nub $ (map ExposePackage  ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"]) ++ oldPackageFlags
   }
   where oldPackageFlags = packageFlags dflags
 
