@@ -2,7 +2,7 @@
 module Main
  where
 
-import Shaker.SourceHelper
+import Shaker.TestHelper
 import Shaker.TestTH
 import Shaker.Cabal.CabalInfoTest
 import Shaker.Action.CompileTest
