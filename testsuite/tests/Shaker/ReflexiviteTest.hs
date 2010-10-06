@@ -89,18 +89,13 @@ templateTestRunFunction modules=  do
 testCollectChangedModules :: Assertion
 testCollectChangedModules =  do
   (cpIn,_) <- compileProject
-  exp_no_modules <- runReaderT collectChangedModules =<< testShakerInput 
+  exp_no_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
   -- Remove a target file 
   let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
   removeFile target
-  exp_one_modules <- runReaderT collectChangedModules =<< testShakerInput 
+  exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
-
-testCollectChangedModulesForTestNoRecomp :: Assertion
-testCollectChangedModulesForTestNoRecomp =  do
-  exp_no_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
-  length exp_no_modules == 0 @? "There should be no modules to recompile"
 
 testCollectChangedModulesForTestHunit:: Assertion
 testCollectChangedModulesForTestHunit =  do

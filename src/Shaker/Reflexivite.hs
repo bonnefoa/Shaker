@@ -3,8 +3,6 @@ module Shaker.Reflexivite (
   ,RunnableFunction(..)
   -- * Collect module information functions
   ,collectAllModulesForTest
-  ,collectAllModules
-  ,collectChangedModules
   ,collectChangedModulesForTest 
   ,runFunction
   ,removeNonTestModule
@@ -23,7 +21,7 @@ import Shaker.Action.Compile
 import Shaker.SourceHelper
 import Shaker.Regex
 
-import Control.Monad.Reader(runReader,runReaderT,asks, Reader, lift, filterM)
+import Control.Monad.Reader
 import Control.Arrow
 import Control.Exception as C
 
@@ -53,49 +51,25 @@ data RunnableFunction = RunnableFunction {
 }
  deriving Show
 
-initializeFilesForCompilation :: Shaker IO (CompileInput, [CompileFile] )
-initializeFilesForCompilation = do
-  cpIn <- getFullCompileCompileInput 
-  cfFlList <- lift $ constructCompileFileList cpIn
-  return (cpIn, cfFlList)
-
 -- | Collect all non-main modules with their test function associated
 collectAllModulesForTest :: Shaker IO [ModuleMapping]
 collectAllModulesForTest = do 
-  (cpIn, cfFlList) <- initializeFilesForCompilation 
+  cpIn <- getFullCompileCompileInput
   allModules <- lift $ runGhc (Just libdir) $ do 
-        _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+        _ <- ghcCompile cpIn
         collectAllModules' >>= mapM getModuleMapping 
   return . removeNonTestModule $ allModules
-
--- | Collect all non-main modules 
-collectAllModules :: Shaker IO [ModSummary]
-collectAllModules = do
-  (cpIn, cfFlList) <- initializeFilesForCompilation 
-  lift $ runGhc (Just libdir) $ do
-        _ <- ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-        collectAllModules'
-
+  
 -- | Analyze all haskell modules of the project and 
 -- output all module needing recompilation
-collectChangedModules :: Shaker IO [ModSummary]
-collectChangedModules = do 
-  (cpIn, cfFlList) <- initializeFilesForCompilation 
-  modInfoFiles <- asks modifiedInfoFiles
-  let modFilePaths = (map fileInfoFilePath modInfoFiles)
-  lift $ runGhc (Just libdir) $ do 
-           _ <- initializeGhc $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-           collectChangedModules' modFilePaths
-
 collectChangedModulesForTest :: Shaker IO [ModuleMapping]
 collectChangedModulesForTest = do 
-  (cpIn, cfFlList) <- initializeFilesForCompilation 
+  cpIn <- getFullCompileCompileInput
   modInfoFiles <- asks modifiedInfoFiles
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
   changed_modules <- lift $ runGhc (Just libdir) $ do 
-           let processedCpIn = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
-           _ <- initializeGhc processedCpIn
-           collectChangedModulesForTest' modFilePaths processedCpIn
+           _ <- initializeGhc cpIn
+           collectChangedModulesForTest' modFilePaths cpIn
   return . removeNonTestModule $ changed_modules
 
 collectAllModules' :: GhcMonad m => m [ModSummary] 
@@ -104,12 +78,9 @@ collectAllModules' = do
   let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
   return sort_mss
          
-collectChangedModules' :: GhcMonad m => [FilePath] -> m [ModSummary] 
-collectChangedModules' modFilePaths = collectAllModules' >>= filterM (isModuleNeedCompilation modFilePaths) 
-
 collectChangedModulesForTest' :: GhcMonad m => [FilePath] -> CompileInput -> m [ModuleMapping] 
 collectChangedModulesForTest' modFilePaths cpIn = do 
-    changedModules <- collectChangedModules' modFilePaths 
+    changedModules <- collectAllModules' >>= filterM (isModuleNeedCompilation modFilePaths) 
     _ <- ghcCompile cpIn
     allModules <- collectAllModules' 
     let res = intersectBy ( \a b -> nameMod a == nameMod b ) allModules changedModules
@@ -207,7 +178,6 @@ removeNonTestModule = filter (\modMap -> notEmpty (cfHunitAssertion modMap) || n
 getSingleTestFrameworkGroup :: ModuleMapping -> Exp
 getSingleTestFrameworkGroup modMap = foldl1 AppE [process_to_group_exp, test_case_tuple_list, list_assertion, list_prop]
   where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ cfModuleName modMap))
-        -- list_test = AppE (AppE (VarE $ mkName "++") testcase_exp)  (ListE $ list_prop ++ list_assertion)
         list_prop = ListE $ map getSingleFrameworkQuickCheck $ cfPropName modMap
         list_assertion = ListE $ map getSingleFrameworkHunit $ cfHunitAssertion modMap
         test_case_tuple_list = convertHunitTestCaseToTuples (cfHunitTestCase modMap)
