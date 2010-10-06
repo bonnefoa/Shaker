@@ -17,15 +17,34 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   shIn <- defaultCabalInput
   let cplInps@(cplLib:cplExe:[]) = compileInputs shIn
   length cplInps == 2 @? "Should have two compile input, one executable and one library, got "++ show ( length cplInps)
-  cfSourceDirs cplLib == ["dist/build/autogen","src"] @? "source dir should be src, got " ++ show (cfSourceDirs cplLib)
+  all (`elem` cfSourceDirs cplLib) ["dist/build/autogen","src"] @? "source dir should have src and dist/build/autogen, got " ++ show (cfSourceDirs cplLib)
   cfCommandLineFlags cplLib == ["-hide-all-packages", "-Wall"] @? "command line flags should be -Wall, got " ++ show ( cfCommandLineFlags cplLib)
   cfTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( cfTargetFiles cplLib)
   cfTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( cfTargetFiles cplExe)
   let dFlags = cfDynFlags cplExe defaultDynFlags
-  importPaths dFlags == ["dist/build/autogen","src"] @? "importPaths should be src, got "++ show (importPaths dFlags)
+  all (`elem` importPaths dFlags) ["dist/build/autogen","src"] @? "importPaths should be contains src and dist/build/autogen, got "++ show (importPaths dFlags)
   (ExposePackage "ghc") `elem` packageFlags dFlags @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
   let (ListenerInput (_:srcLib:[]) _) = listenerInput shIn
   dir srcLib == "src" @? "Expected : src, got " ++ show srcLib
+
+testConditionalFlag :: Assertion
+testConditionalFlag = runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
+  shIn <- testShakerInput
+  let (_:cplExe:[]) = compileInputs shIn
+  let packageList = packageFlags $ cfDynFlags cplExe defaultDynFlags
+  all (`elem` packageList) [ExposePackage "mtl",ExposePackage "bytestring-mmap"] @? "mtl and bytestring-mmap should be exposed package, got "++ (show $ map showExposed packageList)
+  not ( (ExposePackage "shaker") `elem` packageList ) @? "shaker should not be present as exposed package"
+
+testParseSnapCore :: Assertion
+testParseSnapCore = runTestOnDirectory "testsuite/tests/resources/snap-core" $ do  
+  shIn <- testShakerInput
+  let (cplLib:_:[]) = compileInputs shIn
+  let packageList = packageFlags $ cfDynFlags cplLib defaultDynFlags
+  (ExposePackage "bytestring-mmap") `elem` packageList @? "bytestring-mmap should be exposed package, got " ++ (show $ map showExposed packageList)
+  
+showExposed :: PackageFlag -> String
+showExposed (ExposePackage str) = str
+showExposed _ = ""
 
 testInvalidMainShouldBeExcluded :: Assertion
 testInvalidMainShouldBeExcluded =  runTestOnDirectory "testsuite/tests/resources/invalidMain" $ do

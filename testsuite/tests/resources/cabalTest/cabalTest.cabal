@@ -3,13 +3,27 @@ Version:  0.0.1
 cabal-version: >= 1.8
 build-type: Simple
 
+Flag testFlag
+  Default: True
+
+Flag otherFlag
+  Default: False
+
 Executable cabalTest
   Main-Is: Main.hs
   ghc-options: -Wall
   hs-source-dirs: src
+  if flag(testFlag) {
+    build-depends: mtl >= 0.1
+  }
+  if flag(otherFlag) {
+    build-depends: shaker >= 0.1
+  }
+  else {
+    build-depends: bytestring >= 0.2 && < 0.3
+  }
   build-depends: ghc >= 6
-                 ,base >=4
-                 ,mtl >= 0.1
+                 ,base >= 4
 
 Library 
   exposed-modules: CabalTest
