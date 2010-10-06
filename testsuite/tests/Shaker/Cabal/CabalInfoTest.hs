@@ -35,13 +35,6 @@ testConditionalFlag = runTestOnDirectory "testsuite/tests/resources/cabalTest" $
   all (`elem` packageList) [ExposePackage "mtl",ExposePackage "bytestring-mmap"] @? "mtl and bytestring-mmap should be exposed package, got "++ (show $ map showExposed packageList)
   not ( (ExposePackage "shaker") `elem` packageList ) @? "shaker should not be present as exposed package"
 
-testParseSnapCore :: Assertion
-testParseSnapCore = runTestOnDirectory "testsuite/tests/resources/snap-core" $ do  
-  shIn <- testShakerInput
-  let (cplLib:_:[]) = compileInputs shIn
-  let packageList = packageFlags $ cfDynFlags cplLib defaultDynFlags
-  (ExposePackage "bytestring-mmap") `elem` packageList @? "bytestring-mmap should be exposed package, got " ++ (show $ map showExposed packageList)
-  
 showExposed :: PackageFlag -> String
 showExposed (ExposePackage str) = str
 showExposed _ = ""
