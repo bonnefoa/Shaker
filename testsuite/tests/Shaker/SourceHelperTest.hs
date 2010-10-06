@@ -9,6 +9,7 @@ import Control.Monad.Reader(runReader, filterM)
 
 import GHC
 import GHC.Paths
+import DynFlags
 import Data.List
 import HscTypes
 import Digraph
@@ -24,6 +25,13 @@ testConstructCompileFileList =  runTestOnDirectory "testsuite/tests/resources/ca
   any (\cpFl -> "CabalTest.hs" `isSuffixOf` cfFp cpFl && (not . cfHasMain) cpFl) fileList @? "Should have one main file, got " ++ show fileList
   let list_compile_file_paths = filter (\cpFl -> "Paths_cabalTest.hs" `isSuffixOf` cfFp cpFl) fileList
   length list_compile_file_paths== 1 @? "Should have only one Paths_cabalTest, got " ++ show list_compile_file_paths
+
+testMergeCompileInputs :: Assertion
+testMergeCompileInputs = runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
+  shIn <- testShakerInput
+  let cpIn = mergeCompileInputsSources (compileInputs shIn)
+  let packageList = packageFlags $ cfDynFlags cpIn defaultDynFlags
+  all (`elem` packageList ) [ExposePackage "mtl",ExposePackage "bytestring"] @? "mtl and bytestring should be exposed package"
 
 testIgnoreEmacsFile :: Assertion
 testIgnoreEmacsFile = runTestOnDirectory "testsuite/tests/resources/tempEmacsFile" $ do
