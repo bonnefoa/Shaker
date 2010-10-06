@@ -9,10 +9,10 @@ module Shaker.SourceHelper(
   ,removeFileWithMain
   ,removeFileWithTemplateHaskell
   ,fillCompileInputWithStandardTarget
-  ,processToTestGroup 
   -- * GHC Compile management
   ,initializeGhc
   ,ghcCompile
+  ,getFullCompileCompileInput
   -- * module change detection
   ,checkUnchangedSources
   ,isModuleNeedCompilation
@@ -21,11 +21,10 @@ module Shaker.SourceHelper(
 
 import GHC
 import Data.List
-import Data.Maybe
 import Shaker.Io
 import Shaker.Type
 
-import Control.Monad.Reader(ask, Reader)
+import Control.Monad.Reader(ask, asks, lift, runReader, Reader)
 
 import LazyUniqFM
 import MkIface 
@@ -33,10 +32,6 @@ import HscTypes
 import Linker
 
 import System.Directory
-
-import Test.HUnit as H
-import Test.Framework.Providers.API as T (Test, testGroup)
-import Test.Framework.Providers.HUnit 
 
 type CompileR = Reader [CompileFile]
 
@@ -109,14 +104,6 @@ removeFileWithPredicate predicate cpIn = do
 fillCompileInputWithStandardTarget :: CompileInput -> CompileR CompileInput 
 fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell
 
-processToTestGroup :: String -> [(String, H.Test)] -> [T.Test] -> [T.Test] -> T.Test
-processToTestGroup testName testCaseList assertionList propertyList = testGroup testName $ concat [listHunitTestCase, assertionList, propertyList]
-    where listHunitTestCase = mapMaybe convertTestCaseToTestFrameworkTestCase testCaseList
-    
-convertTestCaseToTestFrameworkTestCase :: (String, H.Test) -> Maybe T.Test
-convertTestCaseToTestFrameworkTestCase (name, TestCase assertion) = Just $ testCase name assertion
-convertTestCaseToTestFrameworkTestCase _ = Nothing
-
 -- | Configure and load targets of compilation. 
 -- It is possible to exploit the compilation result after this step.
 ghcCompile :: GhcMonad m => CompileInput -> m SuccessFlag
@@ -125,6 +112,13 @@ ghcCompile cpIn = do
      dflags <- getSessionDynFlags
      liftIO $ unload dflags []
      load LoadAllTargets
+
+getFullCompileCompileInput :: Shaker IO (CompileInput)
+getFullCompileCompileInput = do
+  cpList <- asks compileInputs 
+  let cpIn = mergeCompileInputsSources cpList
+  cfFlList <- lift $ constructCompileFileList cpIn
+  return $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain )  cfFlList
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   

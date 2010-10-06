@@ -31,6 +31,7 @@ import Digraph
 import Language.Haskell.TH
 import GHC
 import GHC.Paths
+import DynFlags
 import Unsafe.Coerce
 import Outputable
 import OccName (occNameString)
@@ -54,8 +55,7 @@ data RunnableFunction = RunnableFunction {
 
 initializeFilesForCompilation :: Shaker IO (CompileInput, [CompileFile] )
 initializeFilesForCompilation = do
-  cpList <- asks compileInputs 
-  let cpIn = mergeCompileInputsSources cpList
+  cpIn <- getFullCompileCompileInput 
   cfFlList <- lift $ constructCompileFileList cpIn
   return (cpIn, cfFlList)
 
@@ -119,9 +119,11 @@ collectChangedModulesForTest' modFilePaths cpIn = do
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
 runFunction (RunnableFunction importModuleList fun) = do
-  (cpIn, cfFlList) <- initializeFilesForCompilation 
+  cpIn <- getFullCompileCompileInput
   dynFun <- lift $ runGhc (Just libdir) $ do
-         _ <- ghcCompile $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain ) cfFlList
+         dflags <- getSessionDynFlags
+         _ <- setSessionDynFlags (addShakerLibraryAsImport dflags)
+         _ <- ghcCompile cpIn 
          configureContext importModuleList
          value <- compileExpr fun
          do let value' = unsafeCoerce value :: a
@@ -131,6 +133,12 @@ runFunction (RunnableFunction importModuleList fun) = do
   where 
         configureContext [] = getModuleGraph >>= \mGraph ->  setContext [] $ map ms_mod mGraph
         configureContext imports = mapM (\a -> findModule (mkModuleName a)  Nothing ) imports >>= \m -> setContext [] m
+
+addShakerLibraryAsImport :: DynFlags -> DynFlags
+addShakerLibraryAsImport dflags = dflags {
+    packageFlags = nub $ HidePackage "monads-fd" : ExposePackage "shaker" : oldPackageFlags
+  }
+  where oldPackageFlags = packageFlags dflags
 
 handleActionInterrupt :: IO() -> IO()
 handleActionInterrupt =  C.handle catchAll

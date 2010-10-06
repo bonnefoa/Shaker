@@ -18,12 +18,7 @@ runCompile = asks compileInputs >>= mapM (lift . runSingleCompileInput )  >> ret
  
 -- | Run haskell compilation on all haskell files
 runFullCompile :: Plugin
-runFullCompile = do
-  cpList <- asks compileInputs 
-  let cpIn = mergeCompileInputsSources cpList
-  cfFlList <- lift $ constructCompileFileList cpIn
-  let newInp = runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain )  cfFlList
-  lift $ runSingleCompileInput newInp
+runFullCompile = getFullCompileCompileInput >>= lift . runSingleCompileInput 
 
 runSingleCompileInput :: CompileInput -> IO()
 runSingleCompileInput cplInp = do

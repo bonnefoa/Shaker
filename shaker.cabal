@@ -130,6 +130,7 @@ Library
     Shaker.Cabal.CabalInfo
     Shaker.Type
     Shaker.Listener
+    Shaker.TestHelper
   build-depends: base == 4.*
                  ,Cabal == 1.8.*
                  ,containers == 0.3.*
