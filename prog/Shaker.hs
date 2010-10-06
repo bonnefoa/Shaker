@@ -6,7 +6,7 @@ import Shaker.Conductor
 import Shaker.Parser
 import Shaker.Cabal.CabalInfo
 import Control.Monad.Reader
-import System( getArgs )
+import System.Environment
 
 main :: IO()
 main = do
@@ -21,10 +21,13 @@ runArgumentAction :: String -> Shaker IO ()
 runArgumentAction args = do 
   shIn <- ask 
   let either_command = parseCommand args shIn
-  either errAction okAction either_command 
+  lift $ either errAction (okAction shIn) either_command 
   return () 
   where 
-        errAction = lift . putStrLn . show 
-        okAction :: Command -> Shaker IO()
-        okAction command = executeCommand (Just command) >> return ()
+        errAction = putStrLn . show 
+        okAction :: ShakerInput -> Command -> IO()
+        okAction shIn command = do
+           putStrLn ("Executing " ++ show command) 
+           withArgs [] (runReaderT (executeCommand (Just command)) shIn )
+           return ()
 
