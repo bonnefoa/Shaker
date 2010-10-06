@@ -10,6 +10,7 @@ import Test.Framework.Providers.HUnit
 
 convertTestCaseToTestFrameworkTestCase :: (String, H.Test) -> Maybe T.Test
 convertTestCaseToTestFrameworkTestCase (name, TestCase assertion) = Just $ testCase name assertion
+convertTestCaseToTestFrameworkTestCase (_, TestLabel name hunit_test) = convertTestCaseToTestFrameworkTestCase (name, hunit_test)
 convertTestCaseToTestFrameworkTestCase _ = Nothing
 
 processToTestGroup :: String -> [(String, H.Test)] -> [T.Test] -> [T.Test] -> T.Test
