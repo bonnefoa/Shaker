@@ -9,13 +9,14 @@ import Shaker.Type
 import Shaker.Config
 import Distribution.Simple.Build
 import Distribution.Verbosity
-import Distribution.Simple.Configure (getPersistBuildConfig)
+import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure)
+import Distribution.PackageDescription.Parse
+import Distribution.PackageDescription
+import Distribution.Simple.Utils
+import Distribution.Simple.Program
 import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
 import Distribution.ModuleName
-import Distribution.PackageDescription(
-  BuildInfo,targetBuildDepends,options,libBuildInfo,library,Library,hsSourceDirs,exposedModules, extensions, 
-  Executable,buildInfo, modulePath, executables, exeName
-  )
+import Distribution.Simple.Setup
 import DynFlags(
     DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
     ,PackageFlag (ExposePackage)
@@ -39,7 +40,15 @@ generatePreprocessFile :: LocalBuildInfo -> IO ()
 generatePreprocessFile lbi = writeAutogenFiles normal (localPkgDescr lbi) lbi
 
 readConf :: IO LocalBuildInfo
-readConf = getPersistBuildConfig "dist"
+readConf = maybeGetPersistBuildConfig "dist" >>= \my_lbi ->
+  case my_lbi of
+   Just lbi -> return lbi
+   Nothing -> callConfigure
+
+callConfigure :: IO LocalBuildInfo
+callConfigure = do
+  genericPackageDescription <- defaultPackageDesc silent >>= readPackageDescription silent 
+  configure (genericPackageDescription ,emptyHookedBuildInfo) (defaultConfigFlags defaultProgramConfiguration) 
 
 -- | Extract useful information from localBuildInfo to a ShakerInput
 localBuildInfoToShakerInput :: LocalBuildInfo -> IO ShakerInput
