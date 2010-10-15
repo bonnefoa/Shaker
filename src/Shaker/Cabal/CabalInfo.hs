@@ -9,7 +9,7 @@ import Shaker.Type
 import Shaker.Config
 import Distribution.Simple.Build
 import Distribution.Verbosity
-import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure)
+import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig)
 import Distribution.PackageDescription.Parse
 import Distribution.PackageDescription
 import Distribution.Simple.Utils
@@ -48,7 +48,9 @@ readConf = maybeGetPersistBuildConfig "dist" >>= \my_lbi ->
 callConfigure :: IO LocalBuildInfo
 callConfigure = do
   genericPackageDescription <- defaultPackageDesc silent >>= readPackageDescription silent 
-  configure (genericPackageDescription ,emptyHookedBuildInfo) (defaultConfigFlags defaultProgramConfiguration) 
+  lbi <- configure (genericPackageDescription ,emptyHookedBuildInfo) (defaultConfigFlags defaultProgramConfiguration) 
+  writePersistBuildConfig "dist" lbi
+  return lbi
 
 -- | Extract useful information from localBuildInfo to a ShakerInput
 localBuildInfoToShakerInput :: LocalBuildInfo -> IO ShakerInput
