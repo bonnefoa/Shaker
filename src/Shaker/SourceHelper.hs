@@ -13,6 +13,7 @@ module Shaker.SourceHelper(
   ,initializeGhc
   ,ghcCompile
   ,getFullCompileCompileInput
+  ,getFullCompileCompileInputNonMain
   -- * module change detection
   ,checkUnchangedSources
   ,isModuleNeedCompilation
@@ -113,12 +114,25 @@ ghcCompile cpIn = do
      liftIO $ unload dflags []
      load LoadAllTargets
 
-getFullCompileCompileInput :: Shaker IO (CompileInput)
+getFullCompileCompileInput :: Shaker IO [CompileInput]
 getFullCompileCompileInput = do
-  cpList <- asks compileInputs 
-  let cpIn = mergeCompileInputsSources cpList
+  cpIn <- fmap mergeCompileInputsSources  (asks compileInputs)
   cfFlList <- lift $ constructCompileFileList cpIn
-  return $ runReader (setAllHsFilesAsTargets cpIn >>= removeFileWithMain )  cfFlList
+  let (mainFiles, nonMainFiles) = partition cfHasMain cfFlList
+  let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
+  let executables = map (runReader (setAllHsFilesAsTargets cpIn) ) $ split mainFiles 
+  return $ libraries : executables
+  where split = groupBy (\_ _ -> False) 
+
+getFullCompileCompileInputNonMain :: Shaker IO CompileInput
+getFullCompileCompileInputNonMain = do
+  cpIn <- fmap mergeCompileInputsSources  (asks compileInputs)
+  cfFlList <- lift $ constructCompileFileList cpIn
+  let (_, nonMainFiles) = partition cfHasMain cfFlList
+  let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
+  return libraries 
+
+
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   

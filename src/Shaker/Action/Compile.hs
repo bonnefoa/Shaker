@@ -18,12 +18,12 @@ runCompile = asks compileInputs >>= mapM (lift . runSingleCompileInput )  >> ret
  
 -- | Run haskell compilation on all haskell files
 runFullCompile :: Plugin
-runFullCompile = getFullCompileCompileInput >>= lift . runSingleCompileInput 
+runFullCompile = getFullCompileCompileInput >>= mapM (lift . runSingleCompileInput ) >> return()
 
 runSingleCompileInput :: CompileInput -> IO()
 runSingleCompileInput cplInp = do
-        putStrLn $ concat ["   --------- ", cfDescription cplInp," ---------"]
-        putStrLn $ concat ["   --------- ", "Compiling target : "++ show (cfTargetFiles cplInp) ," ---------"]
+        putStrLn $ concat [" --", cfDescription cplInp," --"]
+        putStrLn $ concat [" --", "Compiling target : "++ show (cfTargetFiles cplInp) ," --"]
         _ <- defaultErrorHandler defaultDynFlags $ 
                     runGhc (Just libdir) $ ghcCompile cplInp 
         return ()

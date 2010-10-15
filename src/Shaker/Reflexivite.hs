@@ -54,17 +54,17 @@ data RunnableFunction = RunnableFunction {
 -- | Collect all non-main modules with their test function associated
 collectAllModulesForTest :: Shaker IO [ModuleMapping]
 collectAllModulesForTest = do 
-  cpIn <- getFullCompileCompileInput
+  cpIn <- getFullCompileCompileInputNonMain
   allModules <- lift $ runGhc (Just libdir) $ do 
         _ <- ghcCompile cpIn
         collectAllModules' >>= mapM getModuleMapping 
   return . removeNonTestModule $ allModules
-  
+
 -- | Analyze all haskell modules of the project and 
 -- output all module needing recompilation
 collectChangedModulesForTest :: Shaker IO [ModuleMapping]
 collectChangedModulesForTest = do 
-  cpIn <- getFullCompileCompileInput
+  cpIn <- getFullCompileCompileInputNonMain
   modInfoFiles <- asks modifiedInfoFiles
   let modFilePaths = (map fileInfoFilePath modInfoFiles)
   changed_modules <- lift $ runGhc (Just libdir) $ do 
@@ -90,7 +90,7 @@ collectChangedModulesForTest' modFilePaths cpIn = do
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
 runFunction (RunnableFunction importModuleList fun) = do
-  cpIn <- getFullCompileCompileInput
+  cpIn <- getFullCompileCompileInputNonMain
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
          _ <- setSessionDynFlags (addShakerLibraryAsImport (dopt_set dflags Opt_HideAllPackages))
@@ -107,7 +107,7 @@ runFunction (RunnableFunction importModuleList fun) = do
 
 addShakerLibraryAsImport :: DynFlags -> DynFlags
 addShakerLibraryAsImport dflags = dflags {
-    packageFlags = nub $ (map ExposePackage  ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"]) ++ oldPackageFlags
+    packageFlags = nub $ map ExposePackage  ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] ++ oldPackageFlags
   }
   where oldPackageFlags = packageFlags dflags
 

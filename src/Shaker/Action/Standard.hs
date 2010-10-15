@@ -6,6 +6,7 @@ import Shaker.Type
 import qualified Data.Map as M
 import Control.Monad.Trans
 import Control.Monad.Reader
+import Control.Monad
 import System.Directory
 import Control.Concurrent
 
@@ -28,7 +29,7 @@ runExit = do
 -- | Print a begin action notification
 runStartAction :: Plugin
 runStartAction = lift $ 
-  putStrLn "---------- Begin action -------------------------"
+  putStrLn "-- Begin action --"
 
 runEmpty :: Plugin
 runEmpty = return ()
@@ -36,7 +37,7 @@ runEmpty = return ()
 -- | Print an end action notification
 runEndAction :: Plugin
 runEndAction = lift $ 
-  putStrLn "---------- End action ---------------------------"
+  putStrLn "-- End action --"
 
 -- | Clean action is responsible to delete directory containing temporary .o and .hi files 
 runClean :: Plugin 
@@ -45,8 +46,7 @@ runClean = do
      lift$  mapM_ action toClean 
   where action toClean = do
                  ex <- doesDirectoryExist toClean
-                 if ex then removeDirectoryRecursive toClean  
-                       else putStrLn "" 
+                 when ex $ removeDirectoryRecursive toClean  
 
 runInvalidAction :: Plugin 
 runInvalidAction = lift $ putStrLn "Invalid action,  use help to display available actions"
