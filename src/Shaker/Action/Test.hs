@@ -28,7 +28,6 @@ getModulesWithFunctionFiltering module_list = fmap
   (removeNonTestModule . filterFunctionsWithPatterns module_list)
   (asks argument)
   
-
 runTestFramework' :: [ModuleMapping] -> Plugin
 runTestFramework' modules = do
   let import_modules = base_modules ++ map cfModuleName modules

@@ -23,7 +23,7 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   cfTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( cfTargetFiles cplExe)
   let dFlags = cfDynFlags cplExe defaultDynFlags
   all (`elem` importPaths dFlags) ["dist/build/autogen","src"] @? "importPaths should be contains src and dist/build/autogen, got "++ show (importPaths dFlags)
-  (ExposePackage "ghc") `elem` packageFlags dFlags @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
+  ExposePackage "ghc" `elem` packageFlags dFlags @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
   let (ListenerInput (_:srcLib:[]) _) = listenerInput shIn
   dir srcLib == "src" @? "Expected : src, got " ++ show srcLib
 
@@ -32,8 +32,8 @@ testConditionalFlag = runTestOnDirectory "testsuite/tests/resources/cabalTest" $
   shIn <- testShakerInput
   let (_:cplExe:[]) = compileInputs shIn
   let packageList = packageFlags $ cfDynFlags cplExe defaultDynFlags
-  all (`elem` packageList) [ExposePackage "mtl",ExposePackage "bytestring-mmap"] @? "mtl and bytestring-mmap should be exposed package, got "++ (show $ map showExposed packageList)
-  not ( (ExposePackage "shaker") `elem` packageList ) @? "shaker should not be present as exposed package"
+  all (`elem` packageList) [ExposePackage "mtl",ExposePackage "bytestring-mmap"] @? "mtl and bytestring-mmap should be exposed package, got "++ show (map showExposed packageList)
+  ExposePackage "shaker" `notElem` packageList @? "shaker should not be present as exposed package"
 
 showExposed :: PackageFlag -> String
 showExposed (ExposePackage str) = str

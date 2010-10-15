@@ -20,7 +20,7 @@ runTestOnDirectory fp fun = do
   finally fun (setCurrentDirectory oldDir)
 
 testCompileInput ::IO CompileInput 
-testCompileInput = defaultCabalInput >>= return . mergeCompileInputsSources . compileInputs
+testCompileInput = fmap (mergeCompileInputsSources . compileInputs) defaultCabalInput 
 
 initializeEmptyCompileInput :: CompileInput 
 initializeEmptyCompileInput = CompileInput {

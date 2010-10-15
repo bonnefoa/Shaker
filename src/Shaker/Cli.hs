@@ -37,7 +37,7 @@ processInput shIn  = do
      Just str -> either error_action normal_action (parseCommand str shIn)
                  where error_action err = lift $ print err >> tryPutMVar inputMv Nothing >> return()
                        normal_action val = lift $ tryPutMVar inputMv (Just val) >> return()
-       
+
 -- * Auto-completion management 
 
 -- | Settings for haskeline
