@@ -35,11 +35,11 @@ data Action =
   deriving (Show,Eq,Ord)
  
 -- | The input mvar is used to push the parsed command
-type Input = MVar (Maybe Command)
+type InputCommand = MVar (Maybe Command)
 
 data InputState = InputState {  
-  input :: Input,
-  token :: Token -- ^ Token is used to manage the token between action executor and command-line listener
+  inputStateCommand :: InputCommand,
+  inputStateToken :: Token -- ^ Token is used to manage the token between action executor and command-line listener
 }
 
 -- | ShakerAction represents the differents actions realisable by shaker
