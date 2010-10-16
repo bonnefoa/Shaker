@@ -132,8 +132,6 @@ getFullCompileCompileInputNonMain = do
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
   return libraries 
 
-
-
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
      modifySession (\h -> h {hsc_HPT = emptyHomePackageTable} )

@@ -14,17 +14,20 @@ import Control.Monad.Reader
 
 -- | Run haskell compilation on given CompileInput list
 runCompile :: Plugin
-runCompile = asks compileInputs >>= mapM (lift . runSingleCompileInput )  >> return ()
+runCompile = asks compileInputs >>= lift . foldM runUntilFail Succeeded >> return ()
+
+runUntilFail :: SuccessFlag -> CompileInput -> IO SuccessFlag
+runUntilFail Succeeded cpIn = runSingleCompileInput $ cpIn
+runUntilFail Failed _ = return Failed
  
 -- | Run haskell compilation on all haskell files
 runFullCompile :: Plugin
-runFullCompile = getFullCompileCompileInput >>= mapM (lift . runSingleCompileInput ) >> return()
+runFullCompile = getFullCompileCompileInput >>= lift . foldM runUntilFail Succeeded >> return()
 
-runSingleCompileInput :: CompileInput -> IO()
+runSingleCompileInput :: CompileInput -> IO(SuccessFlag)
 runSingleCompileInput cplInp = do
-        putStrLn $ concat [" --", cfDescription cplInp," --"]
-        putStrLn $ concat [" --", "Compiling target : "++ show (cfTargetFiles cplInp) ," --"]
-        _ <- defaultErrorHandler defaultDynFlags $ 
+        putStrLn ""
+        putStrLn $ concat ["--", "Compiling target : "++ show (cfTargetFiles cplInp) ,"--"]
+        defaultErrorHandler defaultDynFlags $ 
                     runGhc (Just libdir) $ ghcCompile cplInp 
-        return ()
 
