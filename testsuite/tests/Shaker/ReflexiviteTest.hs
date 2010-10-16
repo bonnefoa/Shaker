@@ -30,9 +30,9 @@ testModuleMappingContainReflexiviteTest :: Assertion
 testModuleMappingContainReflexiviteTest = abstractTestModuleMapping predicat
   where predicat modMapLst = any ( \mm -> cfModuleName mm == "Shaker.ReflexiviteTest") modMapLst @?  "Should have module Shaker.ReflexiviteTest, got " ++ show modMapLst
 
-testModuleMappingShouldNotContainRunTestTH :: Assertion
-testModuleMappingShouldNotContainRunTestTH = abstractTestModuleMapping predicat
-  where predicat modMapLst = not (any (\a ->cfModuleName a == "Shaker.RunTestTH") modMapLst) @? "Should have excluded RunTestTH, got " ++ show modMapLst
+testModuleMappingShouldContainTestWithMain :: Assertion
+testModuleMappingShouldContainTestWithMain = abstractTestModuleMapping predicat
+  where predicat modMapLst = not (any (\a ->cfModuleName a == "Shaker.TestWithMain") modMapLst) @? "Should have included TestWithMain, got " ++ show modMapLst
 
 -- * Reflexivite module Test 
 

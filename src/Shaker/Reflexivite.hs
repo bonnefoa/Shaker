@@ -54,23 +54,24 @@ data RunnableFunction = RunnableFunction {
 -- | Collect all non-main modules with their test function associated
 collectAllModulesForTest :: Shaker IO [ModuleMapping]
 collectAllModulesForTest = do 
-  cpIn <- getFullCompileCompileInputNonMain
-  allModules <- lift $ runGhc (Just libdir) $ do 
-        _ <- ghcCompile cpIn
-        collectAllModules' >>= mapM getModuleMapping 
+  cpInList <- getFullCompileCompileInput
+  allModules <- fmap concat (lift $ mapM collectModules cpInList)
   return . removeNonTestModule $ allModules
+  where collectModules cpIn = 
+          runGhc (Just libdir) $ ghcCompile cpIn >> collectAllModules' >>= mapM getModuleMapping  
 
 -- | Analyze all haskell modules of the project and 
 -- output all module needing recompilation
 collectChangedModulesForTest :: Shaker IO [ModuleMapping]
 collectChangedModulesForTest = do 
-  cpIn <- getFullCompileCompileInputNonMain
+  cpInList <- getFullCompileCompileInput
   modInfoFiles <- asks modifiedInfoFiles
-  let modFilePaths = (map fileInfoFilePath modInfoFiles)
-  changed_modules <- lift $ runGhc (Just libdir) $ do 
-           _ <- initializeGhc cpIn
-           collectChangedModulesForTest' modFilePaths cpIn
+  let modFilePaths = map fileInfoFilePath modInfoFiles
+  changed_modules <- fmap concat (lift $ mapM (collectChangedModules modFilePaths) cpInList) 
   return . removeNonTestModule $ changed_modules
+  where collectChangedModules modFilePaths cpIn = 
+          runGhc (Just libdir) $ initializeGhc cpIn >> collectChangedModulesForTest' modFilePaths cpIn
+
 
 collectAllModules' :: GhcMonad m => m [ModSummary] 
 collectAllModules' = do 
