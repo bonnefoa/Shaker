@@ -46,7 +46,7 @@ initializeConductorData fun = do
   shIn <- ask
   lstState <- initializeListener 
   mapM_ addThreadIdToListenMVar $ threadIds lstState 
-  let theFun = \a -> runReaderT fun shIn {modifiedInfoFiles = a}
+  let theFun a = runReaderT fun shIn {modifiedInfoFiles = a}
   return $ ConductorData lstState theFun
   
 cleanAllThreads :: Shaker IO ()

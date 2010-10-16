@@ -89,7 +89,7 @@ data CompileInput = CompileInput{
   cfSourceDirs :: [String] -- ^ Source directory of haskell files
   ,cfDescription :: String -- ^ Desctipition of the compile input (executable or library if comming from cabal)
   ,cfCompileTarget :: String  -- ^ Destination of .o and .hi files
-  ,cfDynFlags :: (DynFlags->DynFlags) -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
+  ,cfDynFlags :: DynFlags->DynFlags -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
   ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
   ,cfTargetFiles :: [String] -- ^ List of files or list of modules to compile
 }
@@ -146,7 +146,7 @@ defaultCompileInput = CompileInput {
 -- the result of compilation (.o and .hi) are placed in the target/ directory
 -- there is no main linkage by default to allow faster compilation feedback
 defaultCompileFlags :: (DynFlags -> DynFlags)
-defaultCompileFlags = \a-> a  {
+defaultCompileFlags a = a  {
     verbosity = 1
     ,ghcLink = NoLink
 } 
