@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Main
+module RunTestTH
  where
 
 import Shaker.TestHelper
