@@ -9,12 +9,14 @@ import Control.Concurrent
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
-  compileInputs = [defaultCompileInput],
-  listenerInput = defaultListenerInput,
-  pluginMap = defaultPluginMap,
-  commandMap = defaultCommandMap
+  compileInputs = [defaultCompileInput]
+  ,listenerInput = defaultListenerInput
+  ,pluginMap = defaultPluginMap
+  ,commandMap = defaultCommandMap
   ,argument = []
   ,modifiedInfoFiles = []
+  ,threadData = undefined
+  ,inputState = undefined
   }
 
 defaultInputInitialized :: IO ShakerInput 
@@ -43,5 +45,5 @@ defaultInputState :: IO InputState
 defaultInputState = do
   inputMv <- newEmptyMVar 
   tokenMv <- newEmptyMVar  
-  return InputState { input = inputMv, token =  tokenMv } 
+  return InputState { inputStateCommand = inputMv, inputStateToken =  tokenMv } 
 
