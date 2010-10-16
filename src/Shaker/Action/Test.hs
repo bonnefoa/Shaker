@@ -29,6 +29,7 @@ getModulesWithFunctionFiltering module_list = fmap
   (asks argument)
   
 runTestFramework' :: [ModuleMapping] -> Plugin
+runTestFramework' [] = lift $ putStrLn "No test to run"
 runTestFramework' modules = do
   let import_modules = base_modules ++ map cfModuleName modules
   resolvedExp <- lift $ runQ (listTestFrameworkGroupList modules)
