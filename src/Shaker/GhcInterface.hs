@@ -2,6 +2,7 @@ module Shaker.GhcInterface (
   -- * GHC Compile management
   initializeGhc
   ,ghcCompile
+  ,getListNeededPackages
   -- * module change detection
   ,checkUnchangedSources
   ,isModuleNeedCompilation
@@ -10,24 +11,35 @@ module Shaker.GhcInterface (
 
 import Shaker.Io
 import Shaker.Type
+import Shaker.SourceHelper
+
+import Control.Monad.Reader(lift)
 
 import LazyUniqFM
 import MkIface 
 import HscTypes
 import Linker
 import GHC hiding (parseModule, HsModule)
+import GHC.Paths
 import Finder 
+import Module
+
+import Data.Maybe
 
 import System.Directory
-import System.FilePath
 
-getListNeededPackages :: IO [String]
+getListNeededPackages :: Shaker IO [String]
 getListNeededPackages = do
-  declared_imports <- listDeclaredImports
-  -- hsc_env <- getSession
-  -- listFindResults <- mapM ( \ name -> findImportedModule hsc_env name Nothing) declared_imports
-  return []
-
+  cpIn <- getFullCompileCompileInputNonMain
+  declared_imports <- lift listDeclaredImports
+  lift $ runGhc (Just libdir) $ do 
+    initializeGhc cpIn
+    hsc_env <- getSession
+    find_res_list <- liftIO $ mapM ( \ name -> findImportedModule hsc_env (mkModuleName name) Nothing) declared_imports
+    return $ catMaybes $ map processFindResult find_res_list
+  where processFindResult (FoundMultiple (pkg:_) ) = Just (packageIdString  pkg)
+        processFindResult (NotFound _ _ _ (hidden_pkg:_) ) = Just (packageIdString hidden_pkg)
+        processFindResult _ = Nothing
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   

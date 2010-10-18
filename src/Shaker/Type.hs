@@ -2,6 +2,8 @@
 module Shaker.Type
  where
 
+import Data.Monoid 
+
 import DynFlags hiding (OneShot)
 import qualified Data.Map as M
 import Control.Monad.Reader
@@ -93,6 +95,24 @@ data CompileInput = CompileInput{
   ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
   ,cfTargetFiles :: [String] -- ^ List of files or list of modules to compile
 }
+
+instance Monoid CompileInput where
+  mempty = CompileInput {
+    cfSourceDirs = []
+    ,cfDescription = ""
+    ,cfCompileTarget = ""
+    ,cfDynFlags = id
+    ,cfCommandLineFlags =[]
+    ,cfTargetFiles = []
+    }
+  mappend cpIn1 cpIn2 = CompileInput {
+    cfSourceDirs = cfSourceDirs cpIn1 `mappend` cfSourceDirs cpIn2
+    ,cfDescription = "Merge : " ++ (cfDescription cpIn1) ++ (cfDescription cpIn2)
+    ,cfCompileTarget = cfCompileTarget cpIn1
+    ,cfDynFlags = (cfDynFlags cpIn1) . (cfDynFlags cpIn2)
+    ,cfCommandLineFlags = (cfCommandLineFlags cpIn1) `mappend` (cfCommandLineFlags cpIn2)
+    ,cfTargetFiles = (cfTargetFiles cpIn1) `mappend` (cfTargetFiles cpIn2)
+  }
 
 instance Show CompileInput 
  where show (CompileInput src desc _ _ commandLine target) = 

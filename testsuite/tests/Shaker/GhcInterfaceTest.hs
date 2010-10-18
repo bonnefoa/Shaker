@@ -8,7 +8,7 @@ import Shaker.SourceHelper
 import Shaker.Type
 import Shaker.CommonTest
 
-import Control.Monad.Reader(runReader, filterM)
+import Control.Monad.Reader hiding (liftIO)
 
 import GHC
 import GHC.Paths
@@ -17,6 +17,12 @@ import Digraph
 import Data.Maybe
 
 import System.FilePath 
+
+{-
+testListNeededPackages :: Assertion
+testListNeededPackages = do
+  let compileInput = 
+      -}
 
 
 testCheckUnchangedSources :: Assertion

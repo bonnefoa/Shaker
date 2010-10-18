@@ -23,16 +23,6 @@ runTestOnDirectory fp fun = do
 testCompileInput ::IO CompileInput 
 testCompileInput = fmap (mergeCompileInputsSources . compileInputs) defaultCabalInput 
 
-initializeEmptyCompileInput :: CompileInput 
-initializeEmptyCompileInput = CompileInput {
-  cfSourceDirs = []
-  ,cfDescription = ""
-  ,cfCompileTarget = ""
-  ,cfDynFlags = id
-  ,cfCommandLineFlags =[]
-  ,cfTargetFiles = []
-}
-
 testShakerInput :: IO ShakerInput
 testShakerInput = defaultCabalInput
 

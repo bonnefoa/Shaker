@@ -15,13 +15,11 @@ module Shaker.SourceHelper(
  where
 
 import Data.List
-import Data.Maybe
 import Shaker.Io
 import Shaker.Type
 
 import Control.Monad.Reader(ask, asks, lift, runReader, Reader)
 
-import System.Directory
 import System.FilePath
 
 type CompileR = Reader [CompileFile]
@@ -104,3 +102,4 @@ getFullCompileCompileInputNonMain = do
   let (_, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
   return libraries 
+
