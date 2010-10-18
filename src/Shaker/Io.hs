@@ -6,7 +6,8 @@ module Shaker.Io(
   ,listFiles
   ,getCurrentFpCl
   ,recurseMultipleListFiles
-  ,recurseListFiles 
+  ,recurseListFiles
+  ,listDeclaredImports 
   -- * Test file property
   ,isFileContainingMain
   ,isFileContainingTH
@@ -19,14 +20,19 @@ module Shaker.Io(
 )
  where
  
-import qualified Data.ByteString.Char8 as L 
 import Control.Monad
 import System.Directory
 import Data.List
+import Data.Maybe
+
 import Shaker.Regex
 import Shaker.Type
 
+import Language.Haskell.Parser
+import Language.Haskell.Syntax
+
 import qualified Control.Exception as C
+import qualified Data.ByteString.Char8 as L 
 
 -- |Get the tuples of (newFiles,modifiedFiles) from given list of directory
 listModifiedAndCreatedFiles :: [FileListenInfo] -> [FileInfo] -> IO ([FileInfo],[FileInfo])
@@ -87,6 +93,18 @@ convertToFullPath absDir = map (\a-> concat [absDir, "/",a])
 removeDotDirectory :: [String] -> [String]
 removeDotDirectory = filter (not . isSuffixOf "."  ) 
 
+listDeclaredImports :: IO [String]
+listDeclaredImports = do
+   files <- recurseListFiles (FileListenInfo "." defaultExclude defaultHaskellPatterns)
+   fileContentList <- mapM readFile files
+   return $ nub $ concatMap getImport (catMaybes $ map parseHs fileContentList)
+   where getImport (HsModule _ _ _ listImportDecl _) = map (show . importModule) listImportDecl
+         parseHs content = case parseModule content of
+                                ParseOk val -> Just val
+                                _ -> Nothing
+
+-- * Exception management
+
 handleActionInterrupt :: IO() -> IO()
 handleActionInterrupt =  C.handle catchAll
   where catchAll :: C.SomeException -> IO ()
@@ -96,4 +114,6 @@ handleIOException :: IO() -> IO()
 handleIOException = C.handle catchIO
   where catchIO :: C.IOException -> IO()
         catchIO e = putStrLn ("Shaker caught " ++ show e ) >>  return ()
+
+
 

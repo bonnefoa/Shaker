@@ -137,6 +137,7 @@ Library
                  ,haskeline == 0.6.*
                  ,directory == 1.0.*
                  ,filepath == 1.1.*
+                 ,haskell-src == 1.0.1.*
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*
                  ,haskell98 == 1.0.*
@@ -161,6 +162,7 @@ Executable shaker
                  ,containers == 0.3.*
                  ,haskeline == 0.6.*
                  ,directory == 1.0.*
+                 ,haskell-src == 1.0.1.*
                  ,filepath == 1.1.*
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*
@@ -206,6 +208,7 @@ Executable test
                  ,directory == 1.0.*
                  ,filepath == 1.1.*
                  ,ghc == 6.*
+                 ,haskell-src == 1.0.1.*
                  ,ghc-paths == 0.1.*
                  ,haskell98 == 1.0.*
                  ,mtl == 1.1.*

@@ -5,11 +5,13 @@ module Shaker.Action.Compile(
   )
  where
 
+import Shaker.Type
 import Shaker.SourceHelper
+import Shaker.GhcInterface
+
 import GHC
 import DynFlags 
 import GHC.Paths
-import Shaker.Type
 import Control.Monad.Reader
 
 -- | Run haskell compilation on given CompileInput list

@@ -6,6 +6,7 @@ import Test.HUnit
 import Control.Exception
 import Shaker.Type
 import Shaker.SourceHelper
+import Shaker.GhcInterface
 import Shaker.Cabal.CabalInfo
 
 import Control.Monad.Reader(runReader)

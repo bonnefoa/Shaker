@@ -19,6 +19,7 @@ import Data.Maybe
 import Shaker.Type 
 import Shaker.Action.Compile
 import Shaker.SourceHelper
+import Shaker.GhcInterface
 import Shaker.Regex
 
 import Control.Monad.Reader
