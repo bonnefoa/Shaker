@@ -3,6 +3,7 @@ module Shaker.Type
  where
 
 import Data.Monoid 
+import Data.List
 
 import DynFlags hiding (OneShot)
 import qualified Data.Map as M
@@ -106,12 +107,12 @@ instance Monoid CompileInput where
     ,cfTargetFiles = []
     }
   mappend cpIn1 cpIn2 = CompileInput {
-    cfSourceDirs = cfSourceDirs cpIn1 `mappend` cfSourceDirs cpIn2
-    ,cfDescription = "Merge : " ++ (cfDescription cpIn1) ++ (cfDescription cpIn2)
+    cfSourceDirs = nub $ cfSourceDirs cpIn1 `mappend` cfSourceDirs cpIn2
+    ,cfDescription = "Merge : " ++ cfDescription cpIn1 ++ cfDescription cpIn2
     ,cfCompileTarget = cfCompileTarget cpIn1
-    ,cfDynFlags = (cfDynFlags cpIn1) . (cfDynFlags cpIn2)
-    ,cfCommandLineFlags = (cfCommandLineFlags cpIn1) `mappend` (cfCommandLineFlags cpIn2)
-    ,cfTargetFiles = (cfTargetFiles cpIn1) `mappend` (cfTargetFiles cpIn2)
+    ,cfDynFlags = cfDynFlags cpIn1 . cfDynFlags cpIn2
+    ,cfCommandLineFlags = nub $ cfCommandLineFlags cpIn1 `mappend` cfCommandLineFlags cpIn2
+    ,cfTargetFiles = nub $ cfTargetFiles cpIn1 `mappend` cfTargetFiles cpIn2
   }
 
 instance Show CompileInput 

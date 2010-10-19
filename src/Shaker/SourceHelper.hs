@@ -15,6 +15,7 @@ module Shaker.SourceHelper(
  where
 
 import Data.List
+import Data.Monoid
 import Shaker.Io
 import Shaker.Type
 
@@ -52,10 +53,7 @@ constructCompileFile fp = do
 -- create a single CompileInput
 mergeCompileInputsSources :: [CompileInput] -> CompileInput
 mergeCompileInputsSources [] = defaultCompileInput 
-mergeCompileInputsSources cplInps@(cpIn:_) = do 
-  let srcDirs = nub $ concatMap cfSourceDirs cplInps
-  let mergedDynFlags = foldl1 (.) (map cfDynFlags cplInps)
-  cpIn {cfDynFlags = mergedDynFlags, cfSourceDirs = srcDirs, cfDescription ="Full compilation"} 
+mergeCompileInputsSources listCpIns = (mconcat listCpIns) { cfDescription ="Full compilation"} 
 
 -- | Configure the CompileInput with all haskell files configured as targets
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
@@ -102,4 +100,3 @@ getFullCompileCompileInputNonMain = do
   let (_, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
   return libraries 
-
