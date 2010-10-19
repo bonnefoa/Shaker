@@ -7,6 +7,8 @@ module Shaker.Cabal.CabalInfo(
 
 import Shaker.Type
 import Shaker.Config
+import Shaker.GhcInterface
+
 import Distribution.Simple.Build
 import Distribution.Verbosity
 import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig)
@@ -22,19 +24,22 @@ import DynFlags(
     ,PackageFlag (ExposePackage)
     ,GhcLink (NoLink)
   )
+import Distribution.Compiler(CompilerFlavor(GHC))
+import Distribution.Package (Dependency(Dependency), PackageName(PackageName), pkgName)
+
 import System.FilePath          ( (</>))
 import System.Directory (doesFileExist)
-import Distribution.Compiler(CompilerFlavor(GHC))
-import Distribution.Package (Dependency(Dependency), PackageName(PackageName))
+
 import Data.Maybe
-import Data.List(nub,isSuffixOf)
-import Control.Monad 
+import Data.List(nub,isSuffixOf, delete)
+import Control.Monad.Reader
+import Control.Arrow
 
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
 defaultCabalInput = readConf >>= \lbi -> 
   generatePreprocessFile lbi >> 
-  localBuildInfoToShakerInput lbi >>= checkInvalidMain 
+  localBuildInfoToShakerInput lbi >>= exposeNeededPackages lbi >>= checkInvalidMain 
 
 generatePreprocessFile :: LocalBuildInfo -> IO ()
 generatePreprocessFile lbi = writeAutogenFiles normal (localPkgDescr lbi) lbi
@@ -157,4 +162,18 @@ checkInvalidMain' cplInput
     return cplInput {cfTargetFiles = newTargets}
  | otherwise = return cplInput
   where oldTargets = cfTargetFiles cplInput
+
+-- | Expose needed package
+exposeNeededPackages :: LocalBuildInfo -> ShakerInput -> IO ShakerInput 
+exposeNeededPackages lbi shIn = do
+  listPackages <- fmap (delete currentPackage) (runReaderT getListNeededPackages shIn)
+  let cpIns = compileInputs shIn
+  let packageFlagsToAdd = map ExposePackage listPackages
+  let newCpIns = map ( \cpIn -> cpIn { cfDynFlags = addPackageToDynFlags packageFlagsToAdd . cfDynFlags cpIn} ) cpIns
+  return $ shIn {compileInputs = newCpIns}
+  where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
+            packageFlags = packageFlags dynFlags ++ packageFlagToAdd
+          } 
+        currentPackage = localPkgDescr >>> package >>> pkgName >>> unPackageName $ lbi
+        unPackageName (PackageName v) = v
 

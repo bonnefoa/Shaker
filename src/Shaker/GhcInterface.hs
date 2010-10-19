@@ -15,7 +15,7 @@ import Shaker.SourceHelper
 
 import Data.List
 
-import Control.Monad.Reader(lift)
+import Control.Monad.Reader(lift, runReaderT)
 import Control.Arrow
 
 import Distribution.Package 
@@ -26,6 +26,7 @@ import Linker
 import GHC hiding (parseModule, HsModule)
 import GHC.Paths
 import Packages
+import DynFlags
 
 import System.Directory
 
@@ -37,7 +38,9 @@ getListNeededPackages = do
   lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
     dyn_flags <- getSessionDynFlags
-    return $ concatMap ( lookupModuleInAllPackages dyn_flags . mkModuleName ) 
+    return $ map ( lookupModuleInAllPackages dyn_flags . mkModuleName ) 
+       >>> filter (not . null)
+       >>> map head
        >>> map fst
        >>> nubBy (\a b ->  getPackage a == getPackage b ) 
        >>> filter (not . exposed)
