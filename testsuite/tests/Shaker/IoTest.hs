@@ -94,3 +94,8 @@ testIsFileConductorNotContainingMain =  do
   res <- isFileContainingMain "src/Shaker/Conductor.hs"
   not res @?  "File Config.hs should not contain main methods" 
 
+testListDeclaredImports :: Assertion
+testListDeclaredImports = do
+  res <- listDeclaredImports
+  any (== "Data.List") res @? show res
+

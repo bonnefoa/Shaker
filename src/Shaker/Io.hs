@@ -97,11 +97,12 @@ listDeclaredImports :: IO [String]
 listDeclaredImports = do
    files <- recurseListFiles (FileListenInfo "." defaultExclude defaultHaskellPatterns)
    fileContentList <- mapM readFile files
-   return $ nub $ concatMap getImport (catMaybes $ map parseHs fileContentList)
-   where getImport (HsModule _ _ _ listImportDecl _) = map (show . importModule) listImportDecl
+   return $ nub $ concatMap getImport (mapMaybe parseHs fileContentList)
+   where getImport (HsModule _ _ _ listImportDecl _) = map (unModule . importModule) listImportDecl
          parseHs content = case parseModule content of
                                 ParseOk val -> Just val
                                 _ -> Nothing
+         unModule (Module v) = v
 
 -- * Exception management
 
