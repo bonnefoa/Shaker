@@ -14,8 +14,9 @@ import Shaker.Type
 import Shaker.SourceHelper
 
 import Data.List
+import qualified Data.Map as M
 
-import Control.Monad.Reader(lift, runReaderT)
+import Control.Monad.Reader(lift )
 import Control.Arrow
 
 import Distribution.Package 
@@ -30,24 +31,29 @@ import DynFlags
 
 import System.Directory
 
--- | Get the list of unexposed yet needed packages
-getListNeededPackages :: Shaker IO [String]
+-- | Get the list of unresolved import and 
+-- unexposed yet needed packages
+getListNeededPackages :: Shaker IO ([String], [String])
 getListNeededPackages = do
   cpIn <- getFullCompileCompileInputNonMain
-  declared_imports <- lift listDeclaredImports
+  map_import_modules <- lift mapImportToModules
   lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
     dyn_flags <- getSessionDynFlags
-    return $ map ( lookupModuleInAllPackages dyn_flags . mkModuleName ) 
-       >>> filter (not . null)
-       >>> map head
-       >>> map fst
-       >>> nubBy (\a b ->  getPackage a == getPackage b ) 
-       >>> filter (not . exposed)
-       >>> map (getPackage >>> unPackageName) 
-         $ declared_imports
+    return $ map ( \ imp -> (imp , lookupModuleInAllPackages dyn_flags . mkModuleName $ imp) ) 
+          >>> partition ( snd >>> null ) 
+          >>> first (badImportsProcess map_import_modules)
+          >>> second exposablePackageProcess $ M.keys map_import_modules 
   where unPackageName (PackageName v) = v
         getPackage = sourcePackageId >>> pkgName
+        badImportsProcess map_import_modules = map fst >>> concatMap (map_import_modules M.!)
+        exposablePackageProcess :: [ ( String, [ (PackageConfig, Bool ) ] ) ] -> [ String ]
+        exposablePackageProcess = map snd 
+          >>> head 
+          >>> map fst
+          >>> nubBy (\a b ->  getPackage a == getPackage b ) 
+          >>> filter (not . exposed)
+          >>> map (getPackage >>> unPackageName) 
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   

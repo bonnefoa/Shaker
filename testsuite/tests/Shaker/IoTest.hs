@@ -5,6 +5,8 @@ import Shaker.Io
 import Shaker.Type
 import System.Time
 import Data.List
+import qualified Data.Map as M
+
 import Test.HUnit hiding (assert)
 
 aTimeDiff :: TimeDiff
@@ -94,8 +96,9 @@ testIsFileConductorNotContainingMain =  do
   res <- isFileContainingMain "src/Shaker/Conductor.hs"
   not res @?  "File Config.hs should not contain main methods" 
 
-testListDeclaredImports :: Assertion
-testListDeclaredImports = do
-  res <- listDeclaredImports
-  any (== "Data.List") res @? show res
+testMapImportToModules :: Assertion
+testMapImportToModules = do
+  map_import_modules <- mapImportToModules
+  let data_list_import =  map_import_modules M.! "System.Time"
+  any (== "Shaker.IoTest"  ) data_list_import @? show data_list_import
 

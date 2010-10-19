@@ -7,7 +7,7 @@ module Shaker.Io(
   ,getCurrentFpCl
   ,recurseMultipleListFiles
   ,recurseListFiles
-  ,listDeclaredImports 
+  ,mapImportToModules
   -- * Test file property
   ,isFileContainingMain
   ,isFileContainingTH
@@ -21,7 +21,9 @@ module Shaker.Io(
  where
  
 import Control.Monad
+import Control.Arrow
 import System.Directory
+import qualified Data.Map as M
 import Data.List
 import Data.Maybe
 
@@ -93,16 +95,24 @@ convertToFullPath absDir = map (\a-> concat [absDir, "/",a])
 removeDotDirectory :: [String] -> [String]
 removeDotDirectory = filter (not . isSuffixOf "."  ) 
 
-listDeclaredImports :: IO [String]
-listDeclaredImports = do
+mapImportToModules :: IO ( M.Map String [String] )
+mapImportToModules = do
    files <- recurseListFiles (FileListenInfo "." defaultExclude defaultHaskellPatterns)
    fileContentList <- mapM readFile files
-   return $ nub $ concatMap getImport (mapMaybe parseHs fileContentList)
-   where getImport (HsModule _ _ _ listImportDecl _) = map (unModule . importModule) listImportDecl
+   return $ constructImportToModules $ nub $ map getImport (mapMaybe parseHs fileContentList)
+   where getImport :: HsModule -> (String, [String]) 
+         getImport (HsModule _ moduleName _ listImportDecl _) = (unModule moduleName, map (unModule . importModule) listImportDecl)
          parseHs content = case parseModule content of
                                 ParseOk val -> Just val
                                 _ -> Nothing
          unModule (Module v) = v
+
+constructImportToModules :: [ ( String, [String] ) ] -> M.Map String [String]
+constructImportToModules moduleToImports = M.fromList listKeysWithModules
+  where listProjectModules = map fst moduleToImports
+        listKeys = (nub $ concatMap snd moduleToImports) \\ listProjectModules
+        listKeysWithModules = map ( \ imp -> (imp, getAllModulesForImport imp) ) listKeys
+        getAllModulesForImport imp = filter ( \ (_, lstImp) ->  imp `elem` lstImp ) >>> map fst $ moduleToImports 
 
 -- * Exception management
 

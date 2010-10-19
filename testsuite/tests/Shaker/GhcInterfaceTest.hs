@@ -23,7 +23,8 @@ testListNeededPackages :: Assertion
 testListNeededPackages = do
   let cpIn = defaultCompileInput {cfCommandLineFlags = ["-hide-all-packages"]}
   shIn <- fmap (\ a -> a { compileInputs = [cpIn]  }) testShakerInput
-  list <- runReaderT getListNeededPackages shIn
+  (bad_modules, list) <- runReaderT getListNeededPackages shIn
+  null bad_modules @? "there should be no bad modules " ++ show bad_modules
   any (== "bytestring") list @? show list
 
 testCheckUnchangedSources :: Assertion
