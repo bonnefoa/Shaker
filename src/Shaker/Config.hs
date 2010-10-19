@@ -11,7 +11,7 @@ import Control.Concurrent
 
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
-  compileInputs = [defaultCompileInput]
+  compileInputs = [mempty]
   ,listenerInput = mempty
   ,pluginMap = defaultPluginMap
   ,commandMap = defaultCommandMap

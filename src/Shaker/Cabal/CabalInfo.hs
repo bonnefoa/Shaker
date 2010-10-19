@@ -92,7 +92,7 @@ executableAndLibToCompileInput (Just lib) exes = libraryToCompileInput lib : map
 -- | Convert a cabal executable to a compileInput
 -- The target of compilation will the main file
 executableToCompileInput :: Executable -> CompileInput
-executableToCompileInput executable = defaultCompileInput { 
+executableToCompileInput executable = mempty { 
   cfSourceDirs = mySourceDir
   ,cfDescription = "Executable : " ++ exeName executable
   ,cfCommandLineFlags = getCompileOptions bldInfo
@@ -105,7 +105,7 @@ executableToCompileInput executable = defaultCompileInput {
 -- | Convert a cabal library to a compileInput
 -- The target of compilation will be all exposed modules
 libraryToCompileInput :: Library -> CompileInput
-libraryToCompileInput lib = defaultCompileInput {
+libraryToCompileInput lib = mempty {
   cfSourceDirs = mySourceDir
   ,cfDescription = "Library : " ++ show myModules
   ,cfCommandLineFlags = getCompileOptions bldInfo
@@ -169,13 +169,16 @@ checkInvalidMain' cplInput
 exposeNeededPackages :: LocalBuildInfo -> ShakerInput -> IO ShakerInput 
 exposeNeededPackages lbi shIn = do
   (ignoreModules, listPackages) <- runReaderT getListNeededPackages shIn
+  putStrLn $ "Ignoring modules " ++ show ignoreModules
+  putStrLn $ "Exposing " ++ show listPackages
   let packageToImport = delete currentPackage listPackages
   let cpIns = compileInputs shIn
   let listInp = listenerInput shIn
   let packageFlagsToAdd = map ExposePackage packageToImport
-  let newCpIns = map ( \cpIn -> cpIn { cfDynFlags = addPackageToDynFlags packageFlagsToAdd . cfDynFlags cpIn} ) cpIns
-  --let newListenerInput = listInp { fileListenInfo = } ) 
-  return $ shIn {compileInputs = newCpIns}
+  let listInputWithIgnore = mempty { fileListenInfo = [ mempty { ignore = ignoreModules } ] }
+  let newCpIns = map ( \a -> mappend a $ mempty { cfDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
+  let newListenerInput = listInp `mappend` listInputWithIgnore
+  return $ shIn {compileInputs = newCpIns, listenerInput = newListenerInput}
   where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
             packageFlags = packageFlags dynFlags ++ packageFlagToAdd
           } 

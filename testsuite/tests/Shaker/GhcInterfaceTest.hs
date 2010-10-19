@@ -16,12 +16,13 @@ import HscTypes
 import Digraph
 
 import Data.Maybe
+import Data.Monoid
 
 import System.FilePath 
 
 testListNeededPackages :: Assertion
 testListNeededPackages = do
-  let cpIn = defaultCompileInput {cfCommandLineFlags = ["-hide-all-packages"]}
+  let cpIn = mempty {cfCommandLineFlags = ["-hide-all-packages"]}
   shIn <- fmap (\ a -> a { compileInputs = [cpIn]  }) testShakerInput
   (bad_modules, list) <- runReaderT getListNeededPackages shIn
   null bad_modules @? "there should be no bad modules " ++ show bad_modules

@@ -97,13 +97,15 @@ data CompileInput = CompileInput{
   ,cfTargetFiles :: [String] -- ^ List of files or list of modules to compile
 }
 
+-- | Default compilation argument.
+-- Wall is activated by default
 instance Monoid CompileInput where
   mempty = CompileInput {
-    cfSourceDirs = []
-    ,cfDescription = ""
-    ,cfCompileTarget = ""
-    ,cfDynFlags = id
-    ,cfCommandLineFlags =[]
+    cfSourceDirs = ["."]
+    ,cfDescription = "Default compile inputs"
+    ,cfCompileTarget =  "dist/shakerTarget"  
+    ,cfDynFlags = defaultCompileFlags  
+    ,cfCommandLineFlags = ["-Wall"]
     ,cfTargetFiles = []
     }
   mappend cpIn1 cpIn2 = CompileInput {
@@ -150,8 +152,8 @@ instance Monoid FileListenInfo where
   mempty = FileListenInfo "." defaultExclude defaultHaskellPatterns
   mappend f1 f2 = FileListenInfo { 
     dir = dir f1
-    ,ignore = ignore f1 `mappend` ignore f2
-    ,include = include f1 `mappend` include f2
+    ,ignore = nub $ ignore f1 `mappend` ignore f2
+    ,include = nub $ include f1 `mappend` include f2
   }
 
 -- |Agregate a FilePath with its modification time
@@ -168,20 +170,8 @@ type CommandMap = M.Map String ShakerAction
 -- | Represents an action of shaker
 type Plugin = Shaker IO()
 
-
 -- * Default data
 
--- | Default compilation argument.
--- Wall is activated by default
-defaultCompileInput :: CompileInput
-defaultCompileInput = CompileInput {
-  cfSourceDirs= ["src/","testsuite/tests/", "dist/build/autogen"]
-  ,cfDescription = "Default Compilation"
-  ,cfCompileTarget =  "dist/shakerTarget"  
-  ,cfDynFlags = defaultCompileFlags  
-  ,cfCommandLineFlags = ["-Wall"]
-  ,cfTargetFiles = []
-}
 
 -- | default dynamics flags
 -- the sources are expected to be in src as described in <http://www.haskell.org/haskellwiki/structure_of_a_haskell_project>

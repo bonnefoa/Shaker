@@ -37,7 +37,7 @@ testIgnoreEmacsFile = runTestOnDirectory "testsuite/tests/resources/tempEmacsFil
 
 testConstructConductorCompileFileList :: Assertion
 testConstructConductorCompileFileList =  do
-  list <- constructCompileFileList defaultCompileInput 
+  list <- constructCompileFileList mempty
   let (Just cpFile) = find (\a ->  "Conductor.hs" `isSuffixOf` cfFp a ) list
   not (cfHasMain cpFile) && not (cfHasTH cpFile) @? "Should have conductor in list, got " ++ show cpFile
 

@@ -52,7 +52,7 @@ constructCompileFile fp = do
 -- | Merge source dirs informations from the CompileInput list to 
 -- create a single CompileInput
 mergeCompileInputsSources :: [CompileInput] -> CompileInput
-mergeCompileInputsSources [] = defaultCompileInput 
+mergeCompileInputsSources [] = mempty
 mergeCompileInputsSources listCpIns = (mconcat listCpIns) { cfDescription ="Full compilation"} 
 
 -- | Configure the CompileInput with all haskell files configured as targets

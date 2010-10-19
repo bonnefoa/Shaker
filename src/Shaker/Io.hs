@@ -110,7 +110,7 @@ mapImportToModules = do
 constructImportToModules :: [ ( String, [String] ) ] -> M.Map String [String]
 constructImportToModules moduleToImports = M.fromList listKeysWithModules
   where listProjectModules = map fst moduleToImports
-        listKeys = (nub $ concatMap snd moduleToImports) \\ listProjectModules
+        listKeys = nub (concatMap snd moduleToImports) \\ listProjectModules
         listKeysWithModules = map ( \ imp -> (imp, getAllModulesForImport imp) ) listKeys
         getAllModulesForImport imp = filter ( \ (_, lstImp) ->  imp `elem` lstImp ) >>> map fst $ moduleToImports 
 
