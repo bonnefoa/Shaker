@@ -13,33 +13,38 @@ import Shaker.Io
 import Shaker.Type
 import Shaker.SourceHelper
 
-import Control.Monad.Reader(lift)
+import Data.List
 
+import Control.Monad.Reader(lift)
+import Control.Arrow
+
+import Distribution.Package 
 import LazyUniqFM
 import MkIface 
 import HscTypes
 import Linker
 import GHC hiding (parseModule, HsModule)
 import GHC.Paths
-import Finder 
-import Module
-
-import Data.Maybe
+import Packages
 
 import System.Directory
 
+-- | Get the list of unexposed yet needed packages
 getListNeededPackages :: Shaker IO [String]
 getListNeededPackages = do
   cpIn <- getFullCompileCompileInputNonMain
   declared_imports <- lift listDeclaredImports
   lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
-    hsc_env <- getSession
-    find_res_list <- liftIO $ mapM ( \ name -> findImportedModule hsc_env (mkModuleName name) Nothing) declared_imports
-    return $ catMaybes $ map processFindResult find_res_list
-  where processFindResult (FoundMultiple (pkg:_) ) = Just (packageIdString  pkg)
-        processFindResult (NotFound _ _ _ (hidden_pkg:_) ) = Just (packageIdString hidden_pkg)
-        processFindResult _ = Nothing
+    dyn_flags <- getSessionDynFlags
+    return $ concatMap ( lookupModuleInAllPackages dyn_flags . mkModuleName ) 
+       >>> map fst
+       >>> nubBy (\a b ->  getPackage a == getPackage b ) 
+       >>> filter (not . exposed)
+       >>> map (getPackage >>> unPackageName) 
+         $ declared_imports
+  where unPackageName (PackageName v) = v
+        getPackage = sourcePackageId >>> pkgName
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   

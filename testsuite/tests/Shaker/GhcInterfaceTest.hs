@@ -14,16 +14,17 @@ import GHC
 import GHC.Paths
 import HscTypes
 import Digraph
+
 import Data.Maybe
 
 import System.FilePath 
 
-{-
 testListNeededPackages :: Assertion
 testListNeededPackages = do
-  let compileInput = 
-      -}
-
+  let cpIn = defaultCompileInput {cfCommandLineFlags = ["-hide-all-packages"]}
+  shIn <- fmap (\ a -> a { compileInputs = [cpIn]  }) testShakerInput
+  list <- runReaderT getListNeededPackages shIn
+  any (== "bytestring") list @? show list
 
 testCheckUnchangedSources :: Assertion
 testCheckUnchangedSources =  do
