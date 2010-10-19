@@ -125,6 +125,19 @@ data ListenerInput = ListenerInput {
   ,delay :: Int  -- ^ Delay beetween 2 check in microsecond
 }
 
+-- | The default Listener configuration
+-- Listened sources are all haskell sources in .
+-- The default delay is 2 sec
+instance Monoid ListenerInput where 
+  mempty = ListenerInput {
+    fileListenInfo = mempty
+    ,delay = 2000000
+    }
+  mappend l1 l2 = ListenerInput {
+    fileListenInfo = fileListenInfo l1 `mappend` fileListenInfo l2
+    ,delay = delay l1
+    }
+
 -- | Represents directory to listen 
 data FileListenInfo = FileListenInfo{
   dir :: FilePath     -- ^ location of the listened directory
@@ -132,6 +145,14 @@ data FileListenInfo = FileListenInfo{
   ,include :: [String] -- ^include patterns
   }
   deriving (Show,Eq)
+
+instance Monoid FileListenInfo where
+  mempty = FileListenInfo "." defaultExclude defaultHaskellPatterns
+  mappend f1 f2 = FileListenInfo { 
+    dir = dir f1
+    ,ignore = ignore f1 `mappend` ignore f2
+    ,include = include f1 `mappend` include f2
+  }
 
 -- |Agregate a FilePath with its modification time
 data FileInfo = FileInfo {
@@ -171,15 +192,6 @@ defaultCompileFlags a = a  {
     verbosity = 1
     ,ghcLink = NoLink
 } 
-
--- | The default Listener configuration
--- Listened sources are all haskell sources in src/ and testsuite/
--- The default delay is 2 sec
-defaultListenerInput :: ListenerInput                                   
-defaultListenerInput = ListenerInput {
-    fileListenInfo= [FileListenInfo "src/" [] defaultHaskellPatterns, FileListenInfo "testsuite/" [] defaultHaskellPatterns ]
-    ,delay = 2000000
-    }
 
 -- | Default haskell file pattern : *.hs
 defaultHaskellPatterns :: [String]

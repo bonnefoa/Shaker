@@ -2,6 +2,8 @@
 module Shaker.Config
  where
 
+import Data.Monoid
+
 import Shaker.Type
 import Shaker.PluginConfig
 import Shaker.Cli(InputState(..))
@@ -10,7 +12,7 @@ import Control.Concurrent
 defaultInput ::ShakerInput  
 defaultInput = ShakerInput {
   compileInputs = [defaultCompileInput]
-  ,listenerInput = defaultListenerInput
+  ,listenerInput = mempty
   ,pluginMap = defaultPluginMap
   ,commandMap = defaultCommandMap
   ,argument = []

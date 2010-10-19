@@ -32,6 +32,8 @@ import System.Directory (doesFileExist)
 
 import Data.Maybe
 import Data.List(nub,isSuffixOf, delete)
+import Data.Monoid 
+
 import Control.Monad.Reader
 import Control.Arrow
 
@@ -68,7 +70,7 @@ localBuildInfoToShakerInput lbi = do
   where cplInputs = localBuildInfoToCompileInputs lbi
 
 compileInputsToListenerInput :: [CompileInput] -> ListenerInput
-compileInputsToListenerInput cplInputs = defaultListenerInput {
+compileInputsToListenerInput cplInputs = mempty {
         fileListenInfo = nub $ map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
  } 
  where concatSources = concatMap cfSourceDirs cplInputs
@@ -166,10 +168,13 @@ checkInvalidMain' cplInput
 -- | Expose needed package
 exposeNeededPackages :: LocalBuildInfo -> ShakerInput -> IO ShakerInput 
 exposeNeededPackages lbi shIn = do
-  listPackages <- fmap (delete currentPackage) (runReaderT getListNeededPackages shIn)
+  (ignoreModules, listPackages) <- runReaderT getListNeededPackages shIn
+  let packageToImport = delete currentPackage listPackages
   let cpIns = compileInputs shIn
-  let packageFlagsToAdd = map ExposePackage listPackages
+  let listInp = listenerInput shIn
+  let packageFlagsToAdd = map ExposePackage packageToImport
   let newCpIns = map ( \cpIn -> cpIn { cfDynFlags = addPackageToDynFlags packageFlagsToAdd . cfDynFlags cpIn} ) cpIns
+  --let newListenerInput = listInp { fileListenInfo = } ) 
   return $ shIn {compileInputs = newCpIns}
   where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
             packageFlags = packageFlags dynFlags ++ packageFlagToAdd
