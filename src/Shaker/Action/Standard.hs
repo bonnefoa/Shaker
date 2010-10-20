@@ -13,7 +13,7 @@ import Control.Concurrent
 -- | Print the list of available actions
 runHelp ::  Plugin
 runHelp = do 
-  commands <- asks commandMap 
+  commands <- asks shakerCommandMap 
   lift $ do   
   putStrLn "Following actions are available : "
   print $ M.keys commands
@@ -23,7 +23,7 @@ runHelp = do
 runExit :: Plugin
 runExit = do
   lift $ putStrLn "Exiting"
-  quit_token <- asks (quitToken . threadData)
+  quit_token <- asks (quitToken . shakerThreadData)
   lift $ putMVar quit_token 42
 
 -- | Print a begin action notification

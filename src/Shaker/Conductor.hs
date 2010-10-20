@@ -27,14 +27,14 @@ initThread = do
   lift ( forkIO ( forever input_action) ) >>= addThreadIdToQuitMVar 
   let main_loop = runReaderT mainThread shIn 
   lift ( forkIO (forever main_loop) ) >>= addThreadIdToQuitMVar
-  quit_token <- asks (quitToken . threadData)
+  quit_token <- asks (quitToken . shakerThreadData)
   _ <- lift $ takeMVar quit_token
   cleanAllThreads 
  
 -- | The main thread. 
 mainThread :: Shaker IO()
 mainThread = do
-  (InputState inputMv tokenMv) <- asks inputState
+  (InputState inputMv tokenMv) <- asks shakerInputState
   _ <- lift $ tryPutMVar tokenMv 42
   maybe_cmd <- lift $ takeMVar inputMv 
   executeCommand maybe_cmd
@@ -46,13 +46,13 @@ initializeConductorData fun = do
   shIn <- ask
   lstState <- initializeListener 
   mapM_ addThreadIdToListenMVar $ threadIds lstState 
-  let theFun a = runReaderT fun shIn {modifiedInfoFiles = a}
+  let theFun a = runReaderT fun shIn {shakerModifiedInfoFiles = a}
   return $ ConductorData lstState theFun
   
 cleanAllThreads :: Shaker IO ()
 cleanAllThreads = do 
-  asks ( threadIdListenList . threadData ) >>= cleanThreads
-  asks ( threadIdQuitList . threadData ) >>= cleanThreads
+  asks ( threadIdListenList . shakerThreadData ) >>= cleanThreads
+  asks ( threadIdQuitList . shakerThreadData ) >>= cleanThreads
 
 cleanThreads :: ThreadIdList -> Shaker IO()
 cleanThreads thrdList = lift (readMVar thrdList)  >>= lift . mapM_ killThread 
@@ -63,7 +63,7 @@ threadExecutor conductorData = do
   shIn <- ask
   res <- lift $  handleContinuousInterrupt $ runReaderT (threadExecutor' conductorData) shIn
   when res $ threadExecutor conductorData
-  asks ( threadIdListenList . threadData ) >>= cleanThreads
+  asks ( threadIdListenList . shakerThreadData ) >>= cleanThreads
   
 threadExecutor' :: ConductorData -> Shaker IO Bool
 threadExecutor' (ConductorData listenState fun) = lift $ takeMVar (mvModifiedFiles listenState) >>= fun >> return True
@@ -82,13 +82,13 @@ executeAction acts = do
   lift $ handleActionInterrupt allActs
   return () 
 
--- | Execute a single action with argument
+-- | Execute a single action with shakerArgument
 executeAction' :: Action -> Shaker IO()
 executeAction' (ActionWithArg actKey args) = do 
   plMap <- asks shakerPluginMap 
-  local (\shIn -> shIn {argument = args} ) $ fromJust $ actKey `M.lookup` plMap
+  local (\shIn -> shIn {shakerArgument = args} ) $ fromJust $ actKey `M.lookup` plMap
 
--- | Execute a single action without argument
+-- | Execute a single action without shakerArgument
 executeAction' (Action actKey) = do
   plMap <- asks shakerPluginMap 
   fromJust $ actKey `M.lookup` plMap
@@ -104,11 +104,11 @@ handleContinuousInterrupt = C.handle catchAll
 
 -- | Add the given threadId to the listener thread list
 addThreadIdToListenMVar :: ThreadId -> Shaker IO()
-addThreadIdToListenMVar thrdId = asks (threadIdListenList . threadData) >>= flip addThreadIdToMVar thrdId
+addThreadIdToListenMVar thrdId = asks (threadIdListenList . shakerThreadData) >>= flip addThreadIdToMVar thrdId
 
 -- | Add the given threadId to the quit thread list
 addThreadIdToQuitMVar :: ThreadId -> Shaker IO()
-addThreadIdToQuitMVar thrdId = asks (threadIdQuitList . threadData) >>= flip addThreadIdToMVar thrdId
+addThreadIdToQuitMVar thrdId = asks (threadIdQuitList . shakerThreadData) >>= flip addThreadIdToMVar thrdId
 
 -- | Add the given threadId to the mvar list
 addThreadIdToMVar :: ThreadIdList -> ThreadId -> Shaker IO ()

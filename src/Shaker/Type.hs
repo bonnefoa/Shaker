@@ -41,8 +41,8 @@ data Action =
 type InputCommand = MVar (Maybe Command)
 
 data InputState = InputState {  
-  inputStateCommand :: InputCommand,
-  inputStateToken :: Token -- ^ Token is used to manage the token between action executor and command-line listener
+  shakerInputStateCommand :: InputCommand,
+  shakerInputStateToken :: Token -- ^ Token is used to manage the token between action executor and command-line listener
 }
 
 -- | ShakerAction represents the differents actions realisable by shaker
@@ -70,11 +70,11 @@ data ShakerInput = ShakerInput {
   shakerCompileInputs :: [CompileInput]
   ,shakerListenerInput:: ListenerInput
   ,shakerPluginMap :: PluginMap
-  ,commandMap :: CommandMap
-  ,argument :: [String]
-  ,modifiedInfoFiles :: [FileInfo]
-  ,threadData :: ThreadData 
-  ,inputState :: InputState 
+  ,shakerCommandMap :: CommandMap
+  ,shakerArgument :: [String]
+  ,shakerModifiedInfoFiles :: [FileInfo]
+  ,shakerThreadData :: ThreadData 
+  ,shakerInputState :: InputState 
  }  
  
 data ThreadData = ThreadData {
@@ -85,7 +85,7 @@ data ThreadData = ThreadData {
  }
      
 getListenThreadList :: ShakerInput -> ThreadIdList 
-getListenThreadList = threadIdListenList . threadData
+getListenThreadList = threadIdListenList . shakerThreadData
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
@@ -97,7 +97,7 @@ data CompileInput = CompileInput{
   ,cfTargetFiles :: [String] -- ^ List of files or list of modules to compile
 }
 
--- | Default compilation argument.
+-- | Default compilation shakerArgument.
 -- Wall is activated by default
 instance Monoid CompileInput where
   mempty = CompileInput {

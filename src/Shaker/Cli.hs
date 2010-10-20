@@ -28,7 +28,7 @@ getInput = do
 -- | Execute the entered command 
 processInput :: ShakerInput -> InputT IO()
 processInput shIn  = do
-  let (InputState inputMv tokenMv) = inputState shIn
+  let (InputState inputMv tokenMv) = shakerInputState shIn
   _ <- lift $ takeMVar tokenMv 
   minput <-  handleInterrupt (return (Just "quit"))
                $ getInputLine "% "
@@ -52,7 +52,7 @@ completeAction :: Monad m => ShakerInput -> CompletionFunc m
 completeAction shIn = completeWord (Just '\\') "\"'~" (listActions shIn)
 
 listActions :: Monad m => ShakerInput -> String -> m [Completion]
-listActions shIn str = return $ autocompleteFunction (commandMap shIn) str
+listActions shIn str = return $ autocompleteFunction (shakerCommandMap shIn) str
 
 autocompleteFunction :: CommandMap  -> String -> [Completion]
 autocompleteFunction cmdMap [] = map simpleCompletion $ M.keys cmdMap

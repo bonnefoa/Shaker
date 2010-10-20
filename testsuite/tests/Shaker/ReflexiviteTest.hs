@@ -125,7 +125,7 @@ testCollectChangedModulesWithModifiedFiles =  do
   let sources = map (</> "Shaker" </> "SourceHelperTest.hs") (cfSourceDirs cpIn)
   let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources
   shIn <- testShakerInput 
-  exp_one_modules <- runReaderT collectChangedModulesForTest shIn {modifiedInfoFiles = modFileInfo }
+  exp_one_modules <- runReaderT collectChangedModulesForTest shIn {shakerModifiedInfoFiles = modFileInfo }
   length exp_one_modules == 1 @? "One module should need compilation"
 
 prop_filterModMap_include_all :: [ModuleMapping] -> Bool

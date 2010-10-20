@@ -13,7 +13,7 @@ import qualified Data.Map as M
 -- | Parse the given string to a Command
 parseCommand :: String -> ShakerInput -> Either ParseError Command
 parseCommand str shIn = parse (typeCommand cmd_map) "parseCommand" str
-  where cmd_map = commandMap shIn
+  where cmd_map = shakerCommandMap shIn
 
 -- | Parse a Command
 typeCommand :: CommandMap -> GenParser Char st Command

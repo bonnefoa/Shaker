@@ -66,7 +66,7 @@ collectAllModulesForTest = do
 collectChangedModulesForTest :: Shaker IO [ModuleMapping]
 collectChangedModulesForTest = do 
   cpInList <- getFullCompileCompileInput
-  modInfoFiles <- asks modifiedInfoFiles
+  modInfoFiles <- asks shakerModifiedInfoFiles
   let modFilePaths = map fileInfoFilePath modInfoFiles
   changed_modules <- fmap concat (lift $ mapM (collectChangedModules modFilePaths) cpInList) 
   return . removeNonTestModule $ changed_modules

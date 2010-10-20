@@ -14,11 +14,11 @@ defaultInput = ShakerInput {
   shakerCompileInputs = [mempty]
   ,shakerListenerInput= mempty
   ,shakerPluginMap = defaultPluginMap
-  ,commandMap = defaultCommandMap
-  ,argument = []
-  ,modifiedInfoFiles = []
-  ,threadData = undefined
-  ,inputState = undefined
+  ,shakerCommandMap = defaultCommandMap
+  ,shakerArgument = []
+  ,shakerModifiedInfoFiles = []
+  ,shakerThreadData = undefined
+  ,shakerInputState = undefined
   }
 
 defaultInputInitialized :: IO ShakerInput 
@@ -26,8 +26,8 @@ defaultInputInitialized = do
   defThrdData <- defaultThreadData
   input_state <- defaultInputState 
   return defaultInput { 
-    threadData = defThrdData 
-    ,inputState = input_state 
+    shakerThreadData = defThrdData 
+    ,shakerInputState = input_state 
  }
 
 defaultThreadData :: IO ThreadData 
@@ -47,5 +47,5 @@ defaultInputState :: IO InputState
 defaultInputState = do
   inputMv <- newEmptyMVar 
   tokenMv <- newEmptyMVar  
-  return InputState { inputStateCommand = inputMv, inputStateToken =  tokenMv } 
+  return InputState { shakerInputStateCommand = inputMv, shakerInputStateToken =  tokenMv } 
 

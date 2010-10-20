@@ -56,7 +56,7 @@ getCurrentFpCl fileListen = do
       zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
 -- |List files in the given directory 
--- Files matching one regexp in the ignore argument are excluded
+-- Files matching one regexp in the ignore shakerArgument are excluded
 listFiles :: FileListenInfo -> IO[FilePath]
 listFiles (FileListenInfo inputDir inputIgnore inputInclude) = do
     curDir <- canonicalizePath inputDir 

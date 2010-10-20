@@ -19,14 +19,14 @@ runModuleIntelligentTestFramework :: Plugin
 runModuleIntelligentTestFramework = collectChangedModulesForTest >>= getModulesWithModuleFiltering >>= runTestFramework'
 
 getModulesWithModuleFiltering :: [ModuleMapping] -> Shaker IO [ModuleMapping] 
-getModulesWithModuleFiltering module_list = fmap process (asks argument)
+getModulesWithModuleFiltering module_list = fmap process (asks shakerArgument)
   where process [] = module_list
         process list = concatMap (filterModulesWithPattern module_list) list
 
 getModulesWithFunctionFiltering :: [ModuleMapping] -> Shaker IO [ModuleMapping] 
 getModulesWithFunctionFiltering module_list = fmap 
   (removeNonTestModule . filterFunctionsWithPatterns module_list)
-  (asks argument)
+  (asks shakerArgument)
   
 runTestFramework' :: [ModuleMapping] -> Plugin
 runTestFramework' [] = lift $ putStrLn "No test to run"
