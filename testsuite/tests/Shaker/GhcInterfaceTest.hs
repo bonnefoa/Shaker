@@ -31,7 +31,8 @@ testListNeededPackages = do
 testCheckUnchangedSources :: Assertion
 testCheckUnchangedSources =  do
   cpIn <- testCompileInput
-  cfFlList <-  constructCompileFileList cpIn
+  shIn <- testShakerInput
+  cfFlList <- runReaderT constructCompileFileList shIn
   mss <- runGhc (Just libdir) $ do 
             _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
             depanal [] False

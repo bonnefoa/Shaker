@@ -5,7 +5,7 @@ import Test.HUnit
 import Shaker.SourceHelper
 import Shaker.Type
 import Shaker.CommonTest
-import Control.Monad.Reader(runReader)
+import Control.Monad.Reader
 
 import GHC
 import DynFlags
@@ -14,8 +14,7 @@ import Data.Monoid
 
 testConstructCompileFileList :: Assertion
 testConstructCompileFileList =  runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do 
-  let cpIn = mempty {cfSourceDirs = ["dist/build/autogen","src", "."]}
-  fileList <- constructCompileFileList cpIn 
+  fileList <- testShakerInput >>= runReaderT constructCompileFileList 
   any (\cpFl -> "Main.hs" `isSuffixOf` cfFp cpFl && cfHasMain cpFl) fileList @? "Should have one main file, got " ++ show fileList
   any (\cpFl -> "src/CabalTest.hs" `isSuffixOf` cfFp cpFl && (not . cfHasMain) cpFl) fileList @? "Should have one main file, got " ++ show fileList
   not ( any (\cpFl -> "cabalTest/CabalTest.hs" `isSuffixOf` cfFp cpFl ) fileList ) @? "Should have excluded duplicated file, got " ++ show fileList
@@ -31,19 +30,18 @@ testMergeCompileInputs = runTestOnDirectory "testsuite/tests/resources/cabalTest
 
 testIgnoreEmacsFile :: Assertion
 testIgnoreEmacsFile = runTestOnDirectory "testsuite/tests/resources/tempEmacsFile" $ do
-  cpIn <- testCompileInput
-  fileList <- constructCompileFileList cpIn 
+  fileList <- testShakerInput >>= runReaderT constructCompileFileList 
   not ( any (\cpFl -> ".#TempFile.hs" `isSuffixOf` cfFp cpFl) fileList ) @? "Should ignore all .# files, got " ++ show fileList
 
 testConstructConductorCompileFileList :: Assertion
 testConstructConductorCompileFileList =  do
-  list <- constructCompileFileList mempty
+  list <- testShakerInput >>= runReaderT constructCompileFileList 
   let (Just cpFile) = find (\a ->  "Conductor.hs" `isSuffixOf` cfFp a ) list
   not (cfHasMain cpFile) && not (cfHasTH cpFile) @? "Should have conductor in list, got " ++ show cpFile
 
 testCompileFileListConstruction :: Assertion
 testCompileFileListConstruction =  do
   cpIn <- testCompileInput 
-  list <- constructCompileFileList cpIn
+  list <- testShakerInput >>= runReaderT constructCompileFileList 
   let newCpIn = runReader (fillCompileInputWithStandardTarget cpIn) list 
   any (\a -> "Conductor.hs" `isSuffixOf` a) (cfTargetFiles newCpIn) @?"Should have conductor in list, got " ++ show (cfTargetFiles newCpIn)

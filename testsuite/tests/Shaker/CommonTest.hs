@@ -9,9 +9,9 @@ import Shaker.SourceHelper
 import Shaker.GhcInterface
 import Shaker.Cabal.CabalInfo
 
-import Control.Monad.Reader(runReader)
+import Control.Monad.Reader
 
-import GHC
+import GHC (runGhc)
 import GHC.Paths
 
 runTestOnDirectory :: FilePath -> Assertion -> Assertion
@@ -29,9 +29,9 @@ testShakerInput = defaultCabalInput
 compileProject :: IO(CompileInput, [CompileFile])
 compileProject = do
   cpIn <- testCompileInput 
-  cfFlList <- constructCompileFileList cpIn
+  shIn <- testShakerInput 
+  cfFlList <- runReaderT constructCompileFileList shIn
   _ <- runGhc (Just libdir) $ 
       ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
   return (cpIn, cfFlList)
-
 

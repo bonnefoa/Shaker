@@ -20,6 +20,7 @@ import Shaker.Io
 import Shaker.Type
 
 import Control.Monad.Reader(ask, asks, lift, runReader, Reader)
+import Control.Arrow
 
 import System.FilePath
 
@@ -33,11 +34,11 @@ data CompileFile = CompileFile {
 
 -- | Build the list of haskell source files located in 
 -- CompileInput source dirs
-constructCompileFileList :: CompileInput -> IO [CompileFile] 
-constructCompileFileList cpIn = do
-  files <- fmap nub (recurseMultipleListFiles fli)
-  mapM constructCompileFile $ nubBy fileNameEquals files
-  where fli = getFileListenInfoForCompileInput cpIn
+constructCompileFileList :: Shaker IO [CompileFile] 
+constructCompileFileList = do
+  fli <- asks (listenerInput >>> fileListenInfo) 
+  files <- lift $ fmap nub (recurseMultipleListFiles fli)
+  lift $ mapM constructCompileFile $ nubBy fileNameEquals files
   
 fileNameEquals :: FilePath -> FilePath -> Bool
 fileNameEquals f1 f2 = takeFileName f1 == takeFileName f2
@@ -61,10 +62,6 @@ setAllHsFilesAsTargets cpIn = do
   files <- ask
   return cpIn {cfTargetFiles = map cfFp files }
 
-getFileListenInfoForCompileInput :: CompileInput -> [FileListenInfo] 
-getFileListenInfoForCompileInput cpIn =
-  map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns) (cfSourceDirs cpIn)
-
 removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
 removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
 
@@ -86,7 +83,7 @@ fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= remove
 getFullCompileCompileInput :: Shaker IO [CompileInput]
 getFullCompileCompileInput = do
   cpIn <- fmap mergeCompileInputsSources  (asks compileInputs)
-  cfFlList <- lift $ constructCompileFileList cpIn
+  cfFlList <- constructCompileFileList 
   let (mainFiles, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
   let executables = map (runReader (setAllHsFilesAsTargets cpIn) ) $ split mainFiles 
@@ -96,7 +93,7 @@ getFullCompileCompileInput = do
 getFullCompileCompileInputNonMain :: Shaker IO CompileInput
 getFullCompileCompileInputNonMain = do
   cpIn <- fmap mergeCompileInputsSources  (asks compileInputs)
-  cfFlList <- lift $ constructCompileFileList cpIn
+  cfFlList <- constructCompileFileList 
   let (_, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
   return libraries 
