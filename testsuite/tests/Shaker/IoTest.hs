@@ -51,6 +51,11 @@ testListFilesWithIgnore =  do
   res <-  abstractHunitTestListFiles defaultFileListenInfo {ignore=["\\.$"]} (\a b -> length a  ==length b + 2)
   res @? "ignore of \\.$ should exclude only . and .."
 
+testListFilesWithBadImportIgnore :: Assertion
+testListFilesWithBadImportIgnore =  do
+  res <-  abstractHunitTestListFiles defaultFileListenInfo {dir = "./testsuite/tests/resources/badImports", ignore=[".*BadImports\\.hs$"]} (\_ b -> not $ any (\f -> "BadImports.hs" `isSuffixOf` f  ) b )
+  res @? "should ignore BadImports"
+
 testListFilesWithIncludeAll :: Assertion
 testListFilesWithIncludeAll =  do 
   res <- abstractHunitTestListFiles defaultFileListenInfo {include=[".*"]} (\a b->length a == length b)
