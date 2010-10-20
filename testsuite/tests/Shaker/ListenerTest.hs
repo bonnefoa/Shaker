@@ -25,7 +25,7 @@ testSchedule = do
   mJ <- newEmptyMVar 
   schedule (ListenerInput [fli] 0) mJ
   res <- (tryTakeMVar mJ)
-  res == Just [fli] @? "scheduled fileListenInfo should be put in the job mvar"
+  res == Just [fli] @? "scheduled listenerInputFiles should be put in the job mvar"
 
 testListen :: Assertion
 testListen = do 

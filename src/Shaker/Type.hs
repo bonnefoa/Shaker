@@ -120,21 +120,21 @@ instance Show CompileInput
 
 -- | Configuration of the continuous listener
 data ListenerInput = ListenerInput {
-  fileListenInfo :: [FileListenInfo] -- ^ The files to listen
-  ,delay :: Int  -- ^ Delay beetween 2 check in microsecond
+  listenerInputFiles :: [FileListenInfo] -- ^ The files to listen
+  ,listenerInputDelay :: Int  -- ^ Delay beetween 2 check in microsecond
 }
 
 -- | The default Listener configuration
 -- Listened sources are all haskell sources in .
--- The default delay is 2 sec
+-- The default listenerInputDelay is 2 sec
 instance Monoid ListenerInput where 
   mempty = ListenerInput {
-    fileListenInfo = mempty
-    ,delay = 2000000
+    listenerInputFiles = mempty
+    ,listenerInputDelay = 2000000
     }
   mappend l1 l2 = ListenerInput {
-    fileListenInfo = fileListenInfo l1 `mappend` fileListenInfo l2
-    ,delay = delay l1
+    listenerInputFiles = listenerInputFiles l1 `mappend` listenerInputFiles l2
+    ,listenerInputDelay = listenerInputDelay l1
     }
 
 -- | Represents directory to listen 

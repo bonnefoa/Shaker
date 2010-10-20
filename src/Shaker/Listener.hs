@@ -46,11 +46,11 @@ initialize lstInput = do
   idSch <- forkIO $ forever . handleIOException $ schedule lstInput mJ
   return $ ListenState mC mM [idLst,idSch]
 
--- | manage the job box. Fill it with a job every delay
+-- | manage the job box. Fill it with a job every listenerInputDelay
 schedule :: ListenerInput -> Job -> IO()
 schedule lstInput mJ = do
-  putMVar mJ $ fileListenInfo lstInput
-  threadDelay $ delay lstInput
+  putMVar mJ $ listenerInputFiles lstInput
+  threadDelay $ listenerInputDelay lstInput
   return ()
      
 -- | listen to the job box and process the job

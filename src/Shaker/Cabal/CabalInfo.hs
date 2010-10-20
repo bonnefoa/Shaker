@@ -71,7 +71,7 @@ localBuildInfoToShakerInput lbi = do
 
 compileInputsToListenerInput :: [CompileInput] -> ListenerInput
 compileInputsToListenerInput cplInputs = mempty {
-        fileListenInfo = nub $ map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
+        listenerInputFiles = nub $ map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
  } 
  where concatSources = concatMap compileInputSourceDirs cplInputs
        
@@ -173,10 +173,10 @@ exposeNeededPackages lbi shIn = do
   let cpIns = shakerCompileInputs  shIn
   let oldListenerInput = shakerListenerInput shIn
   let packageFlagsToAdd = map ExposePackage packageToImport
-  let fileListenInfoToMerge = mempty { ignore = generateExcludePatterns ignoreModules } 
+  let listenerInputFilesToMerge = mempty { ignore = generateExcludePatterns ignoreModules } 
   let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
-  let newListFileListenInfo = map ( \ fli -> fli `mappend` fileListenInfoToMerge) (fileListenInfo oldListenerInput )
-  let newListenerInput = oldListenerInput { fileListenInfo = newListFileListenInfo }
+  let newListFileListenInfo = map ( \ fli -> fli `mappend` listenerInputFilesToMerge) (listenerInputFiles oldListenerInput )
+  let newListenerInput = oldListenerInput { listenerInputFiles = newListFileListenInfo }
   return $ shIn {shakerCompileInputs = newCpIns, shakerListenerInput= newListenerInput }
   where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
             packageFlags = packageFlags dynFlags ++ packageFlagToAdd
