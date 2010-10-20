@@ -22,7 +22,7 @@ import System.FilePath
 
 testListNeededPackages :: Assertion
 testListNeededPackages = do
-  let cpIn = mempty {cfCommandLineFlags = ["-hide-all-packages"]}
+  let cpIn = mempty {compileInputCommandLineFlags = ["-hide-all-packages"]}
   shIn <- fmap (\ a -> a { shakerCompileInputs = [cpIn]  }) testShakerInput
   (bad_modules, list) <- runReaderT getListNeededPackages shIn
   null bad_modules @? "there should be no bad modules " ++ show bad_modules

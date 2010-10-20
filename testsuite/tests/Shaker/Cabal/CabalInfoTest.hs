@@ -18,10 +18,10 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   let cplInps@(cplLib:cplExe:[]) = shakerCompileInputs  shIn
   length cplInps == 2 @? "Should have two compile input, one executable and one library, got "++ show ( length cplInps)
   all (`elem` compileInputSourceDirs cplLib) ["dist/build/autogen","src"] @? "source dir should have src and dist/build/autogen, got " ++ show (compileInputSourceDirs cplLib)
-  cfCommandLineFlags cplLib == ["-hide-all-packages", "-Wall"] @? "command line flags should be -Wall, got " ++ show ( cfCommandLineFlags cplLib)
-  cfTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( cfTargetFiles cplLib)
-  cfTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( cfTargetFiles cplExe)
-  let dFlags = cfDynFlags cplExe defaultDynFlags
+  compileInputCommandLineFlags cplLib == ["-hide-all-packages", "-Wall"] @? "command line flags should be -Wall, got " ++ show ( compileInputCommandLineFlags cplLib)
+  compileInputTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( compileInputTargetFiles cplLib)
+  compileInputTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( compileInputTargetFiles cplExe)
+  let dFlags = compileInputDynFlags cplExe defaultDynFlags
   all (`elem` importPaths dFlags) ["dist/build/autogen","src"] @? "importPaths should be contains src and dist/build/autogen, got "++ show (importPaths dFlags)
   ExposePackage "ghc" `elem` packageFlags dFlags @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
   let (ListenerInput (_:srcLib:[]) _) = shakerListenerInput shIn
@@ -31,7 +31,7 @@ testConditionalFlag :: Assertion
 testConditionalFlag = runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
   shIn <- testShakerInput
   let (_:cplExe:[]) = shakerCompileInputs  shIn
-  let packageList = packageFlags $ cfDynFlags cplExe defaultDynFlags
+  let packageList = packageFlags $ compileInputDynFlags cplExe defaultDynFlags
   all (`elem` packageList) [ExposePackage "mtl",ExposePackage "bytestring-mmap"] @? "mtl and bytestring-mmap should be exposed package, got "++ show (map showExposed packageList)
   ExposePackage "shaker" `notElem` packageList @? "shaker should not be present as exposed package"
 
@@ -43,7 +43,7 @@ testInvalidMainShouldBeExcluded :: Assertion
 testInvalidMainShouldBeExcluded =  runTestOnDirectory "testsuite/tests/resources/invalidMain" $ do
  shIn <- defaultCabalInput
  let (cplExe:[]) = shakerCompileInputs  shIn
- cfTargetFiles cplExe == ["src/Main.hs"] @? "since tests/Main.hs is invalid, should have only src/Main.hs, got " ++ show (cfTargetFiles cplExe)
+ compileInputTargetFiles cplExe == ["src/Main.hs"] @? "since tests/Main.hs is invalid, should have only src/Main.hs, got " ++ show (compileInputTargetFiles cplExe)
 
 testCompileWithLocalSource :: Assertion
 testCompileWithLocalSource =  runTestOnDirectory "testsuite/tests/resources/noSourceConfig" $ do
@@ -61,6 +61,6 @@ testProjectCabalContentWithLocalSource =
     shIn <- defaultCabalInput
     let cplInps@(cplInp:_) = shakerCompileInputs  shIn
     length cplInps == 1 @? "Should have one compile input, got "++ show (length cplInps)
-    let targs = cfTargetFiles cplInp
+    let targs = compileInputTargetFiles cplInp
     targs == ["./noHsSource.hs"] @? "Expected [\"./noHsSource.hs\"] got " ++ show cplInp
 

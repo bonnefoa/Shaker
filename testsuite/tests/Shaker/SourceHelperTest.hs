@@ -25,7 +25,7 @@ testMergeCompileInputs  :: Assertion
 testMergeCompileInputs  = runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
   shIn <- testShakerInput
   let cpIn = mergeCompileInputsSources (shakerCompileInputs  shIn)
-  let packageList = packageFlags $ cfDynFlags cpIn defaultDynFlags
+  let packageList = packageFlags $ compileInputDynFlags cpIn defaultDynFlags
   all (`elem` packageList ) [ExposePackage "mtl",ExposePackage "bytestring"] @? "mtl and bytestring should be exposed package"
 
 testIgnoreEmacsFile :: Assertion
@@ -44,4 +44,4 @@ testCompileFileListConstruction =  do
   cpIn <- testCompileInput 
   list <- testShakerInput >>= runReaderT constructCompileFileList 
   let newCpIn = runReader (fillCompileInputWithStandardTarget cpIn) list 
-  any (\a -> "Conductor.hs" `isSuffixOf` a) (cfTargetFiles newCpIn) @?"Should have conductor in list, got " ++ show (cfTargetFiles newCpIn)
+  any (\a -> "Conductor.hs" `isSuffixOf` a) (compileInputTargetFiles newCpIn) @?"Should have conductor in list, got " ++ show (compileInputTargetFiles newCpIn)

@@ -60,7 +60,7 @@ mergeCompileInputsSources listCpIns = mconcat listCpIns
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
 setAllHsFilesAsTargets cpIn = do
   files <- ask
-  return cpIn {cfTargetFiles = map cfFp files }
+  return cpIn {compileInputTargetFiles = map cfFp files }
 
 removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
 removeFileWithTemplateHaskell = removeFileWithPredicate cfHasTH
@@ -72,8 +72,8 @@ removeFileWithPredicate :: (CompileFile -> Bool) -> CompileInput -> CompileR Com
 removeFileWithPredicate predicate cpIn = do 
   cpFl <- ask 
   let toRemove = map cfFp $ filter predicate cpFl
-  return $ cpIn {cfTargetFiles =  targets \\ toRemove}
-  where targets = cfTargetFiles cpIn
+  return $ cpIn {compileInputTargetFiles =  targets \\ toRemove}
+  where targets = compileInputTargetFiles cpIn
 
 -- | Fill compile input with every haskell files in the project except those
 -- containing main and template haskell

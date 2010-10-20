@@ -92,7 +92,7 @@ testCollectChangedModules =  do
   exp_no_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
   -- Remove a target file 
-  let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
+  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "SourceHelperTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
@@ -100,7 +100,7 @@ testCollectChangedModules =  do
 testCollectChangedModulesForTestHunit:: Assertion
 testCollectChangedModulesForTestHunit =  do
   (cpIn,_) <- compileProject
-  let target = cfCompileTarget cpIn </> "Shaker" </> "SourceHelperTest.hi"
+  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "SourceHelperTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_one_modules == 1 @? "One module should need compilation"
@@ -111,7 +111,7 @@ testCollectChangedModulesForTestHunit =  do
 testCollectChangedModulesForTestQuickCheck :: Assertion
 testCollectChangedModulesForTestQuickCheck =  do
   (cpIn,_) <- compileProject
-  let target = cfCompileTarget cpIn </> "Shaker" </> "RegexTest.hi"
+  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "RegexTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   let module_mapping = head exp_one_modules  

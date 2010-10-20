@@ -112,6 +112,6 @@ configureDynFlagsWithCompileInput cpIn dflags = dflags{
     ,objectDir = Just compileTarget
     ,hiDir = Just compileTarget
   }
-  where compileTarget = cfCompileTarget cpIn
+  where compileTarget = compileInputBuildDirectory cpIn
         sourceDirs = compileInputSourceDirs cpIn
 

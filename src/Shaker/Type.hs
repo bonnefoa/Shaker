@@ -90,10 +90,10 @@ getListenThreadList = threadDataListenList . shakerThreadData
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
   compileInputSourceDirs :: [String] -- ^ Source directory of haskell files
-  ,cfCompileTarget :: String  -- ^ Destination of .o and .hi files
-  ,cfDynFlags :: DynFlags->DynFlags -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
-  ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
-  ,cfTargetFiles :: [String] -- ^ List of files or list of modules to compile
+  ,compileInputBuildDirectory :: String  -- ^ Destination of .o and .hi files
+  ,compileInputDynFlags :: DynFlags->DynFlags -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
+  ,compileInputCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
+  ,compileInputTargetFiles :: [String] -- ^ List of files or list of modules to compile
 }
 
 -- | Default compilation shakerArgument.
@@ -101,17 +101,17 @@ data CompileInput = CompileInput{
 instance Monoid CompileInput where
   mempty = CompileInput {
     compileInputSourceDirs = ["."]
-    ,cfCompileTarget =  "dist/shakerTarget"  
-    ,cfDynFlags = defaultCompileFlags  
-    ,cfCommandLineFlags = ["-Wall"]
-    ,cfTargetFiles = []
+    ,compileInputBuildDirectory =  "dist/shakerTarget"  
+    ,compileInputDynFlags = defaultCompileFlags  
+    ,compileInputCommandLineFlags = ["-Wall"]
+    ,compileInputTargetFiles = []
     }
   mappend cpIn1 cpIn2 = CompileInput {
     compileInputSourceDirs = nub $ compileInputSourceDirs cpIn1 `mappend` compileInputSourceDirs cpIn2
-    ,cfCompileTarget = cfCompileTarget cpIn1
-    ,cfDynFlags = cfDynFlags cpIn1 . cfDynFlags cpIn2
-    ,cfCommandLineFlags = nub $ cfCommandLineFlags cpIn1 `mappend` cfCommandLineFlags cpIn2
-    ,cfTargetFiles = nub $ cfTargetFiles cpIn1 `mappend` cfTargetFiles cpIn2
+    ,compileInputBuildDirectory = compileInputBuildDirectory cpIn1
+    ,compileInputDynFlags = compileInputDynFlags cpIn1 . compileInputDynFlags cpIn2
+    ,compileInputCommandLineFlags = nub $ compileInputCommandLineFlags cpIn1 `mappend` compileInputCommandLineFlags cpIn2
+    ,compileInputTargetFiles = nub $ compileInputTargetFiles cpIn1 `mappend` compileInputTargetFiles cpIn2
   }
 
 instance Show CompileInput 

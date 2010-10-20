@@ -94,9 +94,9 @@ executableAndLibToCompileInput (Just lib) exes = libraryToCompileInput lib : map
 executableToCompileInput :: Executable -> CompileInput
 executableToCompileInput executable = mempty { 
   compileInputSourceDirs = mySourceDir
-  ,cfCommandLineFlags = getCompileOptions bldInfo
-  ,cfTargetFiles = map (</> modulePath executable ) mySourceDir
-  ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
+  ,compileInputCommandLineFlags = getCompileOptions bldInfo
+  ,compileInputTargetFiles = map (</> modulePath executable ) mySourceDir
+  ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
   }
   where bldInfo = buildInfo executable
         mySourceDir = "dist/build/autogen" : hsSourceDirs bldInfo
@@ -106,9 +106,9 @@ executableToCompileInput executable = mempty {
 libraryToCompileInput :: Library -> CompileInput
 libraryToCompileInput lib = mempty {
   compileInputSourceDirs = mySourceDir
-  ,cfCommandLineFlags = getCompileOptions bldInfo
-  ,cfTargetFiles = myModules
-  ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
+  ,compileInputCommandLineFlags = getCompileOptions bldInfo
+  ,compileInputTargetFiles = myModules
+  ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
  }
  where bldInfo = libBuildInfo lib
        myModules = map convertModuleNameToString $ exposedModules lib
@@ -159,9 +159,9 @@ checkInvalidMain' :: CompileInput -> IO CompileInput
 checkInvalidMain' cplInput
  | any (".hs" `isSuffixOf`) oldTargets = do
     newTargets <- filterM doesFileExist oldTargets
-    return cplInput {cfTargetFiles = newTargets}
+    return cplInput {compileInputTargetFiles = newTargets}
  | otherwise = return cplInput
-  where oldTargets = cfTargetFiles cplInput
+  where oldTargets = compileInputTargetFiles cplInput
 
 -- | Expose needed package
 exposeNeededPackages :: LocalBuildInfo -> ShakerInput -> IO ShakerInput 
@@ -174,7 +174,7 @@ exposeNeededPackages lbi shIn = do
   let oldListenerInput = shakerListenerInput shIn
   let packageFlagsToAdd = map ExposePackage packageToImport
   let fileListenInfoToMerge = mempty { ignore = generateExcludePatterns ignoreModules } 
-  let newCpIns = map ( \a -> mappend a $ mempty { cfDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
+  let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
   let newListFileListenInfo = map ( \ fli -> fli `mappend` fileListenInfoToMerge) (fileListenInfo oldListenerInput )
   let newListenerInput = oldListenerInput { fileListenInfo = newListFileListenInfo }
   return $ shIn {shakerCompileInputs = newCpIns, shakerListenerInput= newListenerInput }

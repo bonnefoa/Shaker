@@ -29,7 +29,7 @@ runFullCompile = getFullCompileCompileInput >>= lift . foldM runUntilFail Succee
 runSingleCompileInput :: CompileInput -> IO SuccessFlag
 runSingleCompileInput cplInp = do
         putStrLn ""
-        putStrLn $ concat ["--", "Compiling target : "++ show (cfTargetFiles cplInp) ,"--"]
+        putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
         defaultErrorHandler defaultDynFlags $ 
                     runGhc (Just libdir) $ ghcCompile cplInp 
 
