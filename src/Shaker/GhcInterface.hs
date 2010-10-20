@@ -31,11 +31,13 @@ import DynFlags
 
 import System.Directory
 
+import Data.Monoid
+
 -- | Get the list of unresolved import and 
 -- unexposed yet needed packages
 getListNeededPackages :: Shaker IO ([String], [String])
 getListNeededPackages = do
-  cpIn <- getFullCompileCompileInputNonMain
+  cpIn <- fmap mconcat getFullCompileCompileInput
   map_import_modules <- lift mapImportToModules
   lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
@@ -43,13 +45,15 @@ getListNeededPackages = do
     return $ map ( \ imp -> (imp , lookupModuleInAllPackages dyn_flags . mkModuleName $ imp) ) 
           >>> partition ( snd >>> null ) 
           >>> first (badImportsProcess map_import_modules)
-          >>> second exposablePackageProcess $ M.keys map_import_modules 
+          >>> second exposablePackageProcess 
+            $ M.keys map_import_modules 
   where unPackageName (PackageName v) = v
         getPackage = sourcePackageId >>> pkgName
-        badImportsProcess map_import_modules = map fst >>> concatMap (map_import_modules M.!)
+        badImportsProcess map_import_modules = map fst 
+          >>> concatMap (map_import_modules M.!)
         exposablePackageProcess :: [ ( String, [ (PackageConfig, Bool ) ] ) ] -> [ String ]
         exposablePackageProcess = map snd 
-          >>> head 
+          >>> map head 
           >>> map fst
           >>> nubBy (\a b ->  getPackage a == getPackage b ) 
           >>> filter (not . exposed)
