@@ -13,7 +13,7 @@ defaultInput ::ShakerInput
 defaultInput = ShakerInput {
   shakerCompileInputs = [mempty]
   ,shakerListenerInput= mempty
-  ,pluginMap = defaultPluginMap
+  ,shakerPluginMap = defaultPluginMap
   ,commandMap = defaultCommandMap
   ,argument = []
   ,modifiedInfoFiles = []

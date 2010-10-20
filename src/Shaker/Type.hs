@@ -69,7 +69,7 @@ data Command = Command Duration [Action]
 data ShakerInput = ShakerInput {
   shakerCompileInputs :: [CompileInput]
   ,shakerListenerInput:: ListenerInput
-  ,pluginMap :: PluginMap
+  ,shakerPluginMap :: PluginMap
   ,commandMap :: CommandMap
   ,argument :: [String]
   ,modifiedInfoFiles :: [FileInfo]

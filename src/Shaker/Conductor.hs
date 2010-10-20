@@ -85,12 +85,12 @@ executeAction acts = do
 -- | Execute a single action with argument
 executeAction' :: Action -> Shaker IO()
 executeAction' (ActionWithArg actKey args) = do 
-  plMap <- asks pluginMap 
+  plMap <- asks shakerPluginMap 
   local (\shIn -> shIn {argument = args} ) $ fromJust $ actKey `M.lookup` plMap
 
 -- | Execute a single action without argument
 executeAction' (Action actKey) = do
-  plMap <- asks pluginMap 
+  plMap <- asks shakerPluginMap 
   fromJust $ actKey `M.lookup` plMap
 
 -- * Handlers 
