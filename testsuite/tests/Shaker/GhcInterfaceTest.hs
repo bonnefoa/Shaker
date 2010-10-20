@@ -15,6 +15,8 @@ import GHC.Paths
 import HscTypes
 import Digraph
 
+import Shaker.Config
+
 import Data.Maybe
 import Data.Monoid
 
@@ -23,10 +25,10 @@ import System.FilePath
 testListNeededPackages :: Assertion
 testListNeededPackages = do
   let cpIn = mempty {compileInputCommandLineFlags = ["-hide-all-packages"]}
-  shIn <- fmap (\ a -> a { shakerCompileInputs = [cpIn]  }) testShakerInput
-  (bad_modules, list) <- runReaderT getListNeededPackages shIn
-  null bad_modules @? "there should be no bad modules " ++ show bad_modules
-  any (== "bytestring") list @? show list
+  let shIn = defaultInput { shakerCompileInputs = [cpIn]  }
+  (bad_modules, list_needed_imports) <- runReaderT getListNeededPackages shIn
+  bad_modules == ["BadImports"] @? "there should be BadImports module, got " ++ show bad_modules
+  any (== "bytestring") list_needed_imports @? show list_needed_imports
 
 testCheckUnchangedSources :: Assertion
 testCheckUnchangedSources =  do
