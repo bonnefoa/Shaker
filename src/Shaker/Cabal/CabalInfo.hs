@@ -169,12 +169,10 @@ exposeNeededPackages lbi shIn = do
   (fileListenInfoIgnoreModules, listPackages) <- runReaderT getListNeededPackages shIn
   putStrLn $ "Ignoring modules " ++ show fileListenInfoIgnoreModules
   putStrLn $ "Exposing " ++ show listPackages
-  let packageToImport = delete currentPackage listPackages
-  let cpIns = shakerCompileInputs  shIn
+  let packageFlagsToAdd = map ExposePackage (delete currentPackage listPackages)
   let oldListenerInput = shakerListenerInput shIn
-  let packageFlagsToAdd = map ExposePackage packageToImport
   let listenerInputFilesToMerge = mempty { fileListenInfoIgnore = generateExcludePatterns fileListenInfoIgnoreModules } 
-  let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
+  let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) (shakerCompileInputs shIn)
   let newListFileListenInfo = map ( \ fli -> fli `mappend` listenerInputFilesToMerge) (listenerInputFiles oldListenerInput )
   let newListenerInput = oldListenerInput { listenerInputFiles = newListFileListenInfo }
   return $ shIn {shakerCompileInputs = newCpIns, shakerListenerInput= newListenerInput }
