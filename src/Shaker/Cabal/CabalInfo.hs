@@ -173,15 +173,19 @@ exposeNeededPackages lbi shIn = do
   putStrLn $ "Exposing " ++ show listPackages
   let packageToImport = delete currentPackage listPackages
   let cpIns = compileInputs shIn
-  let listInp = listenerInput shIn
+  let oldListenerInput = listenerInput shIn
   let packageFlagsToAdd = map ExposePackage packageToImport
-  let listInputWithIgnore = mempty { fileListenInfo = [ mempty { ignore = ignoreModules } ] }
+  let fileListenInfoToMerge = mempty { ignore = generateExcludePatterns ignoreModules } 
   let newCpIns = map ( \a -> mappend a $ mempty { cfDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
-  let newListenerInput = listInp `mappend` listInputWithIgnore
-  return $ shIn {compileInputs = newCpIns, listenerInput = newListenerInput}
+  let newListFileListenInfo = map ( \ fli -> fli `mappend` fileListenInfoToMerge) (fileListenInfo oldListenerInput )
+  let newListenerInput = oldListenerInput { fileListenInfo = newListFileListenInfo }
+  return $ shIn {compileInputs = newCpIns, listenerInput = newListenerInput }
   where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
             packageFlags = packageFlags dynFlags ++ packageFlagToAdd
           } 
         currentPackage = localPkgDescr >>> package >>> pkgName >>> unPackageName $ lbi
         unPackageName (PackageName v) = v
+        generateExcludePatterns :: [String] -> [String]
+        generateExcludePatterns modList = map (\modName -> ".*" ++ modName ++ "\\.hs$" ) modList ++
+                                          map (\modName -> ".*" ++ modName ++ "\\.lhs$" ) modList
 
