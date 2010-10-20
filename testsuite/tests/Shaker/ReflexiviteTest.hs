@@ -122,7 +122,7 @@ testCollectChangedModulesForTestQuickCheck =  do
 testCollectChangedModulesWithModifiedFiles :: Assertion
 testCollectChangedModulesWithModifiedFiles =  do
   (cpIn,_) <- compileProject
-  let sources = map (</> "Shaker" </> "SourceHelperTest.hs") (cfSourceDirs cpIn)
+  let sources = map (</> "Shaker" </> "SourceHelperTest.hs") (compileInputSourceDirs cpIn)
   let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources
   shIn <- testShakerInput 
   exp_one_modules <- runReaderT collectChangedModulesForTest shIn {shakerModifiedInfoFiles = modFileInfo }

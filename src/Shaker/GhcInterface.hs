@@ -56,7 +56,7 @@ getListNeededPackages = do
           >>> map (getPackage >>> unPackageName) 
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
-initializeGhc cpIn@(CompileInput _ _ _ procFlags strflags targetFiles) = do   
+initializeGhc cpIn@(CompileInput _ _ procFlags strflags targetFiles) = do   
      modifySession (\h -> h {hsc_HPT = emptyHomePackageTable} )
      dflags <- getSessionDynFlags
      (newFlags,_,_) <- parseDynamicFlags dflags (map noLoc strflags)
@@ -113,5 +113,5 @@ configureDynFlagsWithCompileInput cpIn dflags = dflags{
     ,hiDir = Just compileTarget
   }
   where compileTarget = cfCompileTarget cpIn
-        sourceDirs = cfSourceDirs cpIn
+        sourceDirs = compileInputSourceDirs cpIn
 

@@ -49,7 +49,7 @@ testCheckUnchangedSources =  do
 testModuleNeedCompilation :: Assertion
 testModuleNeedCompilation =  do 
  (cpIn, cfFlList) <- compileProject
- let targets = map (</> "Shaker" </> "SourceHelperTest.hs") (cfSourceDirs cpIn)
+ let targets = map (</> "Shaker" </> "SourceHelperTest.hs") (compileInputSourceDirs cpIn)
  runGhc (Just libdir) $ do 
      _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
      mss <- depanal [] False

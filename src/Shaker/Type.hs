@@ -89,8 +89,7 @@ getListenThreadList = threadDataListenList . shakerThreadData
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
-  cfSourceDirs :: [String] -- ^ Source directory of haskell files
-  ,cfDescription :: String -- ^ Desctipition of the compile input (executable or library if comming from cabal)
+  compileInputSourceDirs :: [String] -- ^ Source directory of haskell files
   ,cfCompileTarget :: String  -- ^ Destination of .o and .hi files
   ,cfDynFlags :: DynFlags->DynFlags -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
   ,cfCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
@@ -101,16 +100,14 @@ data CompileInput = CompileInput{
 -- Wall is activated by default
 instance Monoid CompileInput where
   mempty = CompileInput {
-    cfSourceDirs = ["."]
-    ,cfDescription = "Default compile inputs"
+    compileInputSourceDirs = ["."]
     ,cfCompileTarget =  "dist/shakerTarget"  
     ,cfDynFlags = defaultCompileFlags  
     ,cfCommandLineFlags = ["-Wall"]
     ,cfTargetFiles = []
     }
   mappend cpIn1 cpIn2 = CompileInput {
-    cfSourceDirs = nub $ cfSourceDirs cpIn1 `mappend` cfSourceDirs cpIn2
-    ,cfDescription = "Merge : " ++ cfDescription cpIn1 ++ cfDescription cpIn2
+    compileInputSourceDirs = nub $ compileInputSourceDirs cpIn1 `mappend` compileInputSourceDirs cpIn2
     ,cfCompileTarget = cfCompileTarget cpIn1
     ,cfDynFlags = cfDynFlags cpIn1 . cfDynFlags cpIn2
     ,cfCommandLineFlags = nub $ cfCommandLineFlags cpIn1 `mappend` cfCommandLineFlags cpIn2
@@ -118,8 +115,8 @@ instance Monoid CompileInput where
   }
 
 instance Show CompileInput 
- where show (CompileInput src desc _ _ commandLine target) = 
-         concat ["CompileInput |source : ",show src," |desc : ",desc," |cmdLine : ",show commandLine," |targetfiles : ", show target]
+ where show (CompileInput src _ _ commandLine target) = 
+         concat ["CompileInput |source : ",show src," |cmdLine : ",show commandLine," |targetfiles : ", show target]
 
 -- | Configuration of the continuous listener
 data ListenerInput = ListenerInput {

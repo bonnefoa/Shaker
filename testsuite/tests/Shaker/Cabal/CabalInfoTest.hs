@@ -17,7 +17,7 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   shIn <- defaultCabalInput
   let cplInps@(cplLib:cplExe:[]) = shakerCompileInputs  shIn
   length cplInps == 2 @? "Should have two compile input, one executable and one library, got "++ show ( length cplInps)
-  all (`elem` cfSourceDirs cplLib) ["dist/build/autogen","src"] @? "source dir should have src and dist/build/autogen, got " ++ show (cfSourceDirs cplLib)
+  all (`elem` compileInputSourceDirs cplLib) ["dist/build/autogen","src"] @? "source dir should have src and dist/build/autogen, got " ++ show (compileInputSourceDirs cplLib)
   cfCommandLineFlags cplLib == ["-hide-all-packages", "-Wall"] @? "command line flags should be -Wall, got " ++ show ( cfCommandLineFlags cplLib)
   cfTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( cfTargetFiles cplLib)
   cfTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( cfTargetFiles cplExe)

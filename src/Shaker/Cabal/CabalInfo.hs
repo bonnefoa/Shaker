@@ -73,7 +73,7 @@ compileInputsToListenerInput :: [CompileInput] -> ListenerInput
 compileInputsToListenerInput cplInputs = mempty {
         fileListenInfo = nub $ map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
  } 
- where concatSources = concatMap cfSourceDirs cplInputs
+ where concatSources = concatMap compileInputSourceDirs cplInputs
        
 -- * Converter to CompileInput
 
@@ -93,8 +93,7 @@ executableAndLibToCompileInput (Just lib) exes = libraryToCompileInput lib : map
 -- The target of compilation will the main file
 executableToCompileInput :: Executable -> CompileInput
 executableToCompileInput executable = mempty { 
-  cfSourceDirs = mySourceDir
-  ,cfDescription = "Executable : " ++ exeName executable
+  compileInputSourceDirs = mySourceDir
   ,cfCommandLineFlags = getCompileOptions bldInfo
   ,cfTargetFiles = map (</> modulePath executable ) mySourceDir
   ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
@@ -106,8 +105,7 @@ executableToCompileInput executable = mempty {
 -- The target of compilation will be all exposed modules
 libraryToCompileInput :: Library -> CompileInput
 libraryToCompileInput lib = mempty {
-  cfSourceDirs = mySourceDir
-  ,cfDescription = "Library : " ++ show myModules
+  compileInputSourceDirs = mySourceDir
   ,cfCommandLineFlags = getCompileOptions bldInfo
   ,cfTargetFiles = myModules
   ,cfDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
