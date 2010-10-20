@@ -42,7 +42,7 @@ runEndAction = lift $
 -- | Clean action is responsible to delete directory containing temporary .o and .hi files 
 runClean :: Plugin 
 runClean = do
-     toClean <- asks $ map cfCompileTarget . compileInputs
+     toClean <- asks $ map cfCompileTarget . shakerCompileInputs 
      lift$  mapM_ action toClean 
   where action toClean = do
                  ex <- doesDirectoryExist toClean

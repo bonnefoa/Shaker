@@ -21,7 +21,7 @@ runTestOnDirectory fp fun = do
   finally fun (setCurrentDirectory oldDir)
 
 testCompileInput ::IO CompileInput 
-testCompileInput = fmap (mergeCompileInputsSources . compileInputs) defaultCabalInput 
+testCompileInput = fmap (mergeCompileInputsSources . shakerCompileInputs ) defaultCabalInput 
 
 testShakerInput :: IO ShakerInput
 testShakerInput = defaultCabalInput

@@ -16,7 +16,7 @@ import Control.Monad.Reader
 
 -- | Run haskell compilation on given CompileInput list
 runCompile :: Plugin
-runCompile = asks compileInputs >>= lift . foldM runUntilFail Succeeded >> return ()
+runCompile = asks shakerCompileInputs >>= lift . foldM runUntilFail Succeeded >> return ()
 
 runUntilFail :: SuccessFlag -> CompileInput -> IO SuccessFlag
 runUntilFail Succeeded cpIn = runSingleCompileInput cpIn

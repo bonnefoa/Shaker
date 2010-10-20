@@ -82,7 +82,7 @@ fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= remove
 
 getFullCompileCompileInput :: Shaker IO [CompileInput]
 getFullCompileCompileInput = do
-  cpIn <- fmap mergeCompileInputsSources  (asks compileInputs)
+  cpIn <- fmap mergeCompileInputsSources  (asks shakerCompileInputs )
   cfFlList <- constructCompileFileList 
   let (mainFiles, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
@@ -92,7 +92,7 @@ getFullCompileCompileInput = do
 
 getFullCompileCompileInputNonMain :: Shaker IO CompileInput
 getFullCompileCompileInputNonMain = do
-  cpIn <- fmap mergeCompileInputsSources  (asks compileInputs)
+  cpIn <- fmap mergeCompileInputsSources  (asks shakerCompileInputs )
   cfFlList <- constructCompileFileList 
   let (_, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles

@@ -64,10 +64,10 @@ localBuildInfoToShakerInput :: LocalBuildInfo -> IO ShakerInput
 localBuildInfoToShakerInput lbi = do 
   defInput <- defaultInputInitialized 
   return defInput {
-    compileInputs = cplInputs
+    shakerCompileInputs = cplInputs
     ,listenerInput = compileInputsToListenerInput cplInputs
   }
-  where cplInputs = localBuildInfoToCompileInputs lbi
+  where cplInputs = localBuildInfoToCompileInputs  lbi
 
 compileInputsToListenerInput :: [CompileInput] -> ListenerInput
 compileInputsToListenerInput cplInputs = mempty {
@@ -79,8 +79,8 @@ compileInputsToListenerInput cplInputs = mempty {
 
 -- | Extract informations : Convert executable and library to 
 -- compile inputs
-localBuildInfoToCompileInputs :: LocalBuildInfo -> [CompileInput]
-localBuildInfoToCompileInputs lbi = executableAndLibToCompileInput (library pkgDescription) (executables pkgDescription)
+localBuildInfoToCompileInputs  :: LocalBuildInfo -> [CompileInput]
+localBuildInfoToCompileInputs  lbi = executableAndLibToCompileInput (library pkgDescription) (executables pkgDescription)
  where pkgDescription = localPkgDescr lbi
 
 
@@ -154,8 +154,8 @@ convertModuleNameToString modName
 
 -- | Check and filter all invalid main definission
 checkInvalidMain :: ShakerInput -> IO ShakerInput 
-checkInvalidMain shIn = mapM checkInvalidMain' (compileInputs shIn) >>= \newCplInp ->
-  return $ shIn {compileInputs = newCplInp  }
+checkInvalidMain shIn = mapM checkInvalidMain' (shakerCompileInputs  shIn) >>= \newCplInp ->
+  return $ shIn {shakerCompileInputs = newCplInp  }
 
 checkInvalidMain' :: CompileInput -> IO CompileInput
 checkInvalidMain' cplInput
@@ -172,14 +172,14 @@ exposeNeededPackages lbi shIn = do
   putStrLn $ "Ignoring modules " ++ show ignoreModules
   putStrLn $ "Exposing " ++ show listPackages
   let packageToImport = delete currentPackage listPackages
-  let cpIns = compileInputs shIn
+  let cpIns = shakerCompileInputs  shIn
   let oldListenerInput = listenerInput shIn
   let packageFlagsToAdd = map ExposePackage packageToImport
   let fileListenInfoToMerge = mempty { ignore = generateExcludePatterns ignoreModules } 
   let newCpIns = map ( \a -> mappend a $ mempty { cfDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
   let newListFileListenInfo = map ( \ fli -> fli `mappend` fileListenInfoToMerge) (fileListenInfo oldListenerInput )
   let newListenerInput = oldListenerInput { fileListenInfo = newListFileListenInfo }
-  return $ shIn {compileInputs = newCpIns, listenerInput = newListenerInput }
+  return $ shIn {shakerCompileInputs = newCpIns, listenerInput = newListenerInput }
   where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
             packageFlags = packageFlags dynFlags ++ packageFlagToAdd
           } 
