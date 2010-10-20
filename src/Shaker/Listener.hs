@@ -21,7 +21,7 @@ import Shaker.Io
 type CurrentFiles = MVar [FileInfo]
 -- | MVar used to store modifiedFiles since the last check
 type MvModifiedFiles = MVar [FileInfo]
--- | MVar used to pass action to the directory scanner
+-- | MVar used to pass action to the fileListenInfoDirectory scanner
 type Job = MVar [FileListenInfo]
 
 -- | Agregate all information of listener

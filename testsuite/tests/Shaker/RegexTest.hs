@@ -13,6 +13,6 @@ prop_filterListPartial :: [String] -> Bool
 prop_filterListPartial list = length list >= length filtered
         where filtered = processListWithRegexp list ["[a-z0-9]*"] []
 
-prop_includeAll :: [String] -> Bool
-prop_includeAll list = processListWithRegexp list [] [".*"] == nub list
+prop_fileListenInfoIncludeAll :: [String] -> Bool
+prop_fileListenInfoIncludeAll list = processListWithRegexp list [] [".*"] == nub list
 

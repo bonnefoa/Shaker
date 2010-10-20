@@ -39,7 +39,7 @@ runEndAction :: Plugin
 runEndAction = lift $ 
   putStrLn "-- End action --"
 
--- | Clean action is responsible to delete directory containing temporary .o and .hi files 
+-- | Clean action is responsible to delete fileListenInfoDirectory containing temporary .o and .hi files 
 runClean :: Plugin 
 runClean = do
      toClean <- asks $ map compileInputBuildDirectory . shakerCompileInputs 

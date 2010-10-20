@@ -22,11 +22,11 @@ instance Arbitrary ClockTime where
 
 instance Arbitrary FileListenInfo where 
    arbitrary = do
-     gen_dir <- elements ["src","testsuite"]
+     gen_fileListenInfoDir <- elements ["src","testsuite"]
      sizeIgnore <- genSmallNumber
-     gen_ignore <- vectorOf sizeIgnore $ elements ["\\.$","ab"]
-     gen_include <- elements [[],[".*"]]
-     return $ FileListenInfo gen_dir gen_ignore gen_include
+     gen_fileListenInfoIgnore <- vectorOf sizeIgnore $ elements ["\\.$","ab"]
+     gen_fileListenInfoInclude <- elements [[],[".*"]]
+     return $ FileListenInfo gen_fileListenInfoDir gen_fileListenInfoIgnore gen_fileListenInfoInclude
 
 instance Arbitrary FileInfo where
    arbitrary = arbitrary >>= \cl ->

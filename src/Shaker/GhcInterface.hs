@@ -105,7 +105,7 @@ ghcCompile cpIn = do
      load LoadAllTargets
 
 -- | Change the dynflags with information from the CompileInput like importPaths 
--- and .o and .hi directory
+-- and .o and .hi fileListenInfoDirectory
 configureDynFlagsWithCompileInput :: CompileInput -> DynFlags -> DynFlags 
 configureDynFlagsWithCompileInput cpIn dflags = dflags{
     importPaths = sourceDirs

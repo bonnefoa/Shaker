@@ -17,7 +17,7 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   shIn <- defaultCabalInput
   let cplInps@(cplLib:cplExe:[]) = shakerCompileInputs  shIn
   length cplInps == 2 @? "Should have two compile input, one executable and one library, got "++ show ( length cplInps)
-  all (`elem` compileInputSourceDirs cplLib) ["dist/build/autogen","src"] @? "source dir should have src and dist/build/autogen, got " ++ show (compileInputSourceDirs cplLib)
+  all (`elem` compileInputSourceDirs cplLib) ["dist/build/autogen","src"] @? "source fileListenInfoDir should have src and dist/build/autogen, got " ++ show (compileInputSourceDirs cplLib)
   compileInputCommandLineFlags cplLib == ["-hide-all-packages", "-Wall"] @? "command line flags should be -Wall, got " ++ show ( compileInputCommandLineFlags cplLib)
   compileInputTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( compileInputTargetFiles cplLib)
   compileInputTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( compileInputTargetFiles cplExe)
@@ -25,7 +25,7 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   all (`elem` importPaths dFlags) ["dist/build/autogen","src"] @? "importPaths should be contains src and dist/build/autogen, got "++ show (importPaths dFlags)
   ExposePackage "ghc" `elem` packageFlags dFlags @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
   let (ListenerInput (_:srcLib:[]) _) = shakerListenerInput shIn
-  dir srcLib == "src" @? "Expected : src, got " ++ show srcLib
+  fileListenInfoDir srcLib == "src" @? "Expected : src, got " ++ show srcLib
 
 testConditionalFlag :: Assertion
 testConditionalFlag = runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  

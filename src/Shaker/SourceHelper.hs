@@ -33,7 +33,7 @@ data CompileFile = CompileFile {
  } deriving Show
 
 -- | Build the list of haskell source files located in 
--- CompileInput source dirs
+-- CompileInput source fileListenInfoDirs
 constructCompileFileList :: Shaker IO [CompileFile] 
 constructCompileFileList = do
   fli <- asks (shakerListenerInput>>> listenerInputFiles) 
@@ -50,7 +50,7 @@ constructCompileFile fp = do
   hasTH <- isFileContainingTH fp
   return $ CompileFile fp hasMain hasTH
 
--- | Merge source dirs informations from the CompileInput list to 
+-- | Merge source fileListenInfoDirs informations from the CompileInput list to 
 -- create a single CompileInput
 mergeCompileInputsSources :: [CompileInput] -> CompileInput
 mergeCompileInputsSources [] = mempty

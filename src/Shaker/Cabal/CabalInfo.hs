@@ -1,5 +1,5 @@
 -- | Allow to use cabal configuration (generated via the configure action of cabal).
--- Source directories and compilation options will be reused by Shaker.
+-- Source fileListenInfoDirectories and compilation options will be reused by Shaker.
 module Shaker.Cabal.CabalInfo(
     defaultCabalInput
   )
@@ -114,7 +114,7 @@ libraryToCompileInput lib = mempty {
        myModules = map convertModuleNameToString $ exposedModules lib
        mySourceDir = "dist/build/autogen": hsSourceDirs bldInfo 
 
--- | Create a dynFlags for ghc from a source directory and 
+-- | Create a dynFlags for ghc from a source fileListenInfoDirectory and 
 -- a liste of packages
 toDynFlags :: [String] -> [String] -> DynFlags -> DynFlags
 toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
@@ -166,14 +166,14 @@ checkInvalidMain' cplInput
 -- | Expose needed package
 exposeNeededPackages :: LocalBuildInfo -> ShakerInput -> IO ShakerInput 
 exposeNeededPackages lbi shIn = do
-  (ignoreModules, listPackages) <- runReaderT getListNeededPackages shIn
-  putStrLn $ "Ignoring modules " ++ show ignoreModules
+  (fileListenInfoIgnoreModules, listPackages) <- runReaderT getListNeededPackages shIn
+  putStrLn $ "Ignoring modules " ++ show fileListenInfoIgnoreModules
   putStrLn $ "Exposing " ++ show listPackages
   let packageToImport = delete currentPackage listPackages
   let cpIns = shakerCompileInputs  shIn
   let oldListenerInput = shakerListenerInput shIn
   let packageFlagsToAdd = map ExposePackage packageToImport
-  let listenerInputFilesToMerge = mempty { ignore = generateExcludePatterns ignoreModules } 
+  let listenerInputFilesToMerge = mempty { fileListenInfoIgnore = generateExcludePatterns fileListenInfoIgnoreModules } 
   let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
   let newListFileListenInfo = map ( \ fli -> fli `mappend` listenerInputFilesToMerge) (listenerInputFiles oldListenerInput )
   let newListenerInput = oldListenerInput { listenerInputFiles = newListFileListenInfo }

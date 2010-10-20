@@ -31,7 +31,7 @@ testMergeCompileInputs  = runTestOnDirectory "testsuite/tests/resources/cabalTes
 testIgnoreEmacsFile :: Assertion
 testIgnoreEmacsFile = runTestOnDirectory "testsuite/tests/resources/tempEmacsFile" $ do
   fileList <- testShakerInput >>= runReaderT constructCompileFileList 
-  not ( any (\cpFl -> ".#TempFile.hs" `isSuffixOf` cfFp cpFl) fileList ) @? "Should ignore all .# files, got " ++ show fileList
+  not ( any (\cpFl -> ".#TempFile.hs" `isSuffixOf` cfFp cpFl) fileList ) @? "Should fileListenInfoIgnore all .# files, got " ++ show fileList
 
 testConstructConductorCompileFileList :: Assertion
 testConstructConductorCompileFileList =  do

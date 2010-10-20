@@ -89,7 +89,7 @@ getListenThreadList = threadDataListenList . shakerThreadData
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
-  compileInputSourceDirs :: [String] -- ^ Source directory of haskell files
+  compileInputSourceDirs :: [String] -- ^ Source fileListenInfoDirectory of haskell files
   ,compileInputBuildDirectory :: String  -- ^ Destination of .o and .hi files
   ,compileInputDynFlags :: DynFlags->DynFlags -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
   ,compileInputCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
@@ -137,20 +137,20 @@ instance Monoid ListenerInput where
     ,listenerInputDelay = listenerInputDelay l1
     }
 
--- | Represents directory to listen 
+-- | Represents fileListenInfoDirectory to listen 
 data FileListenInfo = FileListenInfo{
-  dir :: FilePath     -- ^ location of the listened directory
-  ,ignore :: [String] -- ^ ignore patterns
-  ,include :: [String] -- ^include patterns
+  fileListenInfoDir :: FilePath     -- ^ location of the listened fileListenInfoDirectory
+  ,fileListenInfoIgnore :: [String] -- ^ fileListenInfoIgnore patterns
+  ,fileListenInfoInclude :: [String] -- ^fileListenInfoInclude patterns
   }
   deriving (Show,Eq)
 
 instance Monoid FileListenInfo where
   mempty = FileListenInfo "." defaultExclude defaultHaskellPatterns
   mappend f1 f2 = FileListenInfo { 
-    dir = dir f1
-    ,ignore = nub $ ignore f1 `mappend` ignore f2
-    ,include = nub $ include f1 `mappend` include f2
+    fileListenInfoDir = fileListenInfoDir f1
+    ,fileListenInfoIgnore = nub $ fileListenInfoIgnore f1 `mappend` fileListenInfoIgnore f2
+    ,fileListenInfoInclude = nub $ fileListenInfoInclude f1 `mappend` fileListenInfoInclude f2
   }
 
 -- |Agregate a FilePath with its modification time
@@ -172,7 +172,7 @@ type Plugin = Shaker IO()
 
 -- | default dynamics flags
 -- the sources are expected to be in src as described in <http://www.haskell.org/haskellwiki/structure_of_a_haskell_project>
--- the result of compilation (.o and .hi) are placed in the target/ directory
+-- the result of compilation (.o and .hi) are placed in the target/ fileListenInfoDirectory
 -- there is no main linkage by default to allow faster compilation feedback
 defaultCompileFlags :: (DynFlags -> DynFlags)
 defaultCompileFlags a = a  {

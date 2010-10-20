@@ -1,4 +1,4 @@
--- | Manage all file operations like listing files with includes and exclude patterns
+-- | Manage all file operations like listing files with fileListenInfoIncludes and exclude patterns
 -- and file filtering
 module Shaker.Io(
   -- * List files functions
@@ -36,27 +36,27 @@ import Language.Haskell.Syntax
 import qualified Control.Exception as C
 import qualified Data.ByteString.Char8 as L 
 
--- |Get the tuples of (newFiles,modifiedFiles) from given list of directory
+-- |Get the tuples of (newFiles,modifiedFiles) from given list of fileListenInfoDirectory
 listModifiedAndCreatedFiles :: [FileListenInfo] -> [FileInfo] -> IO ([FileInfo],[FileInfo])
 listModifiedAndCreatedFiles job curFiles = do
    lstNewAndModifier <- mapM (`listModifiedAndCreatedFiles'` curFiles) job
    return $ foldl1 (\(a,b) (c,d) -> (a++c,b++d)) lstNewAndModifier
    
--- |Get the tuples of (newFiles,modifiedFiles) from given directory
+-- |Get the tuples of (newFiles,modifiedFiles) from given fileListenInfoDirectory
 listModifiedAndCreatedFiles' :: FileListenInfo -> [FileInfo] -> IO([FileInfo],[FileInfo])
 listModifiedAndCreatedFiles' fileListen oldFileInfo = do
   curFileInfo <- getCurrentFpCl fileListen
   return (curFileInfo, curFileInfo \\ oldFileInfo)
 
--- |Get the list of FileInfo of the given directory
+-- |Get the list of FileInfo of the given fileListenInfoDirectory
 getCurrentFpCl :: FileListenInfo -> IO [FileInfo]
 getCurrentFpCl fileListen = do 
       lstFp <- recurseListFiles fileListen 
       lstCl <- mapM getModificationTime lstFp 
       zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
                   
--- |List files in the given directory 
--- Files matching one regexp in the ignore shakerArgument are excluded
+-- |List files in the given fileListenInfoDirectory 
+-- Files matching one regexp in the fileListenInfoIgnore shakerArgument are excluded
 listFiles :: FileListenInfo -> IO[FilePath]
 listFiles (FileListenInfo inputDir inputIgnore inputInclude) = do
     curDir <- canonicalizePath inputDir 
@@ -73,8 +73,8 @@ recurseListFiles :: FileListenInfo -> IO [FilePath]
 recurseListFiles fli@(FileListenInfo inputDir _ _) = do
   curDir <- canonicalizePath inputDir
   content <- getDirectoryContents curDir
-  directories <- filterM doesDirectoryExist (convertToFullPath curDir (removeDotDirectory content) ) 
-  sub <- mapM (\a -> recurseListFiles fli{dir=a}) directories
+  fileListenInfoDirectories <- filterM doesDirectoryExist (convertToFullPath curDir (removeDotDirectory content) ) 
+  sub <- mapM (\a -> recurseListFiles fli{fileListenInfoDir=a}) fileListenInfoDirectories
   curListFiles <-  listFiles fli
   return $ curListFiles ++ concat sub
 

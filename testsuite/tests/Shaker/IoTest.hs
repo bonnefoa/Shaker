@@ -23,7 +23,7 @@ type PresentFiles = [FilePath]
 
 abstractHunitTestListFiles :: FileListenInfo -> (PresentFiles -> ExpectedFiles -> Bool) -> IO Bool
 abstractHunitTestListFiles fli predicat = do 
-  normal_list <- listFiles fli{ignore= []}
+  normal_list <- listFiles fli{fileListenInfoIgnore= []}
   res <- listFiles fli
   return $ predicat normal_list res
 
@@ -43,22 +43,22 @@ testListFiles =  do
 
 testListFilesWithIgnoreAll :: Assertion
 testListFilesWithIgnoreAll =  do 
-  res <- abstractHunitTestListFiles defaultFileListenInfo {ignore=[".*"]} (\_ b -> b == [] )
-  res  @? "List with ignore all should return an empty list"
+  res <- abstractHunitTestListFiles defaultFileListenInfo {fileListenInfoIgnore=[".*"]} (\_ b -> b == [] )
+  res  @? "List with fileListenInfoIgnore all should return an empty list"
 
 testListFilesWithIgnore :: Assertion
 testListFilesWithIgnore =  do
-  res <-  abstractHunitTestListFiles defaultFileListenInfo {ignore=["\\.$"]} (\a b -> length a  ==length b + 2)
-  res @? "ignore of \\.$ should exclude only . and .."
+  res <-  abstractHunitTestListFiles defaultFileListenInfo {fileListenInfoIgnore=["\\.$"]} (\a b -> length a  ==length b + 2)
+  res @? "fileListenInfoIgnore of \\.$ should exclude only . and .."
 
 testListFilesWithBadImportIgnore :: Assertion
 testListFilesWithBadImportIgnore =  do
-  res <-  abstractHunitTestListFiles defaultFileListenInfo {dir = "./testsuite/tests/resources/badImports", ignore=[".*BadImports\\.hs$"]} (\_ b -> not $ any (\f -> "BadImports.hs" `isSuffixOf` f  ) b )
-  res @? "should ignore BadImports"
+  res <-  abstractHunitTestListFiles defaultFileListenInfo {fileListenInfoDir = "./testsuite/tests/resources/badImports", fileListenInfoIgnore=[".*BadImports\\.hs$"]} (\_ b -> not $ any (\f -> "BadImports.hs" `isSuffixOf` f  ) b )
+  res @? "should fileListenInfoIgnore BadImports"
 
 testListFilesWithIncludeAll :: Assertion
 testListFilesWithIncludeAll =  do 
-  res <- abstractHunitTestListFiles defaultFileListenInfo {include=[".*"]} (\a b->length a == length b)
+  res <- abstractHunitTestListFiles defaultFileListenInfo {fileListenInfoInclude=[".*"]} (\a b->length a == length b)
   res @? "inclue of .* should should list all files"
 
 testListModifiedFiles :: Assertion

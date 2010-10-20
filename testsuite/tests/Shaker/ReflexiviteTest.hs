@@ -32,7 +32,7 @@ testModuleMappingContainReflexiviteTest = abstractTestModuleMapping predicat
 
 testModuleMappingShouldContainTestWithMain :: Assertion
 testModuleMappingShouldContainTestWithMain = abstractTestModuleMapping predicat
-  where predicat modMapLst = not (any (\a ->cfModuleName a == "Shaker.TestWithMain") modMapLst) @? "Should have included TestWithMain, got " ++ show modMapLst
+  where predicat modMapLst = not (any (\a ->cfModuleName a == "Shaker.TestWithMain") modMapLst) @? "Should have fileListenInfoIncluded TestWithMain, got " ++ show modMapLst
 
 -- * Reflexivite module Test 
 
@@ -44,8 +44,8 @@ abstractModuleMappingReflexiviteTest predicat = do
 
 testReflexiviteTestContainQuickcheckProperty :: Assertion
 testReflexiviteTestContainQuickcheckProperty = abstractModuleMappingReflexiviteTest predicat
-  where predicat reflexiviteModule = any (== "prop_filterModMap_include_all") (cfPropName reflexiviteModule) 
-          @? "ReflexiviteModule should contains quickechck properties prop_filterModMap_include_all, got " ++ show (cfPropName reflexiviteModule)
+  where predicat reflexiviteModule = any (== "prop_filterModMap_fileListenInfoInclude_all") (cfPropName reflexiviteModule) 
+          @? "ReflexiviteModule should contains quickechck properties prop_filterModMap_fileListenInfoInclude_all, got " ++ show (cfPropName reflexiviteModule)
 
 testReflexiviteTestContainHunitAssertion :: Assertion
 testReflexiviteTestContainHunitAssertion = abstractModuleMappingReflexiviteTest predicat
@@ -128,12 +128,12 @@ testCollectChangedModulesWithModifiedFiles =  do
   exp_one_modules <- runReaderT collectChangedModulesForTest shIn {shakerModifiedInfoFiles = modFileInfo }
   length exp_one_modules == 1 @? "One module should need compilation"
 
-prop_filterModMap_include_all :: [ModuleMapping] -> Bool
-prop_filterModMap_include_all modMap = modMap == res
+prop_filterModMap_fileListenInfoInclude_all :: [ModuleMapping] -> Bool
+prop_filterModMap_fileListenInfoInclude_all modMap = modMap == res
   where res = filterModulesWithPattern modMap ".*"
         
-prop_filterModMap_include_some :: [ModuleMapping] -> Property
-prop_filterModMap_include_some modMap = (not . null) modMap ==> head res == head modMap
+prop_filterModMap_fileListenInfoInclude_some :: [ModuleMapping] -> Property
+prop_filterModMap_fileListenInfoInclude_some modMap = (not . null) modMap ==> head res == head modMap
   where module_name = (cfModuleName . head) modMap
         res = filterModulesWithPattern modMap module_name
 

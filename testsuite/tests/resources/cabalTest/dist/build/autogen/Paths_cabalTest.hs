@@ -10,20 +10,20 @@ import System.Environment (getEnv)
 version :: Version
 version = Version {versionBranch = [0,0,1], versionTags = []}
 
-bindir, libdir, datadir, libexecdir :: FilePath
+binfileListenInfoDir, libdir, datafileListenInfoDir, libexecfileListenInfoDir :: FilePath
 
-bindir     = "/home/sora/.cabal/bin"
+binfileListenInfoDir     = "/home/sora/.cabal/bin"
 libdir     = "/home/sora/.cabal/lib/cabalTest-0.0.1/ghc-6.12.3"
-datadir    = "/home/sora/.cabal/share/cabalTest-0.0.1"
-libexecdir = "/home/sora/.cabal/libexec"
+datafileListenInfoDir    = "/home/sora/.cabal/share/cabalTest-0.0.1"
+libexecfileListenInfoDir = "/home/sora/.cabal/libexec"
 
 getBinDir, getLibDir, getDataDir, getLibexecDir :: IO FilePath
-getBinDir = catch (getEnv "cabalTest_bindir") (\_ -> return bindir)
+getBinDir = catch (getEnv "cabalTest_binfileListenInfoDir") (\_ -> return binfileListenInfoDir)
 getLibDir = catch (getEnv "cabalTest_libdir") (\_ -> return libdir)
-getDataDir = catch (getEnv "cabalTest_datadir") (\_ -> return datadir)
-getLibexecDir = catch (getEnv "cabalTest_libexecdir") (\_ -> return libexecdir)
+getDataDir = catch (getEnv "cabalTest_datafileListenInfoDir") (\_ -> return datafileListenInfoDir)
+getLibexecDir = catch (getEnv "cabalTest_libexecfileListenInfoDir") (\_ -> return libexecfileListenInfoDir)
 
 getDataFileName :: FilePath -> IO FilePath
 getDataFileName name = do
-  dir <- getDataDir
-  return (dir ++ "/" ++ name)
+  fileListenInfoDir <- getDataDir
+  return (fileListenInfoDir ++ "/" ++ name)
