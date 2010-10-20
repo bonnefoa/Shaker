@@ -24,7 +24,7 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   let dFlags = cfDynFlags cplExe defaultDynFlags
   all (`elem` importPaths dFlags) ["dist/build/autogen","src"] @? "importPaths should be contains src and dist/build/autogen, got "++ show (importPaths dFlags)
   ExposePackage "ghc" `elem` packageFlags dFlags @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
-  let (ListenerInput (_:srcLib:[]) _) = listenerInput shIn
+  let (ListenerInput (_:srcLib:[]) _) = shakerListenerInput shIn
   dir srcLib == "src" @? "Expected : src, got " ++ show srcLib
 
 testConditionalFlag :: Assertion

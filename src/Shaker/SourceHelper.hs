@@ -36,7 +36,7 @@ data CompileFile = CompileFile {
 -- CompileInput source dirs
 constructCompileFileList :: Shaker IO [CompileFile] 
 constructCompileFileList = do
-  fli <- asks (listenerInput >>> fileListenInfo) 
+  fli <- asks (shakerListenerInput>>> fileListenInfo) 
   files <- lift $ fmap nub (recurseMultipleListFiles fli)
   lift $ mapM constructCompileFile $ nubBy fileNameEquals files
   

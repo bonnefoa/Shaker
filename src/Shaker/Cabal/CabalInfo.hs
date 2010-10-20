@@ -65,7 +65,7 @@ localBuildInfoToShakerInput lbi = do
   defInput <- defaultInputInitialized 
   return defInput {
     shakerCompileInputs = cplInputs
-    ,listenerInput = compileInputsToListenerInput cplInputs
+    ,shakerListenerInput= compileInputsToListenerInput cplInputs
   }
   where cplInputs = localBuildInfoToCompileInputs  lbi
 
@@ -173,13 +173,13 @@ exposeNeededPackages lbi shIn = do
   putStrLn $ "Exposing " ++ show listPackages
   let packageToImport = delete currentPackage listPackages
   let cpIns = shakerCompileInputs  shIn
-  let oldListenerInput = listenerInput shIn
+  let oldListenerInput = shakerListenerInput shIn
   let packageFlagsToAdd = map ExposePackage packageToImport
   let fileListenInfoToMerge = mempty { ignore = generateExcludePatterns ignoreModules } 
   let newCpIns = map ( \a -> mappend a $ mempty { cfDynFlags = addPackageToDynFlags packageFlagsToAdd } ) cpIns
   let newListFileListenInfo = map ( \ fli -> fli `mappend` fileListenInfoToMerge) (fileListenInfo oldListenerInput )
   let newListenerInput = oldListenerInput { fileListenInfo = newListFileListenInfo }
-  return $ shIn {shakerCompileInputs = newCpIns, listenerInput = newListenerInput }
+  return $ shIn {shakerCompileInputs = newCpIns, shakerListenerInput= newListenerInput }
   where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
             packageFlags = packageFlags dynFlags ++ packageFlagToAdd
           } 

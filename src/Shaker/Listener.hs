@@ -33,7 +33,7 @@ data ListenState = ListenState {
 
 initializeListener :: Shaker IO ListenState
 initializeListener =do
-  lstInput <- asks listenerInput 
+  lstInput <- asks shakerListenerInput
   lift $ initialize lstInput
 
 -- | initialize the mvar and launch forks

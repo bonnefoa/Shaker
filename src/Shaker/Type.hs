@@ -68,7 +68,7 @@ data Command = Command Duration [Action]
 -- | Represents the global configuration of the system
 data ShakerInput = ShakerInput {
   shakerCompileInputs :: [CompileInput]
-  ,listenerInput :: ListenerInput
+  ,shakerListenerInput:: ListenerInput
   ,pluginMap :: PluginMap
   ,commandMap :: CommandMap
   ,argument :: [String]
