@@ -23,7 +23,7 @@ runHelp = do
 runExit :: Plugin
 runExit = do
   lift $ putStrLn "Exiting"
-  quit_token <- asks (quitToken . shakerThreadData)
+  quit_token <- asks (threadDataQuitToken . shakerThreadData)
   lift $ putMVar quit_token 42
 
 -- | Print a begin action notification

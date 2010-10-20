@@ -37,10 +37,10 @@ defaultThreadData = do
   listen_token <- newEmptyMVar 
   quit_token <- newEmptyMVar  
   return ThreadData {
-      listenToken = listen_token
-      ,quitToken = quit_token
-      ,threadIdListenList = thread_listen
-      ,threadIdQuitList = thread_quit
+      threadDataListenToken = listen_token
+      ,threadDataQuitToken = quit_token
+      ,threadDataListenList = thread_listen
+      ,threadDataQuitList = thread_quit
     } 
 
 defaultInputState :: IO InputState

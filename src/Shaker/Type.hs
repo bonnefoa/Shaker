@@ -78,14 +78,14 @@ data ShakerInput = ShakerInput {
  }  
  
 data ThreadData = ThreadData {
-    listenToken :: Token 
-    ,quitToken :: Token 
-    ,threadIdListenList :: ThreadIdList
-    ,threadIdQuitList :: ThreadIdList
+    threadDataListenToken :: Token 
+    ,threadDataQuitToken :: Token 
+    ,threadDataListenList :: ThreadIdList
+    ,threadDataQuitList :: ThreadIdList
  }
      
 getListenThreadList :: ShakerInput -> ThreadIdList 
-getListenThreadList = threadIdListenList . shakerThreadData
+getListenThreadList = threadDataListenList . shakerThreadData
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{

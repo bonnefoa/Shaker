@@ -27,7 +27,7 @@ initThread = do
   lift ( forkIO ( forever input_action) ) >>= addThreadIdToQuitMVar 
   let main_loop = runReaderT mainThread shIn 
   lift ( forkIO (forever main_loop) ) >>= addThreadIdToQuitMVar
-  quit_token <- asks (quitToken . shakerThreadData)
+  quit_token <- asks (threadDataQuitToken . shakerThreadData)
   _ <- lift $ takeMVar quit_token
   cleanAllThreads 
  
@@ -51,8 +51,8 @@ initializeConductorData fun = do
   
 cleanAllThreads :: Shaker IO ()
 cleanAllThreads = do 
-  asks ( threadIdListenList . shakerThreadData ) >>= cleanThreads
-  asks ( threadIdQuitList . shakerThreadData ) >>= cleanThreads
+  asks ( threadDataListenList . shakerThreadData ) >>= cleanThreads
+  asks ( threadDataQuitList . shakerThreadData ) >>= cleanThreads
 
 cleanThreads :: ThreadIdList -> Shaker IO()
 cleanThreads thrdList = lift (readMVar thrdList)  >>= lift . mapM_ killThread 
@@ -63,7 +63,7 @@ threadExecutor conductorData = do
   shIn <- ask
   res <- lift $  handleContinuousInterrupt $ runReaderT (threadExecutor' conductorData) shIn
   when res $ threadExecutor conductorData
-  asks ( threadIdListenList . shakerThreadData ) >>= cleanThreads
+  asks ( threadDataListenList . shakerThreadData ) >>= cleanThreads
   
 threadExecutor' :: ConductorData -> Shaker IO Bool
 threadExecutor' (ConductorData listenState fun) = lift $ takeMVar (mvModifiedFiles listenState) >>= fun >> return True
@@ -104,11 +104,11 @@ handleContinuousInterrupt = C.handle catchAll
 
 -- | Add the given threadId to the listener thread list
 addThreadIdToListenMVar :: ThreadId -> Shaker IO()
-addThreadIdToListenMVar thrdId = asks (threadIdListenList . shakerThreadData) >>= flip addThreadIdToMVar thrdId
+addThreadIdToListenMVar thrdId = asks (threadDataListenList . shakerThreadData) >>= flip addThreadIdToMVar thrdId
 
 -- | Add the given threadId to the quit thread list
 addThreadIdToQuitMVar :: ThreadId -> Shaker IO()
-addThreadIdToQuitMVar thrdId = asks (threadIdQuitList . shakerThreadData) >>= flip addThreadIdToMVar thrdId
+addThreadIdToQuitMVar thrdId = asks (threadDataQuitList . shakerThreadData) >>= flip addThreadIdToMVar thrdId
 
 -- | Add the given threadId to the mvar list
 addThreadIdToMVar :: ThreadIdList -> ThreadId -> Shaker IO ()
