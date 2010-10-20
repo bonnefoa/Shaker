@@ -130,7 +130,7 @@ data ListenerInput = ListenerInput {
 instance Monoid ListenerInput where 
   mempty = ListenerInput {
     listenerInputFiles = mempty
-    ,listenerInputDelay = 2000000
+    ,listenerInputDelay = 1000000
     }
   mappend l1 l2 = ListenerInput {
     listenerInputFiles = listenerInputFiles l1 `mappend` listenerInputFiles l2
