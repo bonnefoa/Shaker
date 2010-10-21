@@ -173,7 +173,7 @@ exposeNeededPackages lbi shIn = do
   let oldListenerInput = shakerListenerInput shIn
   let listenerInputFilesToMerge = mempty { fileListenInfoIgnore = generateExcludePatterns fileListenInfoIgnoreModules } 
   let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) (shakerCompileInputs shIn)
-  let newListFileListenInfo = map ( \ fli -> fli `mappend` listenerInputFilesToMerge) (listenerInputFiles oldListenerInput )
+  let newListFileListenInfo = map ( `mappend` listenerInputFilesToMerge) (listenerInputFiles oldListenerInput )
   let newListenerInput = oldListenerInput { listenerInputFiles = newListFileListenInfo }
   return $ shIn {shakerCompileInputs = newCpIns, shakerListenerInput= newListenerInput }
   where addPackageToDynFlags packageFlagToAdd dynFlags = dynFlags {
