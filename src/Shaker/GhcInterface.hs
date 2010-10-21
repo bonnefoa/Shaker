@@ -19,19 +19,21 @@ import qualified Data.Map as M
 import Control.Monad.Reader(lift )
 import Control.Arrow
 
-import Distribution.Package 
+import Distribution.Package (pkgName, InstalledPackageId(..),PackageName(..) )
 import LazyUniqFM
 import MkIface 
 import HscTypes
 import Linker
 import GHC hiding (parseModule, HsModule)
 import GHC.Paths
-import Packages
+import Packages (lookupModuleInAllPackages, exposed,  installedPackageId, PackageConfig(..)) 
 import DynFlags
 
 import System.Directory
 
 import Data.Monoid
+
+type ImportToPackages = [ ( String, [PackageConfig] ) ]
 
 -- | Get the list of unresolved import and 
 -- unexposed yet needed packages
@@ -39,25 +41,38 @@ getListNeededPackages :: Shaker IO ([String], [String])
 getListNeededPackages = do
   cpIn <- fmap mconcat getFullCompileCompileInput
   (PackageData map_import_modules list_project_modules) <- lift mapImportToModules
-  lift $ runGhc (Just libdir) $ do 
+  import_to_packages <- lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
     dyn_flags <- getSessionDynFlags
     return $ map ( \ imp -> (imp , lookupModuleInAllPackages dyn_flags . mkModuleName $ imp) ) 
-          >>> partition ( snd >>> null ) 
-          >>> first (badImportsProcess map_import_modules)
-          >>> second exposablePackageProcess 
-            $ M.keys map_import_modules 
-  where unPackageName (PackageName v) = v
-        getPackage = sourcePackageId >>> pkgName
-        badImportsProcess map_import_modules = map fst 
-          >>> concatMap (map_import_modules M.!)
-        exposablePackageProcess :: [ ( String, [ (PackageConfig, Bool ) ] ) ] -> [ String ]
-        exposablePackageProcess = map snd 
-          >>> map head 
-          >>> map fst
-          >>> nubBy (\a b ->  getPackage a == getPackage b ) 
-          >>> filter (not . exposed)
-          >>> map (getPackage >>> unPackageName) 
+              >>> map ( second (map fst) )
+              $ (M.keys map_import_modules \\ list_project_modules) 
+  return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
+  -- return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
+
+getModulesToIgnore :: MapImportToModules -> ImportToPackages -> [String]
+getModulesToIgnore map_import_modules = filter (snd >>> null) 
+  >>> map fst 
+  >>> recursivelyAddToIgnore [] 
+  >>> nub
+  where recursivelyAddToIgnore _ [] = []
+        recursivelyAddToIgnore processed (toAdd:xs) 
+          | toAdd `elem` processed = recursivelyAddToIgnore processed xs
+          | toAdd `M.member` map_import_modules = addedElements ++ recursivelyAddToIgnore (toAdd : processed) (xs++addedElements)
+          | otherwise = recursivelyAddToIgnore processed xs
+          where addedElements = map_import_modules M.! toAdd
+  
+
+getPackagesToExpose :: ImportToPackages -> [String]
+getPackagesToExpose = map snd
+    >>> filter (not . null)
+    >>> filter (all (not . exposed) ) 
+    >>> map head 
+    >>> nubBy (\a b ->  getPackage a == getPackage b ) 
+    >>> filter (not . exposed)
+    >>> map getPackage 
+  where unPackageId (InstalledPackageId v) = v 
+        getPackage = installedPackageId >>> unPackageId
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ procFlags strflags targetFiles) = do   

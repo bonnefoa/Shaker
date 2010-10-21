@@ -100,9 +100,9 @@ mapImportToModules :: IO PackageData
 mapImportToModules = do
    files <- recurseListFiles mempty
    fileContentList <- mapM readFile files
-   let moduleToImports = nub $ map getImport (mapMaybe parseHs fileContentList)
-   let mapImportToModules = constructImportToModules moduleToImports
-   return $ PackageData mapImportToModules (map fst moduleToImports)
+   let module_to_imports = nub $ map getImport (mapMaybe parseHs fileContentList)
+   let map_import_modules = constructImportToModules module_to_imports
+   return $ PackageData map_import_modules (map fst module_to_imports)
    where getImport :: HsModule -> (String, [String]) 
          getImport (HsModule _ moduleName _ listImportDecl _) = (unModule moduleName, map (unModule . importModule) listImportDecl)
          parseHs content = case parseModule content of
@@ -112,8 +112,7 @@ mapImportToModules = do
 
 constructImportToModules :: [ ( String, [String] ) ] -> MapImportToModules
 constructImportToModules moduleToImports = M.fromList listKeysWithModules
-  where listProjectModules = map fst moduleToImports
-        listKeys = nub (concatMap snd moduleToImports) \\ listProjectModules
+  where listKeys = nub (concatMap snd moduleToImports) 
         listKeysWithModules = map ( \ imp -> (imp, getAllModulesForImport imp) ) listKeys
         getAllModulesForImport imp = filter ( \ (_, lstImp) ->  imp `elem` lstImp ) >>> map fst $ moduleToImports 
 
