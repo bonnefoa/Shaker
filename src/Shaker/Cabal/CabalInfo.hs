@@ -10,6 +10,8 @@ import Shaker.Config
 import Shaker.GhcInterface
 
 import Distribution.Simple.Build
+import Distribution.Text
+import Distribution.Version
 import Distribution.Verbosity
 import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig)
 import Distribution.PackageDescription.Parse
@@ -30,6 +32,7 @@ import Distribution.Package (Dependency(Dependency), PackageName(PackageName), p
 import System.FilePath          ( (</>))
 import System.Directory (doesFileExist)
 
+import Data.Version
 import Data.Maybe
 import Data.List(nub,isSuffixOf, delete)
 import Data.Monoid 
@@ -138,10 +141,11 @@ getCompileOptions myLibBuildInfo = hideAllPackagesOption : ghcOptions ++ ghcExte
        hideAllPackagesOption = "-hide-all-packages"
 
 getLibDependencies :: BuildInfo -> [String]
-getLibDependencies bi = map getPackageName $ targetBuildDepends bi 
+getLibDependencies bi = map getPackageId $ targetBuildDepends bi 
 
-getPackageName :: Dependency -> String
-getPackageName (Dependency (PackageName pn) _) = pn
+getPackageId :: Dependency -> String
+getPackageId (Dependency (PackageName pn) versionRange) = pn ++ "-" ++ showVersion specVersion
+  where specVersion = fromJust $ isSpecificVersion versionRange
 
 convertModuleNameToString :: ModuleName -> String
 convertModuleNameToString modName
