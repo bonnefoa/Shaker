@@ -21,6 +21,13 @@ testConstructCompileFileList =  runTestOnDirectory "testsuite/tests/resources/ca
   let list_compile_file_paths = filter (\cpFl -> "Paths_cabalTest.hs" `isSuffixOf` cfFp cpFl) fileList
   length list_compile_file_paths== 1 @? "Should have only one Paths_cabalTest, got " ++ show list_compile_file_paths
 
+testSameFileDifferentModuleConstructCompileFileList :: Assertion
+testSameFileDifferentModuleConstructCompileFileList =  runTestOnDirectory "testsuite/tests/resources/sameFileInDifferentsModules" $ do 
+  fileList <- testShakerInput >>= runReaderT constructCompileFileList 
+  any (\cpFl -> "sameFileInDifferentsModules/A.hs" `isSuffixOf` cfFp cpFl) fileList @? "Should have A.hs " ++ show fileList
+  any (\cpFl -> "A/A.hs" `isSuffixOf` cfFp cpFl) fileList @? "Should have A/A.hs " ++ show fileList
+
+
 testMergeCompileInputs  :: Assertion
 testMergeCompileInputs  = runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
   shIn <- testShakerInput
