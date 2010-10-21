@@ -103,7 +103,7 @@ testIsFileConductorNotContainingMain =  do
 
 testMapImportToModules :: Assertion
 testMapImportToModules = do
-  map_import_modules <- mapImportToModules
+  map_import_modules <- fmap packageDataMapImportToModules mapImportToModules
   let data_list_import =  map_import_modules M.! "System.Time"
   any (== "Shaker.IoTest"  ) data_list_import @? show data_list_import
 

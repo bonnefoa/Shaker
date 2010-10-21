@@ -26,6 +26,7 @@ import System.Directory
 import qualified Data.Map as M
 import Data.List
 import Data.Maybe
+import Data.Monoid
 
 import Shaker.Regex
 import Shaker.Type
@@ -95,11 +96,13 @@ convertToFullPath absDir = map (\a-> concat [absDir, "/",a])
 removeDotDirectory :: [String] -> [String]
 removeDotDirectory = filter (not . isSuffixOf "."  ) 
 
-mapImportToModules :: IO ( M.Map String [String] )
+mapImportToModules :: IO PackageData
 mapImportToModules = do
-   files <- recurseListFiles (FileListenInfo "." defaultExclude defaultHaskellPatterns)
+   files <- recurseListFiles mempty
    fileContentList <- mapM readFile files
-   return $ constructImportToModules $ nub $ map getImport (mapMaybe parseHs fileContentList)
+   let moduleToImports = nub $ map getImport (mapMaybe parseHs fileContentList)
+   let mapImportToModules = constructImportToModules moduleToImports
+   return $ PackageData mapImportToModules (map fst moduleToImports)
    where getImport :: HsModule -> (String, [String]) 
          getImport (HsModule _ moduleName _ listImportDecl _) = (unModule moduleName, map (unModule . importModule) listImportDecl)
          parseHs content = case parseModule content of
@@ -107,7 +110,7 @@ mapImportToModules = do
                                 _ -> Nothing
          unModule (Module v) = v
 
-constructImportToModules :: [ ( String, [String] ) ] -> M.Map String [String]
+constructImportToModules :: [ ( String, [String] ) ] -> MapImportToModules
 constructImportToModules moduleToImports = M.fromList listKeysWithModules
   where listProjectModules = map fst moduleToImports
         listKeys = nub (concatMap snd moduleToImports) \\ listProjectModules

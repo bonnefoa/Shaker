@@ -38,7 +38,7 @@ import Data.Monoid
 getListNeededPackages :: Shaker IO ([String], [String])
 getListNeededPackages = do
   cpIn <- fmap mconcat getFullCompileCompileInput
-  map_import_modules <- lift mapImportToModules
+  (PackageData map_import_modules list_project_modules) <- lift mapImportToModules
   lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
     dyn_flags <- getSessionDynFlags

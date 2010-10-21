@@ -159,7 +159,13 @@ data FileInfo = FileInfo {
  ,fileInfoClockTime:: ClockTime 
   }
   deriving (Show,Eq)
-  
+
+data PackageData = PackageData {
+    packageDataMapImportToModules :: MapImportToModules
+    ,packageDataListProjectModules :: [String]
+ }
+
+type MapImportToModules = M.Map String [String]
 -- | Represents the mapping beetween an action and the function to execute
 type PluginMap = M.Map ShakerAction Plugin
 -- | Represents the mapping between the command-line input and the action
