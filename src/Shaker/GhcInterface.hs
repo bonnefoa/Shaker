@@ -3,6 +3,7 @@ module Shaker.GhcInterface (
   initializeGhc
   ,ghcCompile
   ,getListNeededPackages
+  ,installedPackagedId 
   -- * module change detection
   ,checkUnchangedSources
   ,isModuleNeedCompilation
@@ -19,14 +20,14 @@ import qualified Data.Map as M
 import Control.Monad.Reader(lift )
 import Control.Arrow
 
-import Distribution.Package (pkgName, InstalledPackageId(..),PackageName(..) )
+import Distribution.Package (InstalledPackageId(..))
 import LazyUniqFM
 import MkIface 
 import HscTypes
 import Linker
 import GHC hiding (parseModule, HsModule)
 import GHC.Paths
-import Packages (lookupModuleInAllPackages, exposed,  installedPackageId, PackageConfig(..)) 
+import Packages (lookupModuleInAllPackages, exposed,  installedPackageId, PackageConfig)
 import DynFlags
 
 import System.Directory
@@ -47,6 +48,7 @@ getListNeededPackages = do
     return $ map ( \ imp -> (imp , lookupModuleInAllPackages dyn_flags . mkModuleName $ imp) ) 
               >>> map ( second (map fst) )
               $ (M.keys map_import_modules \\ list_project_modules) 
+  -- return ([] , [] )
   return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
   -- return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
 
@@ -71,8 +73,10 @@ getPackagesToExpose = map snd
     >>> nubBy (\a b ->  getPackage a == getPackage b ) 
     >>> filter (not . exposed)
     >>> map getPackage 
-  where unPackageId (InstalledPackageId v) = v 
-        getPackage = installedPackageId >>> unPackageId
+  where getPackage = installedPackageId >>> installedPackagedId
+
+installedPackagedId :: InstalledPackageId -> String
+installedPackagedId (InstalledPackageId v) = v 
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ procFlags strflags targetFiles) = do   

@@ -10,31 +10,28 @@ import Shaker.Config
 import Shaker.GhcInterface
 
 import Distribution.Simple.Build
-import Distribution.Text
-import Distribution.Version
 import Distribution.Verbosity
 import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig)
 import Distribution.PackageDescription.Parse
 import Distribution.PackageDescription
 import Distribution.Simple.Utils
 import Distribution.Simple.Program
-import Distribution.Simple.LocalBuildInfo (LocalBuildInfo, localPkgDescr)
+import Distribution.Simple.LocalBuildInfo 
 import Distribution.ModuleName
 import Distribution.Simple.Setup
 import DynFlags(
     DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
-    ,PackageFlag (ExposePackage)
+    ,PackageFlag (ExposePackageId)
     ,GhcLink (NoLink)
   )
 import Distribution.Compiler(CompilerFlavor(GHC))
-import Distribution.Package (Dependency(Dependency), PackageName(PackageName), pkgName)
+import Distribution.Package (PackageName(PackageName), pkgName)
 
 import System.FilePath          ( (</>))
 import System.Directory (doesFileExist)
 
-import Data.Version
 import Data.Maybe
-import Data.List(nub,isSuffixOf, delete)
+import Data.List(nub,isSuffixOf, find, isPrefixOf)
 import Data.Monoid 
 
 import Control.Monad.Reader
@@ -83,35 +80,38 @@ compileInputsToListenerInput cplInputs = mempty {
 -- | Extract informations : Convert executable and library to 
 -- compile inputs
 localBuildInfoToCompileInputs  :: LocalBuildInfo -> [CompileInput]
-localBuildInfoToCompileInputs  lbi = executableAndLibToCompileInput (library pkgDescription) (executables pkgDescription)
+localBuildInfoToCompileInputs  lbi = executableAndLibToCompileInput libraryTuple  executablesTuples
  where pkgDescription = localPkgDescr lbi
-
+       libraryTuple = library pkgDescription >>= \a ->  libraryConfig lbi >>= \b -> return (a,b)
+       executablesTuples = mapMaybe ( \ (name, comp) -> find (\ex -> exeName ex == name) listExecutables >>= \e -> return (e, comp) ) listConfigs
+       listExecutables = executables pkgDescription
+       listConfigs = executableConfigs lbi
 
 -- | Dispatch the processing depending of the library content
-executableAndLibToCompileInput :: Maybe Library -> [Executable] -> [CompileInput]
+executableAndLibToCompileInput :: Maybe (Library, ComponentLocalBuildInfo )-> [(Executable,ComponentLocalBuildInfo)] -> [CompileInput]
 executableAndLibToCompileInput Nothing exes = map executableToCompileInput exes
 executableAndLibToCompileInput (Just lib) exes = libraryToCompileInput lib : map executableToCompileInput exes
 
 -- | Convert a cabal executable to a compileInput
 -- The target of compilation will the main file
-executableToCompileInput :: Executable -> CompileInput
-executableToCompileInput executable = mempty { 
+executableToCompileInput :: (Executable, ComponentLocalBuildInfo) -> CompileInput
+executableToCompileInput (executable, componentLocalBuildInfo) = mempty { 
   compileInputSourceDirs = mySourceDir
   ,compileInputCommandLineFlags = getCompileOptions bldInfo
   ,compileInputTargetFiles = map (</> modulePath executable ) mySourceDir
-  ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
+  ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies componentLocalBuildInfo)
   }
   where bldInfo = buildInfo executable
         mySourceDir = "dist/build/autogen" : hsSourceDirs bldInfo
 
 -- | Convert a cabal library to a compileInput
 -- The target of compilation will be all exposed modules
-libraryToCompileInput :: Library -> CompileInput
-libraryToCompileInput lib = mempty {
+libraryToCompileInput :: (Library, ComponentLocalBuildInfo) -> CompileInput
+libraryToCompileInput (lib, componentLocalBuildInfo) = mempty {
   compileInputSourceDirs = mySourceDir
   ,compileInputCommandLineFlags = getCompileOptions bldInfo
   ,compileInputTargetFiles = myModules
-  ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies bldInfo)
+  ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies componentLocalBuildInfo)
  }
  where bldInfo = libBuildInfo lib
        myModules = map convertModuleNameToString $ exposedModules lib
@@ -127,7 +127,7 @@ toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
   ,hiDir = Just "dist/shakerTarget"
   ,verbosity = 1
   ,ghcLink = NoLink
-  ,packageFlags = nub $ map ExposePackage packagesToExpose ++ oldPackageFlags
+  ,packageFlags = nub $ map ExposePackageId packagesToExpose ++ oldPackageFlags
   } 
   where oldPackageFlags = packageFlags dnFlags
         oldImportPaths = importPaths dnFlags
@@ -140,12 +140,8 @@ getCompileOptions myLibBuildInfo = hideAllPackagesOption : ghcOptions ++ ghcExte
        ghcExtensions = map (\a -> "-X"++ show a) (extensions myLibBuildInfo)
        hideAllPackagesOption = "-hide-all-packages"
 
-getLibDependencies :: BuildInfo -> [String]
-getLibDependencies bi = map getPackageId $ targetBuildDepends bi 
-
-getPackageId :: Dependency -> String
-getPackageId (Dependency (PackageName pn) versionRange) = pn ++ "-" ++ showVersion specVersion
-  where specVersion = fromJust $ isSpecificVersion versionRange
+getLibDependencies :: ComponentLocalBuildInfo -> [String]
+getLibDependencies = componentPackageDeps >>> map (fst >>> installedPackagedId )
 
 convertModuleNameToString :: ModuleName -> String
 convertModuleNameToString modName
@@ -173,7 +169,7 @@ exposeNeededPackages lbi shIn = do
   (fileListenInfoIgnoreModules, listPackages) <- runReaderT getListNeededPackages shIn
   putStrLn $ "Ignoring modules " ++ show fileListenInfoIgnoreModules
   putStrLn $ "Exposing " ++ show listPackages
-  let packageFlagsToAdd = map ExposePackage (delete currentPackage listPackages)
+  let packageFlagsToAdd = map ExposePackageId $ filter ( \ name -> not $ currentPackage `isPrefixOf` name ) listPackages
   let oldListenerInput = shakerListenerInput shIn
   let listenerInputFilesToMerge = mempty { fileListenInfoIgnore = generateExcludePatterns fileListenInfoIgnoreModules } 
   let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) (shakerCompileInputs shIn)
