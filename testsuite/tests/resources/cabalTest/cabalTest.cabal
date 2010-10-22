@@ -17,7 +17,7 @@ Executable cabalTest
     build-depends: mtl >= 0.1
   }
   if flag(otherFlag) {
-    build-depends: shaker >= 0.1
+    build-depends: HUnit >= 0.1
   }
   else {
     build-depends: bytestring >= 0.2 && < 0.3
