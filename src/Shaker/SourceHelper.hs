@@ -2,7 +2,6 @@
 module Shaker.SourceHelper(
   -- * Compile input management
   CompileFile(..)
-  ,mergeCompileInputsSources
   ,constructCompileFileList
   ,getFullCompileCompileInput
   ,getFullCompileCompileInputNonMain
@@ -38,23 +37,14 @@ constructCompileFileList :: Shaker IO [CompileFile]
 constructCompileFileList = do
   fli <- asks (shakerListenerInput >>> listenerInputFiles) 
   files <- lift $ fmap nub (recurseMultipleListFiles fli)
-  lift $ mapM constructCompileFile $ nubBy fileNameEquals files
+  lift $ mapM constructCompileFile files
   
-fileNameEquals :: FilePath -> FilePath -> Bool
-fileNameEquals f1 f2 = takeFileName f1 == takeFileName f2
-
 -- | Build an individual CompileFile. 
 constructCompileFile :: FilePath -> IO CompileFile      
 constructCompileFile fp = do
   hasMain <- isFileContainingMain fp
   hasTH <- isFileContainingTH fp
   return $ CompileFile fp hasMain hasTH
-
--- | Merge source fileListenInfoDirs informations from the CompileInput list to 
--- create a single CompileInput
-mergeCompileInputsSources :: [CompileInput] -> CompileInput
-mergeCompileInputsSources [] = mempty
-mergeCompileInputsSources listCpIns = mconcat listCpIns 
 
 -- | Configure the CompileInput with all haskell files configured as targets
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
@@ -82,7 +72,7 @@ fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= remove
 
 getFullCompileCompileInput :: Shaker IO [CompileInput]
 getFullCompileCompileInput = do
-  cpIn <- fmap mergeCompileInputsSources  (asks shakerCompileInputs )
+  cpIn <- fmap mconcat  (asks shakerCompileInputs )
   cfFlList <- constructCompileFileList 
   let (mainFiles, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles
@@ -92,7 +82,7 @@ getFullCompileCompileInput = do
 
 getFullCompileCompileInputNonMain :: Shaker IO CompileInput
 getFullCompileCompileInputNonMain = do
-  cpIn <- fmap mergeCompileInputsSources  (asks shakerCompileInputs )
+  cpIn <- fmap mconcat  (asks shakerCompileInputs )
   cfFlList <- constructCompileFileList 
   let (_, nonMainFiles) = partition cfHasMain cfFlList
   let libraries = runReader (setAllHsFilesAsTargets cpIn) nonMainFiles

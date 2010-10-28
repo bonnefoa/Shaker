@@ -1,6 +1,7 @@
 module Shaker.CommonTest
  where 
 
+import Data.Monoid
 import System.Directory
 import Test.HUnit
 import Control.Exception
@@ -22,7 +23,7 @@ runTestOnDirectory fp fun = do
   finally fun (setCurrentDirectory oldDir)
 
 testCompileInput ::IO CompileInput 
-testCompileInput = fmap (mergeCompileInputsSources . shakerCompileInputs ) defaultCabalInput 
+testCompileInput = fmap (mconcat . shakerCompileInputs ) defaultCabalInput 
 
 testShakerInput :: IO ShakerInput
 testShakerInput = defaultCabalInput
@@ -39,3 +40,4 @@ compileProject = do
 exposePackageId :: PackageFlag -> String
 exposePackageId (ExposePackageId v) = v
 exposePackageId _ = ""
+
