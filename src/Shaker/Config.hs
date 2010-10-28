@@ -50,3 +50,4 @@ defaultInputState = do
   tokenMv <- newEmptyMVar  
   return InputState { shakerInputStateCommand = inputMv, shakerInputStateToken =  tokenMv } 
 
+
