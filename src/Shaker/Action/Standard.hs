@@ -6,7 +6,6 @@ import Shaker.Type
 import qualified Data.Map as M
 import Control.Monad.Trans
 import Control.Monad.Reader
-import Control.Monad
 import System.Directory
 import Control.Concurrent
 
