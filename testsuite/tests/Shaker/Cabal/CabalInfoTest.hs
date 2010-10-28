@@ -25,7 +25,7 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   let dFlags = compileInputDynFlags cplExe defaultDynFlags
   all (`elem` importPaths dFlags) ["dist/build/autogen","src"] @? "importPaths should be contains src and dist/build/autogen, got "++ show (importPaths dFlags)
   let listPackageString = map exposePackageId (packageFlags dFlags)
-  any (\a -> "ghc" `isSuffixOf` a ) listPackageString @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
+  any (\a -> "ghc" `isPrefixOf` a ) listPackageString @? "Expected : ExposePackageId ghc, got " ++ show listPackageString
   let (ListenerInput (_:srcLib:[]) _) = shakerListenerInput shIn
   fileListenInfoDir srcLib == "src" @? "Expected : src, got " ++ show srcLib
 

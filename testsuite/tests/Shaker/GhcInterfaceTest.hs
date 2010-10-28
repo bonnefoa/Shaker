@@ -17,6 +17,7 @@ import Digraph
 
 import Shaker.Config
 
+import Data.List
 import Data.Maybe
 import Data.Monoid
 
@@ -27,7 +28,7 @@ testListNeededPackages = do
   let cpIn = mempty {compileInputCommandLineFlags = ["-hide-all-packages"]}
   let shIn = defaultInput { shakerCompileInputs = [cpIn]  }
   list_needed_imports <- runReaderT getListNeededPackages shIn
-  any (== "bytestring") list_needed_imports @? show list_needed_imports
+  any (isPrefixOf "bytestring") list_needed_imports @? show list_needed_imports
 
 testCheckUnchangedSources :: Assertion
 testCheckUnchangedSources =  do
