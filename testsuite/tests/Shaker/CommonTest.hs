@@ -10,6 +10,7 @@ import Shaker.GhcInterface
 import Shaker.Cabal.CabalInfo
 
 import Control.Monad.Reader
+import DynFlags 
 
 import GHC (runGhc)
 import GHC.Paths
@@ -35,3 +36,6 @@ compileProject = do
       ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
   return (cpIn, cfFlList)
 
+exposePackageId :: PackageFlag -> String
+exposePackageId (ExposePackageId v) = v
+exposePackageId _ = ""
