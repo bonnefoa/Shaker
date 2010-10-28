@@ -38,7 +38,7 @@ type ImportToPackages = [ ( String, [PackageConfig] ) ]
 
 -- | Get the list of unresolved import and 
 -- unexposed yet needed packages
-getListNeededPackages :: Shaker IO ([String], [String])
+getListNeededPackages :: Shaker IO [String]
 getListNeededPackages = do
   cpIn <- fmap mconcat getFullCompileCompileInput
   (PackageData map_import_modules list_project_modules) <- lift mapImportToModules
@@ -48,22 +48,8 @@ getListNeededPackages = do
     return $ map ( \ imp -> (imp , lookupModuleInAllPackages dyn_flags . mkModuleName $ imp) ) 
               >>> map ( second (map fst) )
               $ (M.keys map_import_modules \\ list_project_modules) 
-  -- return ([] , [] )
-  return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
+  return $ getPackagesToExpose import_to_packages
   -- return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
-
-getModulesToIgnore :: MapImportToModules -> ImportToPackages -> [String]
-getModulesToIgnore map_import_modules = filter (snd >>> null) 
-  >>> map fst 
-  >>> recursivelyAddToIgnore [] 
-  >>> nub
-  where recursivelyAddToIgnore _ [] = []
-        recursivelyAddToIgnore processed (toAdd:xs) 
-          | toAdd `elem` processed = recursivelyAddToIgnore processed xs
-          | toAdd `M.member` map_import_modules = addedElements ++ recursivelyAddToIgnore (toAdd : processed) (xs++addedElements)
-          | otherwise = recursivelyAddToIgnore processed xs
-          where addedElements = map_import_modules M.! toAdd
-  
 
 getPackagesToExpose :: ImportToPackages -> [String]
 getPackagesToExpose = map snd

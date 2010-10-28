@@ -8,9 +8,8 @@ import Shaker.CommonTest
 import Control.Monad.Reader
 
 import GHC
-import DynFlags
+import DynFlags 
 import Data.List
-import Data.Monoid
 
 testConstructCompileFileList :: Assertion
 testConstructCompileFileList =  runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do 
@@ -27,13 +26,12 @@ testSameFileDifferentModuleConstructCompileFileList =  runTestOnDirectory "tests
   any (\cpFl -> "sameFileInDifferentsModules/A.hs" `isSuffixOf` cfFp cpFl) fileList @? "Should have A.hs " ++ show fileList
   any (\cpFl -> "A/A.hs" `isSuffixOf` cfFp cpFl) fileList @? "Should have A/A.hs " ++ show fileList
 
-
 testMergeCompileInputs  :: Assertion
 testMergeCompileInputs  = runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
   shIn <- testShakerInput
   let cpIn = mergeCompileInputsSources (shakerCompileInputs  shIn)
-  let packageList = packageFlags $ compileInputDynFlags cpIn defaultDynFlags
-  all (`elem` packageList ) [ExposePackage "mtl",ExposePackage "bytestring"] @? "mtl and bytestring should be exposed package"
+  let packageList = map exposePackageId $ packageFlags $ compileInputDynFlags cpIn defaultDynFlags
+  all ( \ cur -> any (\ pkg -> cur `isPrefixOf` pkg ) packageList) ["mtl","bytestring"] @? "mtl and bytestring should be exposed package, got " ++ show packageList
 
 testIgnoreEmacsFile :: Assertion
 testIgnoreEmacsFile = runTestOnDirectory "testsuite/tests/resources/tempEmacsFile" $ do

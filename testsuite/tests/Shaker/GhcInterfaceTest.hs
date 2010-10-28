@@ -26,8 +26,7 @@ testListNeededPackages :: Assertion
 testListNeededPackages = do
   let cpIn = mempty {compileInputCommandLineFlags = ["-hide-all-packages"]}
   let shIn = defaultInput { shakerCompileInputs = [cpIn]  }
-  (bad_modules, list_needed_imports) <- runReaderT getListNeededPackages shIn
-  bad_modules == ["BadImports", "DependanceToBadImports"] @? "there should be BadImports and DependanceToBadImports module, got " ++ show bad_modules
+  list_needed_imports <- runReaderT getListNeededPackages shIn
   any (== "bytestring") list_needed_imports @? show list_needed_imports
 
 testCheckUnchangedSources :: Assertion

@@ -5,6 +5,8 @@ module Shaker.Type
 import Data.Monoid 
 import Data.List
 
+import Distribution.Simple.LocalBuildInfo
+
 import DynFlags hiding (OneShot)
 import qualified Data.Map as M
 import Control.Monad.Reader
@@ -46,19 +48,19 @@ data InputState = InputState {
 }
 
 -- | ShakerAction represents the differents actions realisable by shaker
-data ShakerAction = 
-	Compile -- ^ Compile sources with ghc
-	| FullCompile -- ^ Compile all hs sources with ghc
-        | TestFramework -- ^ Execute both quickcheck and hunit using test framework
-        | ModuleTestFramework -- ^ Execute both quickcheck and hunit using test framework with module filtering
-        | IntelligentTestFramework -- ^ Execute both quickcheck and hunit using test framework on recompiled modules
-        | IntelligentModuleTestFramework -- ^ Execute both quickcheck and hunit using test framework on recompiled modules
-        | InvalidAction -- ^ Display an error when invalid action is inputed
-	| Help -- ^ Display the help
-        | Execute -- ^ Execute a command
-        | Empty -- ^ Nothing to execute 
-	| Quit -- ^ Exit shaker
-	| Clean -- ^ Delete generated 
+data ShakerAction =
+  Compile                            -- ^ Compile sources with ghc
+    | FullCompile                    -- ^ Compile all hs sources with ghc
+    | TestFramework                  -- ^ Execute both quickcheck and hunit using test framework
+    | ModuleTestFramework            -- ^ Execute both quickcheck and hunit using test framework with module filtering
+    | IntelligentTestFramework       -- ^ Execute both quickcheck and hunit using test framework on recompiled modules
+    | IntelligentModuleTestFramework -- ^ Execute both quickcheck and hunit using test framework on recompiled modules
+    | InvalidAction                  -- ^ Display an error when invalid action is inputed
+    | Help                           -- ^ Display the help
+    | Execute                        -- ^ Execute a command
+    | Empty                          -- ^ Nothing to execute
+    | Quit                           -- ^ Exit shaker
+    | Clean                          -- ^ Delete generated
   deriving (Show,Eq,Ord)
 
 -- | Command agregate a duration with an action
@@ -75,6 +77,7 @@ data ShakerInput = ShakerInput {
   ,shakerModifiedInfoFiles :: [FileInfo]
   ,shakerThreadData :: ThreadData 
   ,shakerInputState :: InputState 
+  ,shakerLocalBuildInfo :: LocalBuildInfo
  }  
  
 data ThreadData = ThreadData {

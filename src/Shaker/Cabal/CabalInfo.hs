@@ -66,6 +66,7 @@ localBuildInfoToShakerInput lbi = do
   return defInput {
     shakerCompileInputs = cplInputs
     ,shakerListenerInput= compileInputsToListenerInput cplInputs
+    ,shakerLocalBuildInfo = lbi
   }
   where cplInputs = localBuildInfoToCompileInputs  lbi
 
@@ -141,7 +142,7 @@ getCompileOptions myLibBuildInfo = hideAllPackagesOption : ghcOptions ++ ghcExte
        hideAllPackagesOption = "-hide-all-packages"
 
 getLibDependencies :: ComponentLocalBuildInfo -> [String]
-getLibDependencies = componentPackageDeps >>> map (fst >>> installedPackagedId )
+getLibDependencies = componentPackageDeps >>> map (fst >>> installedPackagedId ) 
 
 convertModuleNameToString :: ModuleName -> String
 convertModuleNameToString modName
@@ -166,12 +167,11 @@ checkInvalidMain' cplInput
 -- | Expose needed package
 exposeNeededPackages :: LocalBuildInfo -> ShakerInput -> IO ShakerInput 
 exposeNeededPackages lbi shIn = do
-  (fileListenInfoIgnoreModules, listPackages) <- runReaderT getListNeededPackages shIn
-  putStrLn $ "Ignoring modules " ++ show fileListenInfoIgnoreModules
-  putStrLn $ "Exposing " ++ show listPackages
+  listPackages <- runReaderT getListNeededPackages shIn
+  putStrLn $ "Exposing packages " ++ show listPackages
   let packageFlagsToAdd = map ExposePackageId $ filter ( \ name -> not $ currentPackage `isPrefixOf` name ) listPackages
   let oldListenerInput = shakerListenerInput shIn
-  let listenerInputFilesToMerge = mempty { fileListenInfoIgnore = generateExcludePatterns fileListenInfoIgnoreModules } 
+  let listenerInputFilesToMerge = mempty 
   let newCpIns = map ( \a -> mappend a $ mempty { compileInputDynFlags = addPackageToDynFlags packageFlagsToAdd } ) (shakerCompileInputs shIn)
   let newListFileListenInfo = map ( `mappend` listenerInputFilesToMerge) (listenerInputFiles oldListenerInput )
   let newListenerInput = oldListenerInput { listenerInputFiles = newListFileListenInfo }
@@ -181,7 +181,5 @@ exposeNeededPackages lbi shIn = do
           } 
         currentPackage = localPkgDescr >>> package >>> pkgName >>> unPackageName $ lbi
         unPackageName (PackageName v) = v
-        generateExcludePatterns :: [String] -> [String]
-        generateExcludePatterns modList = map (\modName -> ".*" ++ modName ++ "\\.hs$" ) modList ++
-                                          map (\modName -> ".*" ++ modName ++ "\\.lhs$" ) modList
+
 
