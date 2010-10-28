@@ -203,3 +203,5 @@ exitCommand = Command OneShot [Action Quit]
 emptyCommand :: Command 
 emptyCommand = Command OneShot [Action Empty] 
 
+listTestLibs :: [String]
+listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] 

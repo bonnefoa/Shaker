@@ -35,7 +35,7 @@ runTestFramework' modules = do
   resolvedExp <- lift $ runQ (listTestFrameworkGroupList modules)
   let function =  filter (/= '\n') $ pprint resolvedExp
   lift $ putStrLn function
-  runFunction $ RunnableFunction import_modules ("defaultMain $ " ++ function) 
+  runFunction $ RunnableFunction import_modules listTestLibs ("defaultMain $ " ++ function) 
   return () 
   where base_modules =["Data.Maybe","Shaker.TestHelper","Test.Framework", "Test.Framework.Providers.HUnit", "Test.Framework.Providers.QuickCheck2", "Test.QuickCheck", "Test.HUnit", "Prelude" ] 
 

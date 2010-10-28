@@ -82,7 +82,7 @@ testRunFunctionWithEmptyModule = templateTestRunFunction []
 templateTestRunFunction :: [String] -> Assertion
 templateTestRunFunction modules=  do 
   tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
-  let run = RunnableFunction modules $ "aFun " ++ show tempFp
+  let run = RunnableFunction modules listTestLibs $ "aFun " ++ show tempFp
   runReaderT (runFunction run) =<< testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
   

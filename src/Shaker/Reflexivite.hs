@@ -26,6 +26,10 @@ import Control.Monad.Reader
 import Control.Arrow
 import Control.Exception as C
 
+import Distribution.Simple.PackageIndex
+import Distribution.InstalledPackageInfo
+import Distribution.Simple.LocalBuildInfo (installedPkgs)
+
 import Digraph
 import Language.Haskell.TH
 import GHC
@@ -48,6 +52,7 @@ data ModuleMapping = ModuleMapping {
 
 data RunnableFunction = RunnableFunction {
   cfModule :: [String]
+  ,runnableLibrairies :: [String]
   ,cfFunctionName :: String -- The function name. Should have IO() as signature
 }
  deriving Show
@@ -91,11 +96,12 @@ collectChangedModulesForTest' modFilePaths cpIn = do
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
-runFunction (RunnableFunction importModuleList fun) = do
+runFunction (RunnableFunction importModuleList listLibs fun) = do
   cpIn <- getFullCompileCompileInputNonMain
+  listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
-         _ <- setSessionDynFlags (addShakerLibraryAsImport (dopt_set dflags Opt_HideAllPackages))
+         _ <- setSessionDynFlags (addShakerLibraryAsImport listInstalledPkgId (dopt_set dflags Opt_HideAllPackages))
          _ <- ghcCompile cpIn 
          configureContext importModuleList
          value <- compileExpr fun
@@ -107,11 +113,21 @@ runFunction (RunnableFunction importModuleList fun) = do
         configureContext [] = getModuleGraph >>= \mGraph ->  setContext [] $ map ms_mod mGraph
         configureContext imports = mapM (\a -> findModule (mkModuleName a)  Nothing ) imports >>= \m -> setContext [] m
 
-addShakerLibraryAsImport :: DynFlags -> DynFlags
-addShakerLibraryAsImport dflags = dflags {
-    packageFlags = nub $ map ExposePackage  ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] ++ oldPackageFlags
+addShakerLibraryAsImport :: [String] -> DynFlags -> DynFlags
+addShakerLibraryAsImport listInstalledPkgId dflags = dflags {
+    packageFlags = nub $ map ExposePackageId listInstalledPkgId ++ oldPackageFlags
   }
   where oldPackageFlags = packageFlags dflags
+
+searchInstalledPackageId :: String -> Shaker IO (Maybe String)
+searchInstalledPackageId pkgName = do 
+  pkgIndex <- fmap installedPkgs (asks shakerLocalBuildInfo)
+  let srchRes = searchByName pkgIndex pkgName 
+  return $ processSearchResult srchRes
+  where processSearchResult None = Nothing
+        processSearchResult (Unambiguous a) = Just $ installedPackageId >>> installedPackageIdString $ head a
+        processSearchResult (Ambiguous (a:_)) = Just $ installedPackageId >>> installedPackageIdString $ head a
+        processSearchResult _ = Nothing
 
 handleActionInterrupt :: IO() -> IO()
 handleActionInterrupt =  C.handle catchAll
