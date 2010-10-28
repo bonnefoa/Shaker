@@ -43,17 +43,17 @@ import Var (varName)
 
 -- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
-  cfModuleName :: String -- ^ Complete name of the module 
-  ,cfHunitAssertion :: [String] -- ^ Hunit assertions
-  ,cfHunitTestCase :: [String] -- ^ Hunit test case to process for test-framework
-  ,cfPropName :: [String] -- ^ QuickCheck test function names
+  runnableFunctionModuleName :: String -- ^ Complete name of the module 
+  ,moduleMappingHunitAssertion :: [String] -- ^ Hunit assertions
+  ,moduleMappingHunitTestCase :: [String] -- ^ Hunit test case to process for test-framework
+  ,moduleMappingPropName :: [String] -- ^ QuickCheck test function names
  }
  deriving (Show,Eq)
 
 data RunnableFunction = RunnableFunction {
-  cfModule :: [String]
+  runnableFunctionModule :: [String]
   ,runnableLibrairies :: [String]
-  ,cfFunctionName :: String -- The function name. Should have IO() as signature
+  ,runnableFunctionFunction :: String -- The function name. Should have IO() as signature
 }
  deriving Show
 
@@ -187,7 +187,7 @@ listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
 
 -- | Remove all modules which does not contain test
 removeNonTestModule :: [ModuleMapping] -> [ModuleMapping]
-removeNonTestModule = filter (\modMap -> notEmpty (cfHunitAssertion modMap) || notEmpty (cfPropName modMap) || notEmpty (cfHunitTestCase modMap) )
+removeNonTestModule = filter (\modMap -> notEmpty (moduleMappingHunitAssertion modMap) || notEmpty (moduleMappingPropName modMap) || notEmpty (moduleMappingHunitTestCase modMap) )
   where notEmpty = not.null
 
 -- * Test framework integration 
@@ -195,10 +195,10 @@ removeNonTestModule = filter (\modMap -> notEmpty (cfHunitAssertion modMap) || n
 -- | Generate a test group for a given module
 getSingleTestFrameworkGroup :: ModuleMapping -> Exp
 getSingleTestFrameworkGroup modMap = foldl1 AppE [process_to_group_exp, test_case_tuple_list, list_assertion, list_prop]
-  where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ cfModuleName modMap))
-        list_prop = ListE $ map getSingleFrameworkQuickCheck $ cfPropName modMap
-        list_assertion = ListE $ map getSingleFrameworkHunit $ cfHunitAssertion modMap
-        test_case_tuple_list = convertHunitTestCaseToTuples (cfHunitTestCase modMap)
+  where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ runnableFunctionModuleName modMap))
+        list_prop = ListE $ map getSingleFrameworkQuickCheck $ moduleMappingPropName modMap
+        list_assertion = ListE $ map getSingleFrameworkHunit $ moduleMappingHunitAssertion modMap
+        test_case_tuple_list = convertHunitTestCaseToTuples (moduleMappingHunitTestCase modMap)
 
 convertHunitTestCaseToTuples :: [String] -> Exp
 convertHunitTestCaseToTuples = ListE . map convertToTuple 
@@ -221,8 +221,8 @@ getSingleFrameworkQuickCheck propName = AppE testproperty_with_name_exp property
 
 -- | Include only module matching the given pattern
 filterModulesWithPattern :: [ModuleMapping]-> String -> [ModuleMapping]
-filterModulesWithPattern mod_map pattern = filter (\a -> cfModuleName a `elem` filtered_mod_list) mod_map
-  where mod_list = map cfModuleName mod_map
+filterModulesWithPattern mod_map pattern = filter (\a -> runnableFunctionModuleName a `elem` filtered_mod_list) mod_map
+  where mod_list = map runnableFunctionModuleName mod_map
         filtered_mod_list = processListWithRegexp mod_list [] [pattern]
 
 filterFunctionsWithPatterns :: [ModuleMapping] -> [String] -> [ModuleMapping]
@@ -231,10 +231,10 @@ filterFunctionsWithPatterns mod_map patterns = map (`filterFunctionsWithPatterns
 filterFunctionsWithPatterns' :: ModuleMapping -> [String] -> ModuleMapping
 filterFunctionsWithPatterns' (ModuleMapping name hunitAssertions hunitTestCases properties) patterns = 
   ModuleMapping{
-    cfModuleName = name
-    ,cfHunitAssertion = processListWithRegexp hunitAssertions [] patterns
-    ,cfHunitTestCase = processListWithRegexp hunitTestCases [] patterns
-    ,cfPropName = processListWithRegexp properties [] patterns
+    runnableFunctionModuleName = name
+    ,moduleMappingHunitAssertion = processListWithRegexp hunitAssertions [] patterns
+    ,moduleMappingHunitTestCase = processListWithRegexp hunitTestCases [] patterns
+    ,moduleMappingPropName = processListWithRegexp properties [] patterns
   }
 
 
