@@ -142,7 +142,7 @@ getCompileOptions myLibBuildInfo = hideAllPackagesOption : ghcOptions ++ ghcExte
        hideAllPackagesOption = "-hide-all-packages"
 
 getLibDependencies :: ComponentLocalBuildInfo -> [String]
-getLibDependencies = componentPackageDeps >>> map (fst >>> installedPackagedId ) 
+getLibDependencies = componentPackageDeps >>> map (fst >>> installedPackageIdString ) 
 
 convertModuleNameToString :: ModuleName -> String
 convertModuleNameToString modName

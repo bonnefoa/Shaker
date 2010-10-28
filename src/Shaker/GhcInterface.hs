@@ -3,7 +3,7 @@ module Shaker.GhcInterface (
   initializeGhc
   ,ghcCompile
   ,getListNeededPackages
-  ,installedPackagedId 
+  ,installedPackageIdString 
   -- * module change detection
   ,checkUnchangedSources
   ,isModuleNeedCompilation
@@ -59,10 +59,10 @@ getPackagesToExpose = map snd
     >>> nubBy (\a b ->  getPackage a == getPackage b ) 
     >>> filter (not . exposed)
     >>> map getPackage 
-  where getPackage = installedPackageId >>> installedPackagedId
+  where getPackage = installedPackageId >>> installedPackageIdString
 
-installedPackagedId :: InstalledPackageId -> String
-installedPackagedId (InstalledPackageId v) = v 
+installedPackageIdString :: InstalledPackageId -> String
+installedPackageIdString (InstalledPackageId v) = v 
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ procFlags strflags targetFiles) = do   
