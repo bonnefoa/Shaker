@@ -49,7 +49,6 @@ getListNeededPackages = do
               >>> map ( second (map fst) )
               $ (M.keys map_import_modules \\ list_project_modules) 
   return $ getPackagesToExpose import_to_packages
-  -- return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
 
 getPackagesToExpose :: ImportToPackages -> [String]
 getPackagesToExpose = map snd
