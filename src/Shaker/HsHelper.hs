@@ -27,15 +27,16 @@ hsModuleHasMain = getTupleIdentType >>> map fst >>> any (=="main")
 hsModuleCollectProperties :: Module -> [String]
 hsModuleCollectProperties = getTupleIdentType >>> map fst >>> filter (isPrefixOf "prop_")
 
-hsModuleCollectTest :: Module -> [String]
-hsModuleCollectTest = getTupleIdentUnqualifiedType
-  >>> filterSnd (== "Test") 
+abstractCollectFunctionWithUnqualifiedType :: (String -> Bool) -> Module -> [String]
+abstractCollectFunctionWithUnqualifiedType fun = getTupleIdentUnqualifiedType
+  >>> filterSnd fun
   >>> map fst
 
+hsModuleCollectTest :: Module -> [String]
+hsModuleCollectTest = abstractCollectFunctionWithUnqualifiedType (== "Test") 
+
 hsModuleCollectAssertions :: Module -> [String]
-hsModuleCollectAssertions = getTupleIdentUnqualifiedType
-  >>> filterSnd ( == "Assertion") 
-  >>> map fst
+hsModuleCollectAssertions = abstractCollectFunctionWithUnqualifiedType ( == "Assertion") 
 
 filterSnd :: (b -> Bool) -> [(a,b)] -> [(a,b)]
 filterSnd fun = filter (snd >>> fun)
