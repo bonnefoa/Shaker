@@ -16,9 +16,10 @@ module Shaker.Reflexivite (
 
 import Data.List
 import Data.Maybe
+
+import Shaker.ModuleData
 import Shaker.Type 
 import Shaker.Action.Compile
-import Shaker.SourceHelper
 import Shaker.GhcInterface
 import Shaker.Regex
 
@@ -60,7 +61,7 @@ data RunnableFunction = RunnableFunction {
 -- | Collect all non-main modules with their test function associated
 collectAllModulesForTest :: Shaker IO [ModuleMapping]
 collectAllModulesForTest = do 
-  cpInList <- getFullCompileCompileInput
+  cpInList <- convertModuleDataToFullCompileInput
   allModules <- fmap concat (lift $ mapM collectModules cpInList)
   return . removeNonTestModule $ allModules
   where collectModules cpIn = 
@@ -70,7 +71,7 @@ collectAllModulesForTest = do
 -- output all module needing recompilation
 collectChangedModulesForTest :: Shaker IO [ModuleMapping]
 collectChangedModulesForTest = do 
-  cpInList <- getFullCompileCompileInput
+  cpInList <- convertModuleDataToFullCompileInput
   modInfoFiles <- asks shakerModifiedInfoFiles
   let modFilePaths = map fileInfoFilePath modInfoFiles
   changed_modules <- fmap concat (lift $ mapM (collectChangedModules modFilePaths) cpInList) 
@@ -97,7 +98,7 @@ collectChangedModulesForTest' modFilePaths cpIn = do
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
 runFunction (RunnableFunction importModuleList listLibs fun) = do
-  cpIn <- getFullCompileCompileInputNonMain
+  cpIn <- getMergedCompileInput
   listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags

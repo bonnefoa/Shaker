@@ -88,29 +88,29 @@ templateTestRunFunction modules=  do
   
 testCollectChangedModules :: Assertion
 testCollectChangedModules =  do
-  (cpIn,_) <- compileProject
+  cpIn <- compileProject
   exp_no_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_no_modules == 0 @? "There should be no modules to recompile"
   -- Remove a target file 
-  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "SourceHelperTest.hi"
+  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "GhcInterfaceTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
-  length exp_one_modules == 1 @? "One module (SourceHelperTest) should need compilation"
+  length exp_one_modules == 1 @? "One module (GhcInterfaceTest ) should need compilation"
 
 testCollectChangedModulesForTestHunit:: Assertion
 testCollectChangedModulesForTestHunit =  do
-  (cpIn,_) <- compileProject
-  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "SourceHelperTest.hi"
+  cpIn <- compileProject
+  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "GhcInterfaceTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
   length exp_one_modules == 1 @? "One module should need compilation"
   let module_mapping = head exp_one_modules 
-  runnableFunctionModuleName module_mapping == "Shaker.SourceHelperTest" @? "module SourceHelperTest should need recompilation, got " ++ runnableFunctionModuleName module_mapping 
-  length (moduleMappingHunitAssertion module_mapping) >2  @? "module SourceHelperTest should have hunit test" 
+  runnableFunctionModuleName module_mapping == "Shaker.GhcInterfaceTest" @? "module GhcInterfaceTest should need recompilation, got " ++ runnableFunctionModuleName module_mapping 
+  length (moduleMappingHunitAssertion module_mapping) >2  @? "module GhcInterfaceTest should have hunit test" 
   
 testCollectChangedModulesForTestQuickCheck :: Assertion
 testCollectChangedModulesForTestQuickCheck =  do
-  (cpIn,_) <- compileProject
+  cpIn <- compileProject
   let target = compileInputBuildDirectory cpIn </> "Shaker" </> "RegexTest.hi"
   removeFile target
   exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
@@ -121,8 +121,8 @@ testCollectChangedModulesForTestQuickCheck =  do
 
 testCollectChangedModulesWithModifiedFiles :: Assertion
 testCollectChangedModulesWithModifiedFiles =  do
-  (cpIn,_) <- compileProject
-  let sources = map (</> "Shaker" </> "SourceHelperTest.hs") (compileInputSourceDirs cpIn)
+  cpIn <- compileProject
+  let sources = map (</> "Shaker" </> "GhcInterfaceTest.hs") (compileInputSourceDirs cpIn)
   let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources
   shIn <- testShakerInput 
   exp_one_modules <- runReaderT collectChangedModulesForTest shIn {shakerModifiedInfoFiles = modFileInfo }

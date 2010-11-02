@@ -34,8 +34,11 @@ constructModuleData hsModule = ModuleData {
   ,moduleDataTestCase = hsModuleCollectTest hsModule
  }
 
-hsModuleHasMain :: Module -> Bool
-hsModuleHasMain = getTupleIdentType >>> map fst >>> any (=="main")
+moduleDataToModuleName :: ModuleData -> String
+moduleDataToModuleName = moduleDataModule >>> hsModuleName
+
+hsModuleDataHasMain :: ModuleData -> Bool
+hsModuleDataHasMain = moduleDataModule >>> getTupleIdentType >>> map fst >>> any (=="main")
 
 hsModuleDataHasTest :: ModuleData -> Bool
 hsModuleDataHasTest hsModuleData = any (not . null) [moduleDataProperties hsModuleData, moduleDataAssertions hsModuleData] 
@@ -86,4 +89,7 @@ ident (Symbol v) = v
 
 hsModuleDecl :: Module -> [Decl]
 hsModuleDecl (Module _ _ _ _ _ _ decls) = decls
+
+hsModuleName :: Module -> String
+hsModuleName (Module _ (ModuleName name) _ _ _ _ _) = name
 

@@ -13,7 +13,7 @@ import Language.Haskell.Exts.Syntax
 testModuleHasMain :: Assertion
 testModuleHasMain = do
   (parsedMod:_) <- parseHsFiles [ mempty {fileListenInfoDir ="prog" } ]
-  hsModuleHasMain parsedMod @? "Should have main, got " ++ show parsedMod
+  hsModuleDataHasMain (constructModuleData parsedMod) @? "Should have main, got " ++ show parsedMod
 
 testModuleCollectProperties :: Assertion
 testModuleCollectProperties = do

@@ -12,7 +12,7 @@ module Shaker.GhcInterface (
 
 import Shaker.Io
 import Shaker.Type
-import Shaker.SourceHelper
+import Shaker.ModuleData
 
 import Data.List
 import qualified Data.Map as M
@@ -40,7 +40,7 @@ type ImportToPackages = [ ( String, [PackageConfig] ) ]
 -- unexposed yet needed packages
 getListNeededPackages :: Shaker IO [String]
 getListNeededPackages = do
-  cpIn <- fmap mconcat getFullCompileCompileInput
+  cpIn <- getMergedCompileInput
   (PackageData map_import_modules list_project_modules) <- lift mapImportToModules
   import_to_packages <- lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn

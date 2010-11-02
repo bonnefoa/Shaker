@@ -5,8 +5,9 @@ import Data.Monoid
 import System.Directory
 import Test.HUnit
 import Control.Exception
+
+import Shaker.ModuleData
 import Shaker.Type
-import Shaker.SourceHelper
 import Shaker.GhcInterface
 import Shaker.Cabal.CabalInfo
 
@@ -25,17 +26,19 @@ runTestOnDirectory fp fun = do
 testCompileInput ::IO CompileInput 
 testCompileInput = fmap (mconcat . shakerCompileInputs ) defaultCabalInput 
 
+mergedCompileInput :: IO CompileInput
+mergedCompileInput = testShakerInput >>= runReaderT getMergedCompileInput 
+
 testShakerInput :: IO ShakerInput
 testShakerInput = defaultCabalInput
 
-compileProject :: IO(CompileInput, [CompileFile])
+compileProject :: IO CompileInput
 compileProject = do
-  cpIn <- testCompileInput 
   shIn <- testShakerInput 
-  cfFlList <- runReaderT constructCompileFileList shIn
+  cpIn <- runReaderT getMergedCompileInput shIn
   _ <- runGhc (Just libdir) $ 
-      ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-  return (cpIn, cfFlList)
+      ghcCompile cpIn
+  return cpIn
 
 exposePackageId :: PackageFlag -> String
 exposePackageId (ExposePackageId v) = v
