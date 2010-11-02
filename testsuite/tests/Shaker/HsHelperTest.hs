@@ -1,4 +1,4 @@
-module HsHelperTest
+module Shaker.HsHelperTest
  where
 
 import Shaker.Type
@@ -9,11 +9,6 @@ import Test.HUnit
 import Data.Monoid 
 
 import Language.Haskell.Exts.Syntax
-
-testModuleHasMain :: Assertion
-testModuleHasMain = do
-  (parsedMod:_) <- parseHsFiles [ mempty {fileListenInfoDir ="prog" } ]
-  hsModuleDataHasMain (constructModuleData parsedMod) @? "Should have main, got " ++ show parsedMod
 
 testModuleCollectProperties :: Assertion
 testModuleCollectProperties = do
@@ -32,11 +27,6 @@ testModuleCollectTestCases = do
   parseMod <- getParsedModule
   let testCollected = hsModuleCollectTest parseMod
   testCollected == ["testModuleCollectTestCase"] @? show testCollected
-
-testModuleDataHasTests :: Assertion
-testModuleDataHasTests = do 
-  modData <- fmap constructModuleData getParsedModule
-  hsModuleDataHasTest modData @? show modData
 
 testModuleCollectTestCase :: Test
 testModuleCollectTestCase = TestCase $ True @? "Trivial"

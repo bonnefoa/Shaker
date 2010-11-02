@@ -32,8 +32,6 @@ import DynFlags
 
 import System.Directory
 
-import Data.Monoid
-
 type ImportToPackages = [ ( String, [PackageConfig] ) ]
 
 -- | Get the list of unresolved import and 

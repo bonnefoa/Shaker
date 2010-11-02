@@ -34,7 +34,7 @@ import Data.Maybe
 import Data.List(nub,isSuffixOf, find, isPrefixOf)
 import Data.Monoid 
 
-import Shaker.HsHelper
+import Shaker.ModuleData
 
 import Control.Monad.Reader
 import Control.Arrow
