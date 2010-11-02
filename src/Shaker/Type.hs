@@ -14,6 +14,9 @@ import System.Time(ClockTime)
 import Control.Concurrent.MVar
 import Control.Concurrent
 
+import Language.Haskell.Exts.Parser
+import Language.Haskell.Exts.Syntax
+
 -- | Environnement containing the project configuration.
 -- It is generated at startup and won't change
 type Shaker  = ReaderT ShakerInput 
@@ -168,6 +171,13 @@ data PackageData = PackageData {
     ,packageDataListProjectModules :: [String]
  }
 
+data ModuleData = ModuleData {
+  moduleDataModule :: Module
+  ,moduleDataProperties :: [String]
+  ,moduleDataAssertions :: [String]
+  ,moduleDataTestCase :: [String]
+ }
+
 type MapImportToModules = M.Map String [String]
 -- | Represents the mapping beetween an action and the function to execute
 type PluginMap = M.Map ShakerAction Plugin
@@ -177,11 +187,10 @@ type CommandMap = M.Map String ShakerAction
 type Plugin = Shaker IO()
 
 -- * Default data
-
-
+ 
 -- | default dynamics flags
 -- the sources are expected to be in src as described in <http://www.haskell.org/haskellwiki/structure_of_a_haskell_project>
--- the result of compilation (.o and .hi) are placed in the target/ fileListenInfoDirectory
+-- the result of compilation (.o and .hi) are placed in the dist/shakerTarget
 -- there is no main linkage by default to allow faster compilation feedback
 defaultCompileFlags :: (DynFlags -> DynFlags)
 defaultCompileFlags a = a  {
@@ -205,3 +214,4 @@ emptyCommand = Command OneShot [Action Empty]
 
 listTestLibs :: [String]
 listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] 
+
