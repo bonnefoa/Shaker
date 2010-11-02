@@ -12,6 +12,11 @@ import Language.Haskell.Exts.Syntax
 
 import Control.Arrow
 
+fillModuleData :: ShakerInput -> IO ShakerInput
+fillModuleData shIn = do
+  lstHsModules <- shakerListenerInput >>> listenerInputFiles >>> parseHsFiles $ shIn
+  return shIn { shakerModuleData = map constructModuleData lstHsModules }
+
 parseHsFiles :: [FileListenInfo] -> IO [Module]
 parseHsFiles fliListenInfos = do
   files <- recurseMultipleListFiles fliListenInfos

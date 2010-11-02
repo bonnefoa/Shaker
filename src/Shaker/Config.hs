@@ -20,6 +20,7 @@ defaultInput = ShakerInput {
   ,shakerThreadData = undefined
   ,shakerInputState = undefined
   ,shakerLocalBuildInfo = undefined
+  ,shakerModuleData = []
   }
 
 defaultInputInitialized :: IO ShakerInput 

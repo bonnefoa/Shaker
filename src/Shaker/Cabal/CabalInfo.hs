@@ -34,6 +34,8 @@ import Data.Maybe
 import Data.List(nub,isSuffixOf, find, isPrefixOf)
 import Data.Monoid 
 
+import Shaker.HsHelper
+
 import Control.Monad.Reader
 import Control.Arrow
 
@@ -41,7 +43,7 @@ import Control.Arrow
 defaultCabalInput :: IO ShakerInput
 defaultCabalInput = readConf >>= \lbi -> 
   generatePreprocessFile lbi >> 
-  localBuildInfoToShakerInput lbi >>= exposeNeededPackages lbi >>= checkInvalidMain 
+  localBuildInfoToShakerInput lbi >>= exposeNeededPackages lbi >>= checkInvalidMain >>= fillModuleData
 
 generatePreprocessFile :: LocalBuildInfo -> IO ()
 generatePreprocessFile lbi = writeAutogenFiles normal (localPkgDescr lbi) lbi

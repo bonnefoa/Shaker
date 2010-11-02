@@ -81,7 +81,8 @@ data ShakerInput = ShakerInput {
   ,shakerThreadData :: ThreadData 
   ,shakerInputState :: InputState 
   ,shakerLocalBuildInfo :: LocalBuildInfo
- }  
+  ,shakerModuleData :: [ModuleData]
+ }
  
 data ThreadData = ThreadData {
     threadDataListenToken :: Token 
