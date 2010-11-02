@@ -9,39 +9,18 @@ import Data.Maybe
 
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Syntax
+import Language.Haskell.Exts
 
 import Control.Arrow
-
-fillModuleData :: ShakerInput -> IO ShakerInput
-fillModuleData shIn = do
-  lstHsModules <- shakerListenerInput >>> listenerInputFiles >>> parseHsFiles $ shIn
-  return shIn { shakerModuleData = map constructModuleData lstHsModules }
 
 parseHsFiles :: [FileListenInfo] -> IO [Module]
 parseHsFiles fliListenInfos = do
   files <- recurseMultipleListFiles fliListenInfos
-  fileContentList <- mapM readFile files
-  return $ mapMaybe parseHs fileContentList
-  where parseHs content = case parseModule content of
+  parseResults <- mapM parseFile files
+  return $ mapMaybe parseHs parseResults
+  where parseHs parseResults = case parseResults of
                                ParseOk val -> Just val
                                _ -> Nothing
-
-constructModuleData :: Module -> ModuleData
-constructModuleData hsModule = ModuleData {
-  moduleDataModule = hsModule
-  ,moduleDataProperties = hsModuleCollectProperties hsModule
-  ,moduleDataAssertions = hsModuleCollectAssertions hsModule
-  ,moduleDataTestCase = hsModuleCollectTest hsModule
- }
-
-moduleDataToModuleName :: ModuleData -> String
-moduleDataToModuleName = moduleDataModule >>> hsModuleName
-
-hsModuleDataHasMain :: ModuleData -> Bool
-hsModuleDataHasMain = moduleDataModule >>> getTupleIdentType >>> map fst >>> any (=="main")
-
-hsModuleDataHasTest :: ModuleData -> Bool
-hsModuleDataHasTest hsModuleData = any (not . null) [moduleDataProperties hsModuleData, moduleDataAssertions hsModuleData] 
 
 hsModuleCollectProperties :: Module -> [String]
 hsModuleCollectProperties = getTupleIdentType >>> map fst >>> filter (isPrefixOf "prop_")
@@ -92,4 +71,7 @@ hsModuleDecl (Module _ _ _ _ _ _ decls) = decls
 
 hsModuleName :: Module -> String
 hsModuleName (Module _ (ModuleName name) _ _ _ _ _) = name
+
+hsModuleFileName :: Module -> String
+hsModuleFileName (Module loc _ _ _ _ _ _ ) = srcFilename loc
 
