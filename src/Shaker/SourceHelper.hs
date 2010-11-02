@@ -22,6 +22,7 @@ import Control.Monad.Reader(ask, asks, lift, runReader, Reader)
 import Control.Arrow
 
 import System.FilePath
+import Language.Haskell.Syntax
 
 type CompileR = Reader [CompileFile]
 
