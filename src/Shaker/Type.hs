@@ -176,7 +176,7 @@ data ModuleData = ModuleData {
   ,moduleDataProperties :: [String]
   ,moduleDataAssertions :: [String]
   ,moduleDataTestCase :: [String]
- }
+ } deriving (Show)
 
 type MapImportToModules = M.Map String [String]
 -- | Represents the mapping beetween an action and the function to execute

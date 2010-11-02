@@ -21,8 +21,19 @@ parseHsFiles fliListenInfos = do
                                ParseOk val -> Just val
                                _ -> Nothing
 
+constructModuleData :: Module -> ModuleData
+constructModuleData hsModule = ModuleData {
+  moduleDataModule = hsModule
+  ,moduleDataProperties = hsModuleCollectProperties hsModule
+  ,moduleDataAssertions = hsModuleCollectAssertions hsModule
+  ,moduleDataTestCase = hsModuleCollectTest hsModule
+ }
+
 hsModuleHasMain :: Module -> Bool
 hsModuleHasMain = getTupleIdentType >>> map fst >>> any (=="main")
+
+hsModuleDataHasTest :: ModuleData -> Bool
+hsModuleDataHasTest hsModuleData = any (not . null) [moduleDataProperties hsModuleData, moduleDataAssertions hsModuleData] 
 
 hsModuleCollectProperties :: Module -> [String]
 hsModuleCollectProperties = getTupleIdentType >>> map fst >>> filter (isPrefixOf "prop_")

@@ -33,6 +33,11 @@ testModuleCollectTestCases = do
   let testCollected = hsModuleCollectTest parseMod
   testCollected == ["testModuleCollectTestCase"] @? show testCollected
 
+testModuleDataHasTests :: Assertion
+testModuleDataHasTests = do 
+  modData <- fmap constructModuleData getParsedModule
+  hsModuleDataHasTest modData @? show modData
+
 testModuleCollectTestCase :: Test
 testModuleCollectTestCase = TestCase $ True @? "Trivial"
 
