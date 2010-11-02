@@ -49,7 +49,7 @@ testConstructConductorCompileFileList :: Assertion
 testConstructConductorCompileFileList =  do
   list <- testShakerInput >>= runReaderT constructCompileFileList 
   let (Just cpFile) = find (\a ->  "Conductor.hs" `isSuffixOf` compileFileFilePath a ) list
-  not (compileFileHasMain cpFile) && not (compileFileHasTH cpFile) @? "Should have conductor in list, got " ++ show cpFile
+  not (compileFileHasMain cpFile) @? "Should have conductor in list, got " ++ show cpFile
 
 testCompileFileListConstruction :: Assertion
 testCompileFileListConstruction =  do

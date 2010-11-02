@@ -8,7 +8,6 @@ module Shaker.SourceHelper(
   -- * Target files filtering
   ,setAllHsFilesAsTargets
   ,removeFileWithMain
-  ,removeFileWithTemplateHaskell
   ,fillCompileInputWithStandardTarget
 )
  where
@@ -29,7 +28,6 @@ type CompileR = Reader [CompileFile]
 data CompileFile = CompileFile {
   compileFileFilePath :: FilePath 
   ,compileFileHasMain :: Bool 
-  ,compileFileHasTH :: Bool
  } deriving Show
 
 -- | Build the list of haskell source files located in 
@@ -44,17 +42,13 @@ constructCompileFileList = do
 constructCompileFile :: FilePath -> IO CompileFile      
 constructCompileFile fp = do
   hasMain <- isFileContainingMain fp
-  hasTH <- isFileContainingTH fp
-  return $ CompileFile fp hasMain hasTH
+  return $ CompileFile fp hasMain 
 
 -- | Configure the CompileInput with all haskell files configured as targets
 setAllHsFilesAsTargets :: CompileInput -> CompileR CompileInput
 setAllHsFilesAsTargets cpIn = do
   files <- ask
   return cpIn {compileInputTargetFiles = map compileFileFilePath files }
-
-removeFileWithTemplateHaskell :: CompileInput ->CompileR CompileInput
-removeFileWithTemplateHaskell = removeFileWithPredicate compileFileHasTH
 
 removeFileWithMain :: CompileInput -> CompileR CompileInput
 removeFileWithMain = removeFileWithPredicate compileFileHasMain
@@ -69,7 +63,7 @@ removeFileWithPredicate predicate cpIn = do
 -- | Fill compile input with every haskell files in the project except those
 -- containing main and template haskell
 fillCompileInputWithStandardTarget :: CompileInput -> CompileR CompileInput 
-fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= removeFileWithMain >>=removeFileWithTemplateHaskell
+fillCompileInputWithStandardTarget cpIn = setAllHsFilesAsTargets cpIn >>= removeFileWithMain 
 
 getFullCompileCompileInput :: Shaker IO [CompileInput]
 getFullCompileCompileInput = do
