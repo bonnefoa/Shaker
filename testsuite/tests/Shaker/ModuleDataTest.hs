@@ -3,30 +3,42 @@ module Shaker.ModuleDataTest
 
 import Shaker.Type
 import Shaker.ModuleData
-import Shaker.HsHelper
 
 import Test.HUnit
+
+import Language.Haskell.Exts.Syntax
 
 import Data.Monoid 
 import Data.List
 
-import Language.Haskell.Exts.Syntax
-
 testModuleDataFileName :: Assertion
 testModuleDataFileName = do
-  modData <- fmap constructModuleData getParsedModule
+  modData <- getParsedModule
   "ModuleDataTest.hs" `isSuffixOf` moduleDataToFileName modData @? show modData
 
 testModuleHasMain :: Assertion
 testModuleHasMain = do
-  (parsedMod:_) <- parseHsFiles [ mempty {fileListenInfoDir ="prog" } ]
-  hsModuleDataHasMain (constructModuleData parsedMod) @? "Should have main, got " ++ show parsedMod
+  (parsedMod:_) <- parseModuleData [ mempty {fileListenInfoDir ="prog" } ]
+  hsModuleDataHasMain parsedMod @? "Should have main, got " ++ show parsedMod
+
+testGroupByMethodUniqueGroup :: Assertion
+testGroupByMethodUniqueGroup = do
+  parsedMod <- parseModuleData [ mempty {fileListenInfoDir ="testsuite/tests/resources/sameFileInDifferentsModules" } ]
+  let res = groupByValidTargets parsedMod 
+  length res == 1 @? "Should have one group, got " ++ show res
+
+testGroupByMethodMultipleGroups :: Assertion
+testGroupByMethodMultipleGroups = do
+  parsedMod <- parseModuleData [ mempty {fileListenInfoDir ="testsuite/tests/resources/" } ]
+  let res = groupByValidTargets parsedMod 
+  let filtered = map ( filter (\a -> (ModuleName "A") == moduleDataName a  ) ) res
+  all (\a -> length a <= 1) filtered @? "Should have no group with more than one A module, got " ++ show filtered
 
 testModuleDataHasTests :: Assertion
 testModuleDataHasTests = do 
-  modData <- fmap constructModuleData getParsedModule
+  modData <- getParsedModule
   hsModuleDataHasTest modData @? show modData
 
-getParsedModule :: IO Module 
-getParsedModule = fmap head ( parseHsFiles [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*ModuleDataTest.hs"]  } ] )
+getParsedModule :: IO ModuleData 
+getParsedModule = fmap head ( parseModuleData [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*ModuleDataTest.hs"]  } ] )
 
