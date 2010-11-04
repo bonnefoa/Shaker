@@ -1,4 +1,6 @@
 module Main
  where
-main = undefined
+
+main :: IO() 
+main = putStrLn "42"
 
