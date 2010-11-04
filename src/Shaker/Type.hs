@@ -146,17 +146,17 @@ instance Monoid ListenerInput where
 
 -- | Represents fileListenInfoDirectory to listen 
 data FileListenInfo = FileListenInfo{
-  fileListenInfoDir :: FilePath     -- ^ location of the listened fileListenInfoDirectory
-  ,fileListenInfoIgnore :: [String] -- ^ fileListenInfoIgnore patterns
+  fileListenInfoDir      :: FilePath     -- ^ location of the listened fileListenInfoDirectory
+  ,fileListenInfoIgnore  :: [String] -- ^ fileListenInfoIgnore patterns
   ,fileListenInfoInclude :: [String] -- ^fileListenInfoInclude patterns
   }
   deriving (Show,Eq)
 
 instance Monoid FileListenInfo where
-  mempty = FileListenInfo "." defaultExclude defaultHaskellPatterns
-  mappend f1 f2 = FileListenInfo { 
-    fileListenInfoDir = fileListenInfoDir f1
-    ,fileListenInfoIgnore = nub $ fileListenInfoIgnore f1 `mappend` fileListenInfoIgnore f2
+  mempty        = FileListenInfo "." defaultExclude defaultHaskellPatterns
+  mappend f1 f2 = FileListenInfo {
+    fileListenInfoDir      = fileListenInfoDir f1
+    ,fileListenInfoIgnore  = nub $ fileListenInfoIgnore f1 `mappend` fileListenInfoIgnore f2
     ,fileListenInfoInclude = nub $ fileListenInfoInclude f1 `mappend` fileListenInfoInclude f2
   }
 
@@ -168,15 +168,16 @@ data FileInfo = FileInfo {
   deriving (Show,Eq)
 
 data PackageData = PackageData {
-    packageDataMapImportToModules :: MapImportToModules
+    packageDataMapImportToModules  :: MapImportToModules
     ,packageDataListProjectModules :: [String]
  }
 
 data ModuleData = ModuleData {
-  moduleDataModule :: Module
+  moduleDataName        :: ModuleName
+  ,moduleDataModule     :: Module
   ,moduleDataProperties :: [String]
   ,moduleDataAssertions :: [String]
-  ,moduleDataTestCase :: [String]
+  ,moduleDataTestCase   :: [String]
  } deriving (Show)
 
 type MapImportToModules = M.Map String [String]
@@ -215,4 +216,7 @@ emptyCommand = Command OneShot [Action Empty]
 
 listTestLibs :: [String]
 listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] 
+
+instance Eq ModuleData where
+ mod1 == mod2 = moduleDataName mod1 == moduleDataName mod2
 
