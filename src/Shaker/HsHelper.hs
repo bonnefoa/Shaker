@@ -69,8 +69,8 @@ ident (Symbol v) = v
 hsModuleDecl :: Module -> [Decl]
 hsModuleDecl (Module _ _ _ _ _ _ decls) = decls
 
-hsModuleName :: Module -> String
-hsModuleName (Module _ (ModuleName name) _ _ _ _ _) = name
+hsModuleName :: Module -> ModuleName
+hsModuleName (Module _ name _ _ _ _ _) = name
 
 hsModuleFileName :: Module -> String
 hsModuleFileName (Module loc _ _ _ _ _ _ ) = srcFilename loc
