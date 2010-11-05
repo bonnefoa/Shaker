@@ -10,8 +10,29 @@ import Control.Arrow
 
 import Shaker.Type
 import Shaker.HsHelper
+import Shaker.Io
 
+import System.FilePath
+import System.Directory
 import Language.Haskell.Exts.Syntax
+
+writeModuleData :: ModuleData -> Shaker IO ()
+writeModuleData moduleData = do
+  let srcFile = moduleDataFileName moduleData
+  buildFile <- fmap (flip addExtension moduleDataExtension) (getCorrespondingBuildFile srcFile)
+  lift $ createDirectoryIfMissing True (dropFileName buildFile) 
+  lift $ writeFile buildFile (show moduleData) 
+
+readModuleDataIfExist :: FilePath -> Shaker IO (Maybe ModuleData)
+readModuleDataIfExist srcFile = do
+  buildFile <- fmap (flip addExtension moduleDataExtension) (getCorrespondingBuildFile srcFile)
+  exist <- lift $ doesFileExist buildFile
+  if exist 
+    then lift $ fmap Just (parseFileToModuleData buildFile)
+    else return Nothing
+
+parseFileToModuleData :: FilePath -> IO ModuleData
+parseFileToModuleData src = fmap read (readFile src)
 
 parseModuleData :: [FileListenInfo] -> IO [ ModuleData ]
 parseModuleData mods = fmap (map constructModuleData) (parseHsFiles mods)

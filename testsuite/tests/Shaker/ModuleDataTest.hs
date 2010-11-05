@@ -6,10 +6,23 @@ import Shaker.ModuleData
 
 import Test.HUnit
 
+import System.FilePath
+import System.Directory
+
 import Language.Haskell.Exts.Syntax
 
 import Data.Monoid 
 import Data.List
+
+import Shaker.CommonTest
+import Control.Monad.Reader
+
+testWriteModuleData :: Assertion
+testWriteModuleData = do
+  modData <- getParsedModule
+  shIn <- testShakerInput
+  runReaderT (writeModuleData modData) shIn
+  doesFileExist "dist/shakerTarget/testsuite/tests/Shaker/ModuleDataTest.mdata" @? "module data file should exit"
 
 testModuleDataFileName :: Assertion
 testModuleDataFileName = do

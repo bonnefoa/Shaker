@@ -1,8 +1,10 @@
 -- | Manage all file operations like listing files with fileListenInfoIncludes and exclude patterns
 -- and file filtering
 module Shaker.Io(
+  -- * Utility functions
+  getCorrespondingBuildFile
   -- * List files functions
-  listModifiedAndCreatedFiles
+  ,listModifiedAndCreatedFiles
   ,listFiles
   ,getCurrentFpCl
   ,recurseMultipleListFiles
@@ -20,9 +22,11 @@ module Shaker.Io(
 )
  where
  
-import Control.Monad
+import Control.Monad.Reader
 import Control.Arrow
+
 import System.Directory
+import System.FilePath
 import qualified Data.Map as M
 import Data.List
 import Data.Maybe
@@ -36,6 +40,13 @@ import Language.Haskell.Syntax
 
 import qualified Control.Exception as C
 import qualified Data.ByteString.Char8 as L 
+
+-- |Get the build file (without extension) for the given file
+getCorrespondingBuildFile :: FilePath -> Shaker IO FilePath
+getCorrespondingBuildFile srcFile = do
+  buildDir <- fmap (head >>> compileInputBuildDirectory) (asks shakerCompileInputs)
+  relativePath <- lift $ makeRelativeToCurrentDirectory srcFile
+  return $ dropExtension $ buildDir </> relativePath
 
 -- |Get the tuples of (newFiles,modifiedFiles) from given list of fileListenInfoDirectory
 listModifiedAndCreatedFiles :: [FileListenInfo] -> [FileInfo] -> IO ([FileInfo],[FileInfo])
@@ -127,6 +138,4 @@ handleIOException :: IO() -> IO()
 handleIOException = C.handle catchIO
   where catchIO :: C.IOException -> IO()
         catchIO e = putStrLn ("Shaker caught " ++ show e ) >>  return ()
-
-
 
