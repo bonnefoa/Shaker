@@ -173,12 +173,13 @@ data PackageData = PackageData {
  }
 
 data ModuleData = ModuleData {
-  moduleDataName        :: ModuleName
-  ,moduleDataModule     :: Module
+  moduleDataName        :: String
+  ,moduleDataFileName   :: String
+  ,moduleDataHasMain    :: Bool
   ,moduleDataProperties :: [String]
   ,moduleDataAssertions :: [String]
   ,moduleDataTestCase   :: [String]
- } deriving (Show)
+ } deriving (Show, Read)
 
 type MapImportToModules = M.Map String [String]
 -- | Represents the mapping beetween an action and the function to execute

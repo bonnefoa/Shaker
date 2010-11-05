@@ -21,14 +21,13 @@ convertModuleDataToFullCompileInput = do
   baseCpIn <- fmap mconcat (asks shakerCompileInputs)
   lstModuleDatas <- asks shakerModuleData
   let groupOfCompileModules = groupByValidTargets lstModuleDatas
-  return $ map ( \ lstModules -> baseCpIn { compileInputTargetFiles = map moduleDataToFileName lstModules } ) groupOfCompileModules
+  return $ map ( \ lstModules -> baseCpIn { compileInputTargetFiles = map moduleDataFileName lstModules } ) groupOfCompileModules
 
 groupByValidTargets :: [ModuleData] -> [ [ ModuleData] ] 
-groupByValidTargets = partition hsModuleDataHasMain 
+groupByValidTargets = partition moduleDataHasMain 
   >>> first (groupBy mainGroupPredicate)
-  >>> second ( nub )
+  >>> second nub 
   >>> ( \ (a, b) -> b : a ) 
-  -- >>> uncurry (++)
   where mainGroupPredicate _ _ = False
 
 getMergedCompileInput :: Shaker IO CompileInput
@@ -41,18 +40,14 @@ fillModuleData shIn = do
 
 constructModuleData :: Module -> ModuleData
 constructModuleData hsModule = ModuleData {
-  moduleDataName = hsModuleName hsModule
-  ,moduleDataModule = hsModule
+  moduleDataName = hsModuleName >>> unwrapModuleName $ hsModule
+  ,moduleDataFileName = hsModuleFileName hsModule
+  ,moduleDataHasMain = getTupleIdentType >>> map fst >>> any (=="main") $ hsModule
   ,moduleDataProperties = hsModuleCollectProperties hsModule
   ,moduleDataAssertions = hsModuleCollectAssertions hsModule
   ,moduleDataTestCase = hsModuleCollectTest hsModule
  }
-
-moduleDataToFileName :: ModuleData -> String
-moduleDataToFileName = moduleDataModule >>> hsModuleFileName
-
-hsModuleDataHasMain :: ModuleData -> Bool
-hsModuleDataHasMain = moduleDataModule >>> getTupleIdentType >>> map fst >>> any (=="main")
+ where unwrapModuleName (ModuleName a) = a
 
 hsModuleDataHasTest :: ModuleData -> Bool
 hsModuleDataHasTest hsModuleData = any (not . null) [moduleDataProperties hsModuleData, moduleDataAssertions hsModuleData] 

@@ -14,12 +14,12 @@ import Data.List
 testModuleDataFileName :: Assertion
 testModuleDataFileName = do
   modData <- getParsedModule
-  "ModuleDataTest.hs" `isSuffixOf` moduleDataToFileName modData @? show modData
+  "ModuleDataTest.hs" `isSuffixOf` moduleDataFileName modData @? show modData
 
 testModuleHasMain :: Assertion
 testModuleHasMain = do
   (parsedMod:_) <- parseModuleData [ mempty {fileListenInfoDir ="prog" } ]
-  hsModuleDataHasMain parsedMod @? "Should have main, got " ++ show parsedMod
+  moduleDataHasMain parsedMod @? "Should have main, got " ++ show parsedMod
 
 testGroupByMethodUniqueGroup :: Assertion
 testGroupByMethodUniqueGroup = do
@@ -31,7 +31,7 @@ testGroupByMethodMultipleGroups :: Assertion
 testGroupByMethodMultipleGroups = do
   parsedMod <- parseModuleData [ mempty {fileListenInfoDir ="testsuite/tests/resources/" } ]
   let res = groupByValidTargets parsedMod 
-  let filtered = map ( filter (\a -> (ModuleName "A") == moduleDataName a  ) ) res
+  let filtered = map ( filter (\a -> "A" == moduleDataName a  ) ) res
   all (\a -> length a <= 1) filtered @? "Should have no group with more than one A module, got " ++ show filtered
 
 testModuleDataHasTests :: Assertion
