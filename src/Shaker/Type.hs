@@ -14,9 +14,6 @@ import System.Time(ClockTime)
 import Control.Concurrent.MVar
 import Control.Concurrent
 
-import Language.Haskell.Exts.Parser
-import Language.Haskell.Exts.Syntax
-
 -- | Environnement containing the project configuration.
 -- It is generated at startup and won't change
 type Shaker  = ReaderT ShakerInput 
@@ -72,23 +69,23 @@ data Command = Command Duration [Action]
 
 -- | Represents the global configuration of the system
 data ShakerInput = ShakerInput {
-  shakerCompileInputs :: [CompileInput]
-  ,shakerListenerInput:: ListenerInput
-  ,shakerPluginMap :: PluginMap
-  ,shakerCommandMap :: CommandMap
-  ,shakerArgument :: [String]
+  shakerCompileInputs      :: [CompileInput]
+  ,shakerListenerInput     :: ListenerInput
+  ,shakerPluginMap         :: PluginMap
+  ,shakerCommandMap        :: CommandMap
+  ,shakerArgument          :: [String]
   ,shakerModifiedInfoFiles :: [FileInfo]
-  ,shakerThreadData :: ThreadData 
-  ,shakerInputState :: InputState 
-  ,shakerLocalBuildInfo :: LocalBuildInfo
-  ,shakerModuleData :: [ModuleData]
+  ,shakerThreadData        :: ThreadData
+  ,shakerInputState        :: InputState
+  ,shakerLocalBuildInfo    :: LocalBuildInfo
+  ,shakerModuleData        :: [ModuleData]
  }
  
 data ThreadData = ThreadData {
-    threadDataListenToken :: Token 
-    ,threadDataQuitToken :: Token 
+    threadDataListenToken :: Token
+    ,threadDataQuitToken  :: Token
     ,threadDataListenList :: ThreadIdList
-    ,threadDataQuitList :: ThreadIdList
+    ,threadDataQuitList   :: ThreadIdList
  }
      
 getListenThreadList :: ShakerInput -> ThreadIdList 
@@ -96,29 +93,29 @@ getListenThreadList = threadDataListenList . shakerThreadData
   
 -- | Configuration flags to pass to the ghc compiler
 data CompileInput = CompileInput{
-  compileInputSourceDirs :: [String] -- ^ Source fileListenInfoDirectory of haskell files
-  ,compileInputBuildDirectory :: String  -- ^ Destination of .o and .hi files
-  ,compileInputDynFlags :: DynFlags->DynFlags -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
-  ,compileInputCommandLineFlags :: [String]  -- ^ The command line to pass options to pass to the ghc compiler
-  ,compileInputTargetFiles :: [String] -- ^ List of files or list of modules to compile
+  compileInputSourceDirs        :: [String]           -- ^ Source fileListenInfoDirectory of haskell files
+  ,compileInputBuildDirectory   :: String             -- ^ Destination of .o and .hi files
+  ,compileInputDynFlags         :: DynFlags->DynFlags -- ^ A transform fonction wich will takes the DynFlags of the current ghc session and change some values
+  ,compileInputCommandLineFlags :: [String]           -- ^ The command line to pass options to pass to the ghc compiler
+  ,compileInputTargetFiles      :: [String]           -- ^ List of files or list of modules to compile
 }
 
 -- | Default compilation shakerArgument.
 -- Wall is activated by default
 instance Monoid CompileInput where
   mempty = CompileInput {
-    compileInputSourceDirs = ["."]
-    ,compileInputBuildDirectory =  "dist/shakerTarget"  
-    ,compileInputDynFlags = defaultCompileFlags  
+    compileInputSourceDirs        = ["."]
+    ,compileInputBuildDirectory   = "dist/shakerTarget"
+    ,compileInputDynFlags         = defaultCompileFlags
     ,compileInputCommandLineFlags = ["-Wall"]
-    ,compileInputTargetFiles = []
+    ,compileInputTargetFiles      = []
     }
   mappend cpIn1 cpIn2 = CompileInput {
-    compileInputSourceDirs = nub $ compileInputSourceDirs cpIn1 `mappend` compileInputSourceDirs cpIn2
-    ,compileInputBuildDirectory = compileInputBuildDirectory cpIn1
-    ,compileInputDynFlags = compileInputDynFlags cpIn1 . compileInputDynFlags cpIn2
+    compileInputSourceDirs        = nub $ compileInputSourceDirs cpIn1 `mappend` compileInputSourceDirs cpIn2
+    ,compileInputBuildDirectory   = compileInputBuildDirectory cpIn1
+    ,compileInputDynFlags         = compileInputDynFlags cpIn1 . compileInputDynFlags cpIn2
     ,compileInputCommandLineFlags = nub $ compileInputCommandLineFlags cpIn1 `mappend` compileInputCommandLineFlags cpIn2
-    ,compileInputTargetFiles = nub $ compileInputTargetFiles cpIn1 `mappend` compileInputTargetFiles cpIn2
+    ,compileInputTargetFiles      = nub $ compileInputTargetFiles cpIn1 `mappend` compileInputTargetFiles cpIn2
   }
 
 instance Show CompileInput 
@@ -127,7 +124,7 @@ instance Show CompileInput
 
 -- | Configuration of the continuous listener
 data ListenerInput = ListenerInput {
-  listenerInputFiles :: [FileListenInfo] -- ^ The files to listen
+  listenerInputFiles  :: [FileListenInfo] -- ^ The files to listen
   ,listenerInputDelay :: Int  -- ^ Delay beetween 2 check in microsecond
 }
 
@@ -136,11 +133,11 @@ data ListenerInput = ListenerInput {
 -- The default listenerInputDelay is 2 sec
 instance Monoid ListenerInput where 
   mempty = ListenerInput {
-    listenerInputFiles = mempty
+    listenerInputFiles  = mempty
     ,listenerInputDelay = 1000000
     }
   mappend l1 l2 = ListenerInput {
-    listenerInputFiles = listenerInputFiles l1 `mappend` listenerInputFiles l2
+    listenerInputFiles  = listenerInputFiles l1 `mappend` listenerInputFiles l2
     ,listenerInputDelay = listenerInputDelay l1
     }
 
@@ -220,4 +217,6 @@ listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","te
 
 instance Eq ModuleData where
  mod1 == mod2 = moduleDataName mod1 == moduleDataName mod2
+
+moduleDataExtension = ".mdata"
 
