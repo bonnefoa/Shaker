@@ -17,7 +17,7 @@ import Shaker.ModuleData
 import Data.List
 import qualified Data.Map as M
 
-import Control.Monad.Reader(lift )
+import Control.Monad.Reader(lift, asks )
 import Control.Arrow
 
 import Distribution.Package (InstalledPackageId(..))
@@ -38,7 +38,7 @@ type ImportToPackages = [ ( String, [PackageConfig] ) ]
 -- unexposed yet needed packages
 getListNeededPackages :: Shaker IO [String]
 getListNeededPackages = do
-  cpIn <- getMergedCompileInput
+  cpIn <- fmap head (asks shakerCompileInputs)
   (PackageData map_import_modules list_project_modules) <- lift mapImportToModules
   import_to_packages <- lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
