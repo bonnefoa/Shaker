@@ -98,7 +98,7 @@ collectChangedModulesForTest' modFilePaths cpIn = do
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
 runFunction (RunnableFunction importModuleList listLibs fun) = do
-  cpIn <- getMergedCompileInput
+  cpIn <- getNonMainCompileInput
   listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags

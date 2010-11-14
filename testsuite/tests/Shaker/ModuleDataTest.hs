@@ -6,14 +6,10 @@ import Shaker.ModuleData
 
 import Test.HUnit
 
-import System.FilePath
 import System.Directory
-
-import Language.Haskell.Exts.Syntax
 
 import Data.Monoid 
 import Data.List
-import Data.Maybe
 
 import Shaker.CommonTest
 import Control.Monad.Reader
@@ -34,6 +30,19 @@ testGroupModuleData = do
   let res = filter ( any ( \ md -> "/noHsSource.hs" `isSuffixOf` moduleDataFileName md) ) parsedMod
   length res == 1 @? show res
   
+testNubModuleData :: Assertion
+testNubModuleData = do
+  parsedMod <- fmap nub (parseModuleData [ mempty ])
+  let res = filter ( \ md -> "/CabalTest.hs" `isSuffixOf` moduleDataFileName md) parsedMod
+  length res == 1 @? show res
+
+testGetNonMain :: Assertion
+testGetNonMain = do
+ shIn <- testShakerInput
+ cpIn <- runReaderT getNonMainCompileInput shIn
+ let filtered = filter (isSuffixOf "CabalTest.hs"  ) (compileInputTargetFiles cpIn )
+ length filtered ==1 @? show filtered
+
 testModuleDataFileName :: Assertion
 testModuleDataFileName = do
   modData <- getParsedModule

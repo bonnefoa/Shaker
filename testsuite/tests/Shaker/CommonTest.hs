@@ -27,7 +27,7 @@ testCompileInput ::IO CompileInput
 testCompileInput = fmap (mconcat . shakerCompileInputs ) defaultCabalInput 
 
 mergedCompileInput :: IO CompileInput
-mergedCompileInput = testShakerInput >>= runReaderT getMergedCompileInput 
+mergedCompileInput = testShakerInput >>= runReaderT getNonMainCompileInput 
 
 testShakerInput :: IO ShakerInput
 testShakerInput = defaultCabalInput
@@ -35,7 +35,7 @@ testShakerInput = defaultCabalInput
 compileProject :: IO CompileInput
 compileProject = do
   shIn <- testShakerInput 
-  cpIn <- runReaderT getMergedCompileInput shIn
+  cpIn <- runReaderT getNonMainCompileInput shIn
   _ <- runGhc (Just libdir) $ 
       ghcCompile cpIn
   return cpIn

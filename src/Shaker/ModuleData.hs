@@ -3,7 +3,6 @@ module Shaker.ModuleData
 
 import Data.List 
 import Data.Monoid
-import Data.Maybe
 
 import Control.Monad.Reader
 import Control.Arrow
@@ -19,13 +18,13 @@ import Language.Haskell.Exts.Syntax
 writeModuleData :: ModuleData -> Shaker IO ()
 writeModuleData moduleData = do
   let srcFile = moduleDataFileName moduleData
-  buildFile <- fmap (flip addExtension moduleDataExtension) (getCorrespondingBuildFile srcFile)
+  buildFile <- fmap (`addExtension` moduleDataExtension) (getCorrespondingBuildFile srcFile)
   lift $ createDirectoryIfMissing True (dropFileName buildFile) 
   lift $ writeFile buildFile (show moduleData) 
 
 readModuleDataIfExist :: FilePath -> Shaker IO (Maybe ModuleData)
 readModuleDataIfExist srcFile = do
-  buildFile <- fmap (flip addExtension moduleDataExtension) (getCorrespondingBuildFile srcFile)
+  buildFile <- fmap (`addExtension` moduleDataExtension) (getCorrespondingBuildFile srcFile)
   exist <- lift $ doesFileExist buildFile
   if exist 
     then lift $ fmap Just (parseFileToModuleData buildFile)
@@ -51,8 +50,12 @@ groupByValidTargets = partition moduleDataHasMain
   >>> ( \ (a, b) -> b : a ) 
   where mainGroupPredicate _ _ = False
 
-getMergedCompileInput :: Shaker IO CompileInput
-getMergedCompileInput = fmap mconcat convertModuleDataToFullCompileInput
+getNonMainCompileInput :: Shaker IO CompileInput
+getNonMainCompileInput = do
+  baseCpIn <- fmap mconcat (asks shakerCompileInputs)
+  lstModuleDatas <- asks shakerModuleData
+  let filteredModuleDatas = filter (not . moduleDataHasMain) >>> nub $ lstModuleDatas
+  return $ baseCpIn { compileInputTargetFiles = map moduleDataFileName filteredModuleDatas } 
 
 fillModuleData :: ShakerInput -> IO ShakerInput
 fillModuleData shIn = do
