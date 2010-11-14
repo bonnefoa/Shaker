@@ -24,7 +24,7 @@ runArgumentAction args = do
   lift $ either errAction (okAction shIn) either_command 
   return () 
   where 
-        errAction = putStrLn . show 
+        errAction = print
         okAction :: ShakerInput -> Command -> IO()
         okAction shIn command = do
            putStrLn ("Executing " ++ show command) 

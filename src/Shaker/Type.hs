@@ -218,5 +218,6 @@ listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","te
 instance Eq ModuleData where
  mod1 == mod2 = moduleDataName mod1 == moduleDataName mod2
 
+moduleDataExtension :: String
 moduleDataExtension = ".mdata"
 
