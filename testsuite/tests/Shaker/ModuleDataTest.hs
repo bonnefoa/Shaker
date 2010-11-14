@@ -6,8 +6,6 @@ import Shaker.ModuleData
 
 import Test.HUnit
 
-import System.Directory
-
 import Data.Monoid 
 import Data.List
 
@@ -19,10 +17,9 @@ testReadWriteModuleData = do
   moduleData <- getParsedModule
   shIn <- testShakerInput
   runReaderT (writeModuleData moduleData) shIn
-  let expectedDestFile = "dist/shakerTarget/testsuite/tests/Shaker/ModuleDataTest.mdata"
-  doesFileExist expectedDestFile @? "module data file should exit"
-  readModuleData <- runReaderT (readModuleDataIfExist expectedDestFile) shIn
-  Just moduleData == readModuleData @? "Module datas should be equals"
+  let testFile = "testsuite/tests/Shaker/ModuleDataTest.hs"
+  readModuleData <- runReaderT (readModuleDataIfExist testFile) shIn
+  Just moduleData == readModuleData @? "Module datas should be equals, got " ++ show moduleData ++ " and " ++ show readModuleData
 
 testGroupModuleData :: Assertion
 testGroupModuleData = do 
