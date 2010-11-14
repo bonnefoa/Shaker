@@ -50,16 +50,16 @@ getTupleIdentUnqualifiedType = getTupleIdentType
 
 getTupleIdentType :: Module -> [(String,Type)] 
 getTupleIdentType = hsModuleDecl >>> mapMaybe getSigIdent 
-  where getSigIdent (TypeSig _ names ty) = Just (ident (head names), ty)
+  where getSigIdent (TypeSig _ typeSigNames ty) = Just (ident (head typeSigNames), ty)
         getSigIdent _ = Nothing
 
 getSigTypes :: Module -> [String] 
 getSigTypes = hsModuleDecl >>> mapMaybe getSigType
-  where getSigType (TypeSig _ _ (TyCon (UnQual name) ) ) = Just (ident name)
+  where getSigType (TypeSig _ _ (TyCon (UnQual tyConName) ) ) = Just (ident tyConName)
         getSigType _ = Nothing
 
 getSigUnQualType :: Type -> Maybe String
-getSigUnQualType (TyCon (UnQual name) ) = Just (ident name)
+getSigUnQualType (TyCon (UnQual tyConName) ) = Just (ident tyConName)
 getSigUnQualType _ = Nothing
 
 ident :: Name -> String
@@ -70,7 +70,7 @@ hsModuleDecl :: Module -> [Decl]
 hsModuleDecl (Module _ _ _ _ _ _ decls) = decls
 
 hsModuleName :: Module -> ModuleName
-hsModuleName (Module _ name _ _ _ _ _) = name
+hsModuleName (Module _ moduleName _ _ _ _ _) = moduleName
 
 hsModuleFileName :: Module -> String
 hsModuleFileName (Module loc _ _ _ _ _ _ ) = srcFilename loc
