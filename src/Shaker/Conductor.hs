@@ -82,13 +82,13 @@ executeAction acts = do
   lift $ handleActionInterrupt allActs
   return () 
 
--- | Execute a single action with shakerArgument
+-- | Execute a single action with argument
 executeAction' :: Action -> Shaker IO()
 executeAction' (ActionWithArg actKey args) = do 
   plMap <- asks shakerPluginMap 
   local (\shIn -> shIn {shakerArgument = args} ) $ fromJust $ actKey `M.lookup` plMap
 
--- | Execute a single action without shakerArgument
+-- | Execute a single action without argument
 executeAction' (Action actKey) = do
   plMap <- asks shakerPluginMap 
   fromJust $ actKey `M.lookup` plMap

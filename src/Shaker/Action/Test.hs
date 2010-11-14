@@ -31,11 +31,11 @@ getModulesWithFunctionFiltering module_list = fmap
 runTestFramework' :: [ModuleMapping] -> Plugin
 runTestFramework' [] = lift $ putStrLn "No test to run"
 runTestFramework' modules = do
-  let import_modules = base_modules ++ map cfModuleName modules
+  let import_modules = base_modules ++ map runnableFunctionModuleName modules
   resolvedExp <- lift $ runQ (listTestFrameworkGroupList modules)
   let function =  filter (/= '\n') $ pprint resolvedExp
   lift $ putStrLn function
-  runFunction $ RunnableFunction import_modules ("defaultMain $ " ++ function) 
+  runFunction $ RunnableFunction import_modules listTestLibs ("defaultMain $ " ++ function) 
   return () 
   where base_modules =["Data.Maybe","Shaker.TestHelper","Test.Framework", "Test.Framework.Providers.HUnit", "Test.Framework.Providers.QuickCheck2", "Test.QuickCheck", "Test.HUnit", "Prelude" ] 
 

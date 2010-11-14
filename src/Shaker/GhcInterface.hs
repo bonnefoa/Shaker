@@ -3,7 +3,7 @@ module Shaker.GhcInterface (
   initializeGhc
   ,ghcCompile
   ,getListNeededPackages
-  ,installedPackagedId 
+  ,installedPackageIdString 
   -- * module change detection
   ,checkUnchangedSources
   ,isModuleNeedCompilation
@@ -12,12 +12,12 @@ module Shaker.GhcInterface (
 
 import Shaker.Io
 import Shaker.Type
-import Shaker.SourceHelper
+import Shaker.ModuleData
 
 import Data.List
 import qualified Data.Map as M
 
-import Control.Monad.Reader(lift )
+import Control.Monad.Reader(lift, asks )
 import Control.Arrow
 
 import Distribution.Package (InstalledPackageId(..))
@@ -32,15 +32,13 @@ import DynFlags
 
 import System.Directory
 
-import Data.Monoid
-
 type ImportToPackages = [ ( String, [PackageConfig] ) ]
 
 -- | Get the list of unresolved import and 
 -- unexposed yet needed packages
-getListNeededPackages :: Shaker IO ([String], [String])
+getListNeededPackages :: Shaker IO [String]
 getListNeededPackages = do
-  cpIn <- fmap mconcat getFullCompileCompileInput
+  cpIn <- fmap head (asks shakerCompileInputs)
   (PackageData map_import_modules list_project_modules) <- lift mapImportToModules
   import_to_packages <- lift $ runGhc (Just libdir) $ do 
     initializeGhc cpIn
@@ -48,22 +46,7 @@ getListNeededPackages = do
     return $ map ( \ imp -> (imp , lookupModuleInAllPackages dyn_flags . mkModuleName $ imp) ) 
               >>> map ( second (map fst) )
               $ (M.keys map_import_modules \\ list_project_modules) 
-  -- return ([] , [] )
-  return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
-  -- return (getModulesToIgnore map_import_modules import_to_packages, getPackagesToExpose import_to_packages)
-
-getModulesToIgnore :: MapImportToModules -> ImportToPackages -> [String]
-getModulesToIgnore map_import_modules = filter (snd >>> null) 
-  >>> map fst 
-  >>> recursivelyAddToIgnore [] 
-  >>> nub
-  where recursivelyAddToIgnore _ [] = []
-        recursivelyAddToIgnore processed (toAdd:xs) 
-          | toAdd `elem` processed = recursivelyAddToIgnore processed xs
-          | toAdd `M.member` map_import_modules = addedElements ++ recursivelyAddToIgnore (toAdd : processed) (xs++addedElements)
-          | otherwise = recursivelyAddToIgnore processed xs
-          where addedElements = map_import_modules M.! toAdd
-  
+  return $ getPackagesToExpose import_to_packages
 
 getPackagesToExpose :: ImportToPackages -> [String]
 getPackagesToExpose = map snd
@@ -73,10 +56,10 @@ getPackagesToExpose = map snd
     >>> nubBy (\a b ->  getPackage a == getPackage b ) 
     >>> filter (not . exposed)
     >>> map getPackage 
-  where getPackage = installedPackageId >>> installedPackagedId
+  where getPackage = installedPackageId >>> installedPackageIdString
 
-installedPackagedId :: InstalledPackageId -> String
-installedPackagedId (InstalledPackageId v) = v 
+installedPackageIdString :: InstalledPackageId -> String
+installedPackageIdString (InstalledPackageId v) = v 
 
 initializeGhc :: GhcMonad m => CompileInput -> m ()
 initializeGhc cpIn@(CompileInput _ _ procFlags strflags targetFiles) = do   

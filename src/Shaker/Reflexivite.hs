@@ -16,15 +16,20 @@ module Shaker.Reflexivite (
 
 import Data.List
 import Data.Maybe
+
+import Shaker.ModuleData
 import Shaker.Type 
 import Shaker.Action.Compile
-import Shaker.SourceHelper
 import Shaker.GhcInterface
 import Shaker.Regex
 
 import Control.Monad.Reader
 import Control.Arrow
 import Control.Exception as C
+
+import Distribution.Simple.PackageIndex
+import Distribution.InstalledPackageInfo
+import Distribution.Simple.LocalBuildInfo (installedPkgs)
 
 import Digraph
 import Language.Haskell.TH
@@ -39,23 +44,24 @@ import Var (varName)
 
 -- | Mapping between module name (to import) and test to execute
 data ModuleMapping = ModuleMapping {
-  cfModuleName :: String -- ^ Complete name of the module 
-  ,cfHunitAssertion :: [String] -- ^ Hunit assertions
-  ,cfHunitTestCase :: [String] -- ^ Hunit test case to process for test-framework
-  ,cfPropName :: [String] -- ^ QuickCheck test function names
+  runnableFunctionModuleName :: String -- ^ Complete name of the module 
+  ,moduleMappingHunitAssertion :: [String] -- ^ Hunit assertions
+  ,moduleMappingHunitTestCase :: [String] -- ^ Hunit test case to process for test-framework
+  ,moduleMappingPropName :: [String] -- ^ QuickCheck test function names
  }
  deriving (Show,Eq)
 
 data RunnableFunction = RunnableFunction {
-  cfModule :: [String]
-  ,cfFunctionName :: String -- The function name. Should have IO() as signature
+  runnableFunctionModule :: [String]
+  ,runnableLibrairies :: [String]
+  ,runnableFunctionFunction :: String -- The function name. Should have IO() as signature
 }
  deriving Show
 
 -- | Collect all non-main modules with their test function associated
 collectAllModulesForTest :: Shaker IO [ModuleMapping]
 collectAllModulesForTest = do 
-  cpInList <- getFullCompileCompileInput
+  cpInList <- convertModuleDataToFullCompileInput
   allModules <- fmap concat (lift $ mapM collectModules cpInList)
   return . removeNonTestModule $ allModules
   where collectModules cpIn = 
@@ -65,7 +71,7 @@ collectAllModulesForTest = do
 -- output all module needing recompilation
 collectChangedModulesForTest :: Shaker IO [ModuleMapping]
 collectChangedModulesForTest = do 
-  cpInList <- getFullCompileCompileInput
+  cpInList <- convertModuleDataToFullCompileInput
   modInfoFiles <- asks shakerModifiedInfoFiles
   let modFilePaths = map fileInfoFilePath modInfoFiles
   changed_modules <- fmap concat (lift $ mapM (collectChangedModules modFilePaths) cpInList) 
@@ -91,11 +97,12 @@ collectChangedModulesForTest' modFilePaths cpIn = do
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()
-runFunction (RunnableFunction importModuleList fun) = do
-  cpIn <- getFullCompileCompileInputNonMain
+runFunction (RunnableFunction importModuleList listLibs fun) = do
+  cpIn <- getNonMainCompileInput
+  listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
-         _ <- setSessionDynFlags (addShakerLibraryAsImport (dopt_set dflags Opt_HideAllPackages))
+         _ <- setSessionDynFlags (addShakerLibraryAsImport listInstalledPkgId (dopt_set dflags Opt_HideAllPackages))
          _ <- ghcCompile cpIn 
          configureContext importModuleList
          value <- compileExpr fun
@@ -107,11 +114,21 @@ runFunction (RunnableFunction importModuleList fun) = do
         configureContext [] = getModuleGraph >>= \mGraph ->  setContext [] $ map ms_mod mGraph
         configureContext imports = mapM (\a -> findModule (mkModuleName a)  Nothing ) imports >>= \m -> setContext [] m
 
-addShakerLibraryAsImport :: DynFlags -> DynFlags
-addShakerLibraryAsImport dflags = dflags {
-    packageFlags = nub $ map ExposePackage  ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] ++ oldPackageFlags
+addShakerLibraryAsImport :: [String] -> DynFlags -> DynFlags
+addShakerLibraryAsImport listInstalledPkgId dflags = dflags {
+    packageFlags = nub $ map ExposePackageId listInstalledPkgId ++ oldPackageFlags
   }
   where oldPackageFlags = packageFlags dflags
+
+searchInstalledPackageId :: String -> Shaker IO (Maybe String)
+searchInstalledPackageId pkgName = do 
+  pkgIndex <- fmap installedPkgs (asks shakerLocalBuildInfo)
+  let srchRes = searchByName pkgIndex pkgName 
+  return $ processSearchResult srchRes
+  where processSearchResult None = Nothing
+        processSearchResult (Unambiguous a) = Just $ installedPackageId >>> installedPackageIdString $ head a
+        processSearchResult (Ambiguous (a:_)) = Just $ installedPackageId >>> installedPackageIdString $ head a
+        processSearchResult _ = Nothing
 
 handleActionInterrupt :: IO() -> IO()
 handleActionInterrupt =  C.handle catchAll
@@ -171,7 +188,7 @@ listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
 
 -- | Remove all modules which does not contain test
 removeNonTestModule :: [ModuleMapping] -> [ModuleMapping]
-removeNonTestModule = filter (\modMap -> notEmpty (cfHunitAssertion modMap) || notEmpty (cfPropName modMap) || notEmpty (cfHunitTestCase modMap) )
+removeNonTestModule = filter (\modMap -> notEmpty (moduleMappingHunitAssertion modMap) || notEmpty (moduleMappingPropName modMap) || notEmpty (moduleMappingHunitTestCase modMap) )
   where notEmpty = not.null
 
 -- * Test framework integration 
@@ -179,10 +196,10 @@ removeNonTestModule = filter (\modMap -> notEmpty (cfHunitAssertion modMap) || n
 -- | Generate a test group for a given module
 getSingleTestFrameworkGroup :: ModuleMapping -> Exp
 getSingleTestFrameworkGroup modMap = foldl1 AppE [process_to_group_exp, test_case_tuple_list, list_assertion, list_prop]
-  where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ cfModuleName modMap))
-        list_prop = ListE $ map getSingleFrameworkQuickCheck $ cfPropName modMap
-        list_assertion = ListE $ map getSingleFrameworkHunit $ cfHunitAssertion modMap
-        test_case_tuple_list = convertHunitTestCaseToTuples (cfHunitTestCase modMap)
+  where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ runnableFunctionModuleName modMap))
+        list_prop = ListE $ map getSingleFrameworkQuickCheck $ moduleMappingPropName modMap
+        list_assertion = ListE $ map getSingleFrameworkHunit $ moduleMappingHunitAssertion modMap
+        test_case_tuple_list = convertHunitTestCaseToTuples (moduleMappingHunitTestCase modMap)
 
 convertHunitTestCaseToTuples :: [String] -> Exp
 convertHunitTestCaseToTuples = ListE . map convertToTuple 
@@ -205,8 +222,8 @@ getSingleFrameworkQuickCheck propName = AppE testproperty_with_name_exp property
 
 -- | Include only module matching the given pattern
 filterModulesWithPattern :: [ModuleMapping]-> String -> [ModuleMapping]
-filterModulesWithPattern mod_map pattern = filter (\a -> cfModuleName a `elem` filtered_mod_list) mod_map
-  where mod_list = map cfModuleName mod_map
+filterModulesWithPattern mod_map pattern = filter (\a -> runnableFunctionModuleName a `elem` filtered_mod_list) mod_map
+  where mod_list = map runnableFunctionModuleName mod_map
         filtered_mod_list = processListWithRegexp mod_list [] [pattern]
 
 filterFunctionsWithPatterns :: [ModuleMapping] -> [String] -> [ModuleMapping]
@@ -215,10 +232,10 @@ filterFunctionsWithPatterns mod_map patterns = map (`filterFunctionsWithPatterns
 filterFunctionsWithPatterns' :: ModuleMapping -> [String] -> ModuleMapping
 filterFunctionsWithPatterns' (ModuleMapping name hunitAssertions hunitTestCases properties) patterns = 
   ModuleMapping{
-    cfModuleName = name
-    ,cfHunitAssertion = processListWithRegexp hunitAssertions [] patterns
-    ,cfHunitTestCase = processListWithRegexp hunitTestCases [] patterns
-    ,cfPropName = processListWithRegexp properties [] patterns
+    runnableFunctionModuleName = name
+    ,moduleMappingHunitAssertion = processListWithRegexp hunitAssertions [] patterns
+    ,moduleMappingHunitTestCase = processListWithRegexp hunitTestCases [] patterns
+    ,moduleMappingPropName = processListWithRegexp properties [] patterns
   }
 
 

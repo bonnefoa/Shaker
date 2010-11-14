@@ -32,3 +32,6 @@ tm.out
 *.o
 *.hi
 target
+tags
+log.txt
+.directory

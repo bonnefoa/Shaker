@@ -4,7 +4,6 @@ module Shaker.GhcInterfaceTest
 import Test.HUnit
 
 import Shaker.GhcInterface
-import Shaker.SourceHelper
 import Shaker.Type
 import Shaker.CommonTest
 
@@ -17,6 +16,7 @@ import Digraph
 
 import Shaker.Config
 
+import Data.List
 import Data.Maybe
 import Data.Monoid
 
@@ -26,17 +26,14 @@ testListNeededPackages :: Assertion
 testListNeededPackages = do
   let cpIn = mempty {compileInputCommandLineFlags = ["-hide-all-packages"]}
   let shIn = defaultInput { shakerCompileInputs = [cpIn]  }
-  (bad_modules, list_needed_imports) <- runReaderT getListNeededPackages shIn
-  bad_modules == ["BadImports", "DependanceToBadImports"] @? "there should be BadImports and DependanceToBadImports module, got " ++ show bad_modules
-  any (== "bytestring") list_needed_imports @? show list_needed_imports
+  list_needed_imports <- runReaderT getListNeededPackages shIn
+  any (isPrefixOf "bytestring") list_needed_imports @? show list_needed_imports
 
 testCheckUnchangedSources :: Assertion
 testCheckUnchangedSources =  do
-  cpIn <- testCompileInput
-  shIn <- testShakerInput
-  cfFlList <- runReaderT constructCompileFileList shIn
-  mss <- runGhc (Just libdir) $ do 
-            _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+  cpIn <- mergedCompileInput
+  mss <- runGhc (Just libdir) $ do  
+            _ <- initializeGhc cpIn
             depanal [] False
   let hsSrcs = map (fromJust . ml_hs_file . ms_location) mss
   exp_all_true <- filterM (checkUnchangedSources  []) mss 
@@ -50,10 +47,10 @@ testCheckUnchangedSources =  do
 
 testModuleNeedCompilation :: Assertion
 testModuleNeedCompilation =  do 
- (cpIn, cfFlList) <- compileProject
- let targets = map (</> "Shaker" </> "SourceHelperTest.hs") (compileInputSourceDirs cpIn)
+ cpIn <- compileProject
+ let targets = map (</> "Shaker" </> "GhcInterfaceTest.hs") (compileInputSourceDirs cpIn)
  runGhc (Just libdir) $ do 
-     _ <- initializeGhc $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
+     _ <- initializeGhc cpIn
      mss <- depanal [] False
      let sort_mss = topSortModuleGraph True mss Nothing
      mapRecompNeeded <- mapM (isModuleNeedCompilation []) (flattenSCCs sort_mss)

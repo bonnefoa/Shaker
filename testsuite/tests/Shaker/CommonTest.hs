@@ -1,15 +1,18 @@
 module Shaker.CommonTest
  where 
 
+import Data.Monoid
 import System.Directory
 import Test.HUnit
 import Control.Exception
+
+import Shaker.ModuleData
 import Shaker.Type
-import Shaker.SourceHelper
 import Shaker.GhcInterface
 import Shaker.Cabal.CabalInfo
 
 import Control.Monad.Reader
+import DynFlags 
 
 import GHC (runGhc)
 import GHC.Paths
@@ -21,17 +24,23 @@ runTestOnDirectory fp fun = do
   finally fun (setCurrentDirectory oldDir)
 
 testCompileInput ::IO CompileInput 
-testCompileInput = fmap (mergeCompileInputsSources . shakerCompileInputs ) defaultCabalInput 
+testCompileInput = fmap (mconcat . shakerCompileInputs ) defaultCabalInput 
+
+mergedCompileInput :: IO CompileInput
+mergedCompileInput = testShakerInput >>= runReaderT getNonMainCompileInput 
 
 testShakerInput :: IO ShakerInput
 testShakerInput = defaultCabalInput
 
-compileProject :: IO(CompileInput, [CompileFile])
+compileProject :: IO CompileInput
 compileProject = do
-  cpIn <- testCompileInput 
   shIn <- testShakerInput 
-  cfFlList <- runReaderT constructCompileFileList shIn
+  cpIn <- runReaderT getNonMainCompileInput shIn
   _ <- runGhc (Just libdir) $ 
-      ghcCompile $ runReader (fillCompileInputWithStandardTarget cpIn) cfFlList
-  return (cpIn, cfFlList)
+      ghcCompile cpIn
+  return cpIn
+
+exposePackageId :: PackageFlag -> String
+exposePackageId (ExposePackageId v) = v
+exposePackageId _ = ""
 

@@ -1,0 +1,12 @@
+Name:     sameFile
+Version:  0.0.1
+cabal-version: >= 1.8
+build-type: Simple
+
+Library 
+  exposed-modules: A
+  ghc-options: -Wall
+  build-depends: ghc >= 6
+                 ,base >=4
+
+

@@ -7,6 +7,7 @@ import Shaker.Action.Compile
 import Shaker.Action.Standard
 import Shaker.Type
 import Shaker.CommonTest
+import Data.List
 import Test.HUnit
 import Shaker.Cabal.CabalInfo
 import DynFlags( DynFlags, packageFlags, importPaths ,PackageFlag (ExposePackage) , defaultDynFlags
@@ -23,7 +24,8 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   compileInputTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( compileInputTargetFiles cplExe)
   let dFlags = compileInputDynFlags cplExe defaultDynFlags
   all (`elem` importPaths dFlags) ["dist/build/autogen","src"] @? "importPaths should be contains src and dist/build/autogen, got "++ show (importPaths dFlags)
-  ExposePackage "ghc" `elem` packageFlags dFlags @? "Expected : ExposePackage ghc. No show instance so figure it yourself... (/me being lazy)" 
+  let listPackageString = map exposePackageId (packageFlags dFlags)
+  any (\a -> "ghc" `isPrefixOf` a ) listPackageString @? "Expected : ExposePackageId ghc, got " ++ show listPackageString
   let (ListenerInput (_:srcLib:[]) _) = shakerListenerInput shIn
   fileListenInfoDir srcLib == "src" @? "Expected : src, got " ++ show srcLib
 

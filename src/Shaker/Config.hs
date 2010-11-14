@@ -19,6 +19,8 @@ defaultInput = ShakerInput {
   ,shakerModifiedInfoFiles = []
   ,shakerThreadData = undefined
   ,shakerInputState = undefined
+  ,shakerLocalBuildInfo = undefined
+  ,shakerModuleData = []
   }
 
 defaultInputInitialized :: IO ShakerInput 
@@ -48,4 +50,5 @@ defaultInputState = do
   inputMv <- newEmptyMVar 
   tokenMv <- newEmptyMVar  
   return InputState { shakerInputStateCommand = inputMv, shakerInputStateToken =  tokenMv } 
+
 
