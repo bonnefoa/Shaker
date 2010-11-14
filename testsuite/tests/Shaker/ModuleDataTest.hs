@@ -13,17 +13,27 @@ import Language.Haskell.Exts.Syntax
 
 import Data.Monoid 
 import Data.List
+import Data.Maybe
 
 import Shaker.CommonTest
 import Control.Monad.Reader
 
-testWriteModuleData :: Assertion
-testWriteModuleData = do
-  modData <- getParsedModule
+testReadWriteModuleData :: Assertion
+testReadWriteModuleData = do
+  moduleData <- getParsedModule
   shIn <- testShakerInput
-  runReaderT (writeModuleData modData) shIn
-  doesFileExist "dist/shakerTarget/testsuite/tests/Shaker/ModuleDataTest.mdata" @? "module data file should exit"
+  runReaderT (writeModuleData moduleData) shIn
+  let expectedDestFile = "dist/shakerTarget/testsuite/tests/Shaker/ModuleDataTest.mdata"
+  doesFileExist expectedDestFile @? "module data file should exit"
+  readModuleData <- runReaderT (readModuleDataIfExist expectedDestFile) shIn
+  Just moduleData == readModuleData @? "Module datas should be equals"
 
+testGroupModuleData :: Assertion
+testGroupModuleData = do 
+  parsedMod <- fmap groupByValidTargets (parseModuleData [ mempty ])
+  let res = filter ( any ( \ md -> "/noHsSource.hs" `isSuffixOf` moduleDataFileName md) ) parsedMod
+  length res == 1 @? show res
+  
 testModuleDataFileName :: Assertion
 testModuleDataFileName = do
   modData <- getParsedModule
