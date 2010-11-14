@@ -7,6 +7,10 @@ import System.Time
 import Data.List
 import qualified Data.Map as M
 
+import Shaker.CommonTest
+
+import Control.Monad.Reader
+
 import Test.HUnit hiding (assert)
 
 aTimeDiff :: TimeDiff
@@ -101,4 +105,10 @@ testMapImportToModules = do
   map_import_modules <- fmap packageDataMapImportToModules mapImportToModules
   let data_list_import =  map_import_modules M.! "System.Time"
   any (== "Shaker.IoTest"  ) data_list_import @? show data_list_import
+
+testGetCorrespondingBuildFile :: Assertion
+testGetCorrespondingBuildFile = do 
+  shIn <- testShakerInput
+  res <- runReaderT (getCorrespondingBuildFile "src/test.test") shIn
+  "dist/shakerTarget/src/test" `isSuffixOf` res @? show res
 
