@@ -6,6 +6,7 @@ import Data.Monoid
 import Data.List
 
 import Distribution.Simple.LocalBuildInfo
+import Distribution.Simple.PackageIndex
 
 import DynFlags hiding (OneShot)
 import qualified Data.Map as M
@@ -78,6 +79,7 @@ data ShakerInput = ShakerInput {
   ,shakerThreadData        :: ThreadData
   ,shakerInputState        :: InputState
   ,shakerLocalBuildInfo    :: LocalBuildInfo
+  ,shakerPackageIndex      :: PackageIndex
   ,shakerModuleData        :: [ModuleData]
  }
  
