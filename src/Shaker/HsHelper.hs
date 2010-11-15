@@ -1,40 +1,43 @@
 module Shaker.HsHelper
  where
 
-import Shaker.Type
-import Shaker.Io
-
+import Control.Arrow
 import Data.List
 import Data.Maybe
+import Language.Haskell.Parser
+import Language.Haskell.Syntax
+import Shaker.Io
+import Shaker.Type
 
-import Language.Haskell.Exts.Parser
-import Language.Haskell.Exts.Syntax
-import Language.Haskell.Exts
-
-import Control.Arrow
-
-parseHsFiles :: [FileListenInfo] -> IO [Module]
+parseHsFiles :: [FileListenInfo] -> IO [HsModule]
 parseHsFiles fliListenInfos = do
   files <- recurseMultipleListFiles fliListenInfos
-  parseResults <- mapM parseFile files
+  parseResults <- mapM parseFileToHsModule files
   return $ mapMaybe parseHs parseResults
   where parseHs parseResults = case parseResults of
                                ParseOk val -> Just val
                                _ -> Nothing
+        parseFileToHsModule fp = do 
+          fileContent <- readFile fp
+          return $ parseModuleWithMode defaultParseMode { parseFilename = fp } fileContent
 
-hsModuleCollectProperties :: Module -> [String]
-hsModuleCollectProperties = getTupleIdentType >>> map fst >>> filter (isPrefixOf "prop_")
+hsModuleCollectProperties :: HsModule -> [String]
+hsModuleCollectProperties = getTupleFunctionNameType >>> map fst >>> filter (isPrefixOf "prop_")
 
-abstractCollectFunctionWithUnqualifiedType :: (String -> Bool) -> Module -> [String]
-abstractCollectFunctionWithUnqualifiedType fun = getTupleIdentUnqualifiedType
+abstractCollectFunctionWithUnqualifiedType :: (HsQualType -> Bool) -> HsModule -> [String]
+abstractCollectFunctionWithUnqualifiedType fun = getTupleFunctionNameType 
   >>> filterSnd fun
   >>> map fst
 
-hsModuleCollectTest :: Module -> [String]
-hsModuleCollectTest = abstractCollectFunctionWithUnqualifiedType (== "Test") 
+hsModuleCollectTest :: HsModule -> [String]
+hsModuleCollectTest = abstractCollectFunctionWithUnqualifiedType predicat
+  where predicat (HsQualType _ (HsTyCon (UnQual hsName) ) ) = hsName == HsIdent "Test"
+        predicat _ = False
 
-hsModuleCollectAssertions :: Module -> [String]
-hsModuleCollectAssertions = abstractCollectFunctionWithUnqualifiedType ( == "Assertion") 
+hsModuleCollectAssertions :: HsModule -> [String]
+hsModuleCollectAssertions = abstractCollectFunctionWithUnqualifiedType predicat
+  where predicat (HsQualType _ (HsTyCon (UnQual hsName) ) ) = hsName == HsIdent "Assertion"
+        predicat _ = False
 
 filterSnd :: (b -> Bool) -> [(a,b)] -> [(a,b)]
 filterSnd fun = filter (snd >>> fun)
@@ -42,36 +45,23 @@ filterSnd fun = filter (snd >>> fun)
 mapSnd :: ( t1 -> t2 ) -> [ ( t, t1 ) ] -> [ ( t , t2 ) ] 
 mapSnd fun = map ( second fun )
 
-getTupleIdentUnqualifiedType :: Module -> [(String, String)]
-getTupleIdentUnqualifiedType = getTupleIdentType 
-  >>> mapSnd getSigUnQualType 
-  >>> filterSnd isJust
-  >>> mapSnd fromJust
+getTupleFunctionNameType :: HsModule -> [(String, HsQualType)]
+getTupleFunctionNameType = getDecls >>> mapMaybe getSignature
 
-getTupleIdentType :: Module -> [(String,Type)] 
-getTupleIdentType = hsModuleDecl >>> mapMaybe getSigIdent 
-  where getSigIdent (TypeSig _ typeSigNames ty) = Just (ident (head typeSigNames), ty)
-        getSigIdent _ = Nothing
+getSignature :: HsDecl -> Maybe (String, HsQualType)
+getSignature (HsTypeSig _ hsNames hsQualType) = Just (head >>> getIdentFromHsName $ hsNames, hsQualType)
+getSignature _ = Nothing
 
-getSigTypes :: Module -> [String] 
-getSigTypes = hsModuleDecl >>> mapMaybe getSigType
-  where getSigType (TypeSig _ _ (TyCon (UnQual tyConName) ) ) = Just (ident tyConName)
-        getSigType _ = Nothing
+getIdentFromHsName :: HsName -> String
+getIdentFromHsName (HsIdent v) = v
+getIdentFromHsName _ = ""
 
-getSigUnQualType :: Type -> Maybe String
-getSigUnQualType (TyCon (UnQual tyConName) ) = Just (ident tyConName)
-getSigUnQualType _ = Nothing
+getDecls :: HsModule -> [HsDecl]
+getDecls (HsModule _ _ _ _ decls) = decls
 
-ident :: Name -> String
-ident (Ident v) = v
-ident (Symbol v) = v
+hsModuleFileName :: HsModule -> String
+hsModuleFileName (HsModule loc _ _ _ _) = srcFilename loc
 
-hsModuleDecl :: Module -> [Decl]
-hsModuleDecl (Module _ _ _ _ _ _ decls) = decls
-
-hsModuleName :: Module -> ModuleName
-hsModuleName (Module _ moduleName _ _ _ _ _) = moduleName
-
-hsModuleFileName :: Module -> String
-hsModuleFileName (Module loc _ _ _ _ _ _ ) = srcFilename loc
+hsModuleName :: HsModule -> String
+hsModuleName (HsModule _ (Module moduleName) _ _ _) = moduleName
 

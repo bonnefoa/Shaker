@@ -1,19 +1,16 @@
 module Shaker.ModuleData
  where
 
+import Control.Arrow
+import Control.Monad.Reader
 import Data.List 
 import Data.Monoid
-
-import Control.Monad.Reader
-import Control.Arrow
-
-import Shaker.Type
+import Language.Haskell.Syntax
 import Shaker.HsHelper
 import Shaker.Io
-
-import System.FilePath
+import Shaker.Type
 import System.Directory
-import Language.Haskell.Exts.Syntax
+import System.FilePath
 
 writeModuleData :: ModuleData -> Shaker IO ()
 writeModuleData moduleData = do
@@ -62,16 +59,15 @@ fillModuleData shIn = do
   lstHsModules <- shakerListenerInput >>> listenerInputFiles >>> parseHsFiles $ shIn
   return shIn { shakerModuleData = map constructModuleData lstHsModules }
 
-constructModuleData :: Module -> ModuleData
+constructModuleData :: HsModule -> ModuleData
 constructModuleData hsModule = ModuleData {
-  moduleDataName = hsModuleName >>> unwrapModuleName $ hsModule
+  moduleDataName = hsModuleName hsModule
   ,moduleDataFileName = hsModuleFileName hsModule
-  ,moduleDataHasMain = getTupleIdentType >>> map fst >>> any (=="main") $ hsModule
+  ,moduleDataHasMain = getTupleFunctionNameType >>> map fst >>> any (=="main") $ hsModule
   ,moduleDataProperties = hsModuleCollectProperties hsModule
   ,moduleDataAssertions = hsModuleCollectAssertions hsModule
   ,moduleDataTestCase = hsModuleCollectTest hsModule
  }
- where unwrapModuleName (ModuleName a) = a
 
 hsModuleDataHasTest :: ModuleData -> Bool
 hsModuleDataHasTest hsModuleData = any (not . null) [moduleDataProperties hsModuleData, moduleDataAssertions hsModuleData] 

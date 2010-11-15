@@ -138,7 +138,6 @@ Library
                  ,directory == 1.0.*
                  ,filepath == 1.1.*
                  ,haskell-src
-                 ,haskell-src-exts == 1.9.*
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*
                  ,haskell98 == 1.0.*
@@ -164,7 +163,6 @@ Executable shaker
                  ,haskeline == 0.6.*
                  ,directory == 1.0.*
                  ,haskell-src
-                 ,haskell-src-exts == 1.9.*
                  ,filepath == 1.1.*
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*

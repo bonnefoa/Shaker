@@ -1,16 +1,13 @@
 module Shaker.ModuleDataTest
  where 
 
-import Shaker.Type
-import Shaker.ModuleData
-
-import Test.HUnit
-
-import Data.Monoid 
-import Data.List
-
-import Shaker.CommonTest
 import Control.Monad.Reader
+import Data.List
+import Data.Monoid 
+import Shaker.CommonTest
+import Shaker.ModuleData
+import Shaker.Type
+import Test.HUnit
 
 testReadWriteModuleData :: Assertion
 testReadWriteModuleData = do

@@ -1,14 +1,11 @@
 module Shaker.HsHelperTest
  where
 
-import Shaker.Type
-import Shaker.HsHelper
-
-import Test.HUnit
-
 import Data.Monoid 
-
-import Language.Haskell.Exts.Syntax
+import Language.Haskell.Syntax
+import Shaker.HsHelper
+import Shaker.Type
+import Test.HUnit
 
 testModuleCollectProperties :: Assertion
 testModuleCollectProperties = do
@@ -34,6 +31,6 @@ testModuleCollectTestCase = TestCase $ True @? "Trivial"
 prop_trivial :: Bool
 prop_trivial = True
 
-getParsedModule :: IO Module 
+getParsedModule :: IO HsModule 
 getParsedModule = fmap head ( parseHsFiles [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*HsHelperTest.hs"]  } ] )
 
