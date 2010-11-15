@@ -12,7 +12,6 @@ module Shaker.GhcInterface (
 
 import Shaker.Io
 import Shaker.Type
-import Shaker.ModuleData
 
 import Data.List
 import qualified Data.Map as M

@@ -20,7 +20,7 @@ import Distribution.Simple.LocalBuildInfo
 import Distribution.ModuleName
 import Distribution.Simple.Setup
 import DynFlags(
-    DynFlags, verbosity, ghcLink, packageFlags, outputFile, hiDir, objectDir ,importPaths
+    DynFlags, verbosity, ghcLink, packageFlags, hiDir, objectDir ,importPaths
     ,PackageFlag (ExposePackageId)
     ,GhcLink (NoLink)
   )
@@ -125,7 +125,6 @@ libraryToCompileInput (lib, componentLocalBuildInfo) = mempty {
 toDynFlags :: [String] -> [String] -> DynFlags -> DynFlags
 toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
   importPaths = nub $ oldImportPaths ++ sourceDirs
-  ,outputFile = Just "dist/shakerTarget/Main"
   ,objectDir = Just "dist/shakerTarget"
   ,hiDir = Just "dist/shakerTarget"
   ,verbosity = 1
