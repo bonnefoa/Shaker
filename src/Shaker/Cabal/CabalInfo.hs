@@ -5,45 +5,37 @@ module Shaker.Cabal.CabalInfo(
   )
    where
 
-import Shaker.Type
+import Control.Arrow
+import Control.Monad.Reader
+import Data.List(nub,isSuffixOf, find, isPrefixOf)
+import Data.Maybe
+import Data.Monoid 
+import Distribution.Compiler(CompilerFlavor(GHC))
+import Distribution.ModuleName
+import Distribution.PackageDescription
+import Distribution.PackageDescription.Parse
+import Distribution.Package (PackageName(PackageName), pkgName)
+import Distribution.Simple.Build
+import Distribution.Simple.Compiler (PackageDB(..))
+import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig, getInstalledPackages)
+import Distribution.Simple.LocalBuildInfo 
+import Distribution.Simple.Program
+import Distribution.Simple.Setup
+import Distribution.Simple.Utils
+import Distribution.Verbosity
+import DynFlags( DynFlags, verbosity, ghcLink, packageFlags, hiDir, objectDir ,importPaths ,PackageFlag (ExposePackageId) ,GhcLink (NoLink))
 import Shaker.Config
 import Shaker.GhcInterface
-
-import Distribution.Simple.Build
-import Distribution.Verbosity
-import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig)
-import Distribution.PackageDescription.Parse
-import Distribution.PackageDescription
-import Distribution.Simple.Utils
-import Distribution.Simple.Program
-import Distribution.Simple.LocalBuildInfo 
-import Distribution.ModuleName
-import Distribution.Simple.Setup
-import DynFlags(
-    DynFlags, verbosity, ghcLink, packageFlags, hiDir, objectDir ,importPaths
-    ,PackageFlag (ExposePackageId)
-    ,GhcLink (NoLink)
-  )
-import Distribution.Compiler(CompilerFlavor(GHC))
-import Distribution.Package (PackageName(PackageName), pkgName)
-
-import System.FilePath          ( (</>))
-import System.Directory (doesFileExist)
-
-import Data.Maybe
-import Data.List(nub,isSuffixOf, find, isPrefixOf)
-import Data.Monoid 
-
 import Shaker.ModuleData
-
-import Control.Monad.Reader
-import Control.Arrow
+import Shaker.Type
+import System.Directory (doesFileExist)
+import System.FilePath          ( (</>))
 
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
 defaultCabalInput = readConf >>= \lbi -> 
   generatePreprocessFile lbi >> 
-  localBuildInfoToShakerInput lbi >>= exposeNeededPackages lbi >>= checkInvalidMain >>= fillModuleData
+  localBuildInfoToShakerInput lbi >>= exposeNeededPackages lbi >>= checkInvalidMain >>= fillModuleData >>= fillPackageIndex
 
 generatePreprocessFile :: LocalBuildInfo -> IO ()
 generatePreprocessFile lbi = writeAutogenFiles normal (localPkgDescr lbi) lbi
@@ -183,4 +175,10 @@ exposeNeededPackages lbi shIn = do
         currentPackage = localPkgDescr >>> package >>> pkgName >>> unPackageName $ lbi
         unPackageName (PackageName v) = v
 
+fillPackageIndex :: ShakerInput -> IO ShakerInput 
+fillPackageIndex shIn = do
+  (Just pkgIndex) <- getInstalledPackages normal lbi_compiler [GlobalPackageDB] lbi_programConfiguration 
+  return shIn { shakerPackageIndex = pkgIndex }
+  where lbi_compiler = shakerLocalBuildInfo >>> compiler $ shIn
+        lbi_programConfiguration = shakerLocalBuildInfo >>> withPrograms $ shIn
 

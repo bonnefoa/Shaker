@@ -6,6 +6,7 @@ module Shaker.Reflexivite (
   ,collectChangedModulesForTest 
   ,runFunction
   ,removeNonTestModule
+  ,searchInstalledPackageId
   -- * Template haskell generator
   ,listAllTestFrameworkGroupList
   ,filterModulesWithPattern
@@ -14,32 +15,27 @@ module Shaker.Reflexivite (
   )
  where
 
-import Data.List
-import Data.Maybe
-
-import Shaker.ModuleData
-import Shaker.Type 
-import Shaker.Action.Compile
-import Shaker.GhcInterface
-import Shaker.Regex
-
-import Control.Monad.Reader
 import Control.Arrow
 import Control.Exception as C
-
-import Distribution.Simple.PackageIndex
-import Distribution.InstalledPackageInfo
-import Distribution.Simple.LocalBuildInfo (installedPkgs)
-
+import Control.Monad.Reader
+import Data.List
+import Data.Maybe
 import Digraph
-import Language.Haskell.TH
+import Distribution.InstalledPackageInfo
+import Distribution.Simple.PackageIndex
+import DynFlags
 import GHC
 import GHC.Paths
-import DynFlags
-import Unsafe.Coerce
-import Outputable
-import OccName (occNameString)
+import Language.Haskell.TH
 import Name (nameOccName)
+import OccName (occNameString)
+import Outputable
+import Shaker.Action.Compile
+import Shaker.GhcInterface
+import Shaker.ModuleData
+import Shaker.Regex
+import Shaker.Type 
+import Unsafe.Coerce
 import Var (varName)
 
 -- | Mapping between module name (to import) and test to execute
@@ -122,7 +118,7 @@ addShakerLibraryAsImport listInstalledPkgId dflags = dflags {
 
 searchInstalledPackageId :: String -> Shaker IO (Maybe String)
 searchInstalledPackageId pkgName = do 
-  pkgIndex <- fmap installedPkgs (asks shakerLocalBuildInfo)
+  pkgIndex <- asks shakerPackageIndex
   let srchRes = searchByName pkgIndex pkgName 
   return $ processSearchResult srchRes
   where processSearchResult None = Nothing
