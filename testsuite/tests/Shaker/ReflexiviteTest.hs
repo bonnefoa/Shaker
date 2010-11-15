@@ -5,6 +5,7 @@ import Test.HUnit
 import Test.QuickCheck 
 
 import Data.List
+import Data.Maybe
 
 import Control.Monad.Reader(runReaderT)
 import Shaker.Reflexivite
@@ -127,6 +128,12 @@ testCollectChangedModulesWithModifiedFiles =  do
   shIn <- testShakerInput 
   exp_one_modules <- runReaderT collectChangedModulesForTest shIn {shakerModifiedInfoFiles = modFileInfo }
   length exp_one_modules == 1 @? "One module should need compilation"
+
+testSearchInstalledPackageId :: Assertion
+testSearchInstalledPackageId = do 
+  shIn <- testShakerInput
+  may_pkgId <- runReaderT (searchInstalledPackageId "shaker") shIn
+  isJust may_pkgId @? show may_pkgId
 
 prop_filterModMap_fileListenInfoInclude_all :: [ModuleMapping] -> Bool
 prop_filterModMap_fileListenInfoInclude_all modMap = modMap == res
