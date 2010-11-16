@@ -11,7 +11,7 @@ import Distribution.Simple.PackageIndex
 import DynFlags hiding (OneShot)
 import qualified Data.Map as M
 import Control.Monad.Reader
-import System.Time(ClockTime)
+import System.Time
 import Control.Concurrent.MVar
 import Control.Concurrent
 
@@ -162,7 +162,7 @@ instance Monoid FileListenInfo where
 -- |Agregate a FilePath with its modification time
 data FileInfo = FileInfo {
   fileInfoFilePath :: FilePath
- ,fileInfoClockTime:: ClockTime 
+ ,fileInfoClockTime:: ClockTime
   }
   deriving (Show,Eq)
 
@@ -206,7 +206,7 @@ defaultHaskellPatterns = [".*\\.hs$", ".*\\.lhs"]
 
 -- | Default exclude pattern : Setup.hs
 defaultExclude :: [String]
-defaultExclude =  [".*Setup\\.lhs$",".*Setup\\.hs$", ".*/\\."]
+defaultExclude =  [".*Setup\\.lhs$",".*Setup\\.hs$", ".*/\\.", ".*/dist/.*"]
 
 exitCommand :: Command
 exitCommand = Command OneShot [Action Quit]
