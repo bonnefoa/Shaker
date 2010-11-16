@@ -11,7 +11,7 @@ import Test.HUnit
 
 testReadWriteModuleData :: Assertion
 testReadWriteModuleData = do
-  moduleData <- getParsedModule
+  moduleData <- getTestModuleData "ModuleDataTest.hs"
   shIn <- testShakerInput
   runReaderT (writeModuleData moduleData) shIn
   let testFile = "testsuite/tests/Shaker/ModuleDataTest.hs"
@@ -39,8 +39,14 @@ testGetNonMain = do
 
 testModuleDataFileName :: Assertion
 testModuleDataFileName = do
-  modData <- getParsedModule
+  modData <- getTestModuleData "ModuleDataTest.hs"
   "ModuleDataTest.hs" `isSuffixOf` moduleDataFileName modData @? show modData
+
+testParseListenerTest :: Assertion
+testParseListenerTest = do
+  listenerTestModuleData <- getTestModuleData "ListenerTest.hs"
+  let listAssertion = moduleDataAssertions listenerTestModuleData 
+  "testSchedule" `elem` listAssertion @? show listAssertion
 
 testModuleHasMain :: Assertion
 testModuleHasMain = do
@@ -62,9 +68,9 @@ testGroupByMethodMultipleGroups = do
 
 testModuleDataHasTests :: Assertion
 testModuleDataHasTests = do 
-  modData <- getParsedModule
+  modData <- getTestModuleData "ModuleDataTest.hs"
   hsModuleDataHasTest modData @? show modData
 
-getParsedModule :: IO ModuleData 
-getParsedModule = fmap head ( parseModuleData [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*ModuleDataTest.hs"]  } ] )
+getTestModuleData :: String -> IO ModuleData 
+getTestModuleData str = fmap head ( parseModuleData [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*"++str]  } ] )
 
