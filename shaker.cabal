@@ -141,11 +141,11 @@ Library
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*
                  ,haskell98 == 1.0.*
-                 ,mtl == 1.1.*
+                 ,mtl == 2.*
                  ,parsec == 3.*
                  ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
-                 ,bytestring >= 0.9.1.0
+                 ,bytestring == 0.9.*
                  ,HUnit == 1.2.*
                  ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
@@ -167,11 +167,11 @@ Executable shaker
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*
                  ,haskell98 == 1.0.*
-                 ,mtl == 1.1.*
+                 ,mtl == 2.*
                  ,parsec == 3.*
                  ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
-                 ,bytestring >= 0.9.1.0
+                 ,bytestring == 0.9.*
                  ,HUnit == 1.2.*
                  ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
@@ -212,11 +212,11 @@ Executable test
                  ,haskell-src-exts == 1.9.*
                  ,ghc-paths == 0.1.*
                  ,haskell98 == 1.0.*
-                 ,mtl == 1.1.*
+                 ,mtl == 2.*
                  ,parsec == 3.*
                  ,regex-posix == 0.94.*
                  ,old-time >= 1.0.0
-                 ,bytestring >= 0.9.1.0
+                 ,bytestring == 0.9.*
                  ,HUnit == 1.2.*
                  ,QuickCheck == 2.*
                  ,template-haskell >= 2.4.0.0
