@@ -10,7 +10,6 @@ import Control.Monad.Reader
 import Data.List(nub,isSuffixOf, find, isPrefixOf)
 import Data.Maybe
 import Data.Monoid 
-import Distribution.Compiler(CompilerFlavor(GHC))
 import Distribution.ModuleName
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Parse
@@ -18,12 +17,13 @@ import Distribution.Package (PackageName(PackageName), pkgName)
 import Distribution.Simple.Build
 import Distribution.Simple.Compiler (PackageDB(..))
 import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig, getInstalledPackages)
+import Distribution.Simple.GHC(ghcOptions)
 import Distribution.Simple.LocalBuildInfo 
 import Distribution.Simple.Program
 import Distribution.Simple.Setup
 import Distribution.Simple.Utils
 import Distribution.Verbosity
-import DynFlags( DynFlags, verbosity, ghcLink, packageFlags, hiDir, objectDir ,importPaths ,PackageFlag (ExposePackageId) ,GhcLink (NoLink))
+import DynFlags( DynFlags, verbosity, ghcLink, packageFlags, importPaths ,PackageFlag (ExposePackageId) ,GhcLink (NoLink))
 import Shaker.Config
 import Shaker.GhcInterface
 import Shaker.ModuleData
@@ -75,7 +75,7 @@ compileInputsToListenerInput cplInputs = mempty {
 -- | Extract informations : Convert executable and library to 
 -- compile inputs
 localBuildInfoToCompileInputs  :: LocalBuildInfo -> [CompileInput]
-localBuildInfoToCompileInputs  lbi = executableAndLibToCompileInput libraryTuple  executablesTuples
+localBuildInfoToCompileInputs lbi = executableAndLibToCompileInput lbi libraryTuple  executablesTuples
  where pkgDescription = localPkgDescr lbi
        libraryTuple = library pkgDescription >>= \a ->  libraryConfig lbi >>= \b -> return (a,b)
        executablesTuples = mapMaybe ( \ (name, comp) -> find (\ex -> exeName ex == name) listExecutables >>= \e -> return (e, comp) ) listConfigs
@@ -83,16 +83,16 @@ localBuildInfoToCompileInputs  lbi = executableAndLibToCompileInput libraryTuple
        listConfigs = executableConfigs lbi
 
 -- | Dispatch the processing depending of the library content
-executableAndLibToCompileInput :: Maybe (Library, ComponentLocalBuildInfo )-> [(Executable,ComponentLocalBuildInfo)] -> [CompileInput]
-executableAndLibToCompileInput Nothing exes = map executableToCompileInput exes
-executableAndLibToCompileInput (Just lib) exes = libraryToCompileInput lib : map executableToCompileInput exes
+executableAndLibToCompileInput :: LocalBuildInfo -> Maybe (Library, ComponentLocalBuildInfo) -> [(Executable,ComponentLocalBuildInfo)] -> [CompileInput]
+executableAndLibToCompileInput lbi Nothing exes = map (executableToCompileInput lbi) exes
+executableAndLibToCompileInput lbi (Just lib) exes = libraryToCompileInput lbi lib : map (executableToCompileInput lbi) exes
 
 -- | Convert a cabal executable to a compileInput
 -- The target of compilation will the main file
-executableToCompileInput :: (Executable, ComponentLocalBuildInfo) -> CompileInput
-executableToCompileInput (executable, componentLocalBuildInfo) = mempty { 
+executableToCompileInput :: LocalBuildInfo -> (Executable, ComponentLocalBuildInfo) -> CompileInput
+executableToCompileInput lbi (executable, componentLocalBuildInfo) = mempty { 
   compileInputSourceDirs = mySourceDir
-  ,compileInputCommandLineFlags = getCompileOptions bldInfo
+  ,compileInputCommandLineFlags = ghcOptions lbi bldInfo componentLocalBuildInfo defaultDistDir
   ,compileInputTargetFiles = map (</> modulePath executable ) mySourceDir
   ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies componentLocalBuildInfo)
   }
@@ -101,10 +101,10 @@ executableToCompileInput (executable, componentLocalBuildInfo) = mempty {
 
 -- | Convert a cabal library to a compileInput
 -- The target of compilation will be all exposed modules
-libraryToCompileInput :: (Library, ComponentLocalBuildInfo) -> CompileInput
-libraryToCompileInput (lib, componentLocalBuildInfo) = mempty {
+libraryToCompileInput :: LocalBuildInfo -> (Library, ComponentLocalBuildInfo) -> CompileInput
+libraryToCompileInput lbi (lib, componentLocalBuildInfo) = mempty {
   compileInputSourceDirs = mySourceDir
-  ,compileInputCommandLineFlags = getCompileOptions bldInfo
+  ,compileInputCommandLineFlags = ghcOptions lbi bldInfo componentLocalBuildInfo defaultDistDir
   ,compileInputTargetFiles = myModules
   ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies componentLocalBuildInfo)
  }
@@ -117,8 +117,6 @@ libraryToCompileInput (lib, componentLocalBuildInfo) = mempty {
 toDynFlags :: [String] -> [String] -> DynFlags -> DynFlags
 toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
   importPaths = nub $ oldImportPaths ++ sourceDirs
-  ,objectDir = Just "dist/shakerTarget"
-  ,hiDir = Just "dist/shakerTarget"
   ,verbosity = 1
   ,ghcLink = NoLink
   ,packageFlags = nub $ map ExposePackageId packagesToExpose ++ oldPackageFlags
@@ -127,12 +125,6 @@ toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
         oldImportPaths = importPaths dnFlags
 
 -- * Helper methods
-
-getCompileOptions :: BuildInfo -> [String]
-getCompileOptions myLibBuildInfo = hideAllPackagesOption : ghcOptions ++ ghcExtensions
- where ghcOptions = fromMaybe [] $ lookup GHC (options myLibBuildInfo)
-       ghcExtensions = map (\a -> "-X"++ show a) (extensions myLibBuildInfo)
-       hideAllPackagesOption = "-hide-all-packages"
 
 getLibDependencies :: ComponentLocalBuildInfo -> [String]
 getLibDependencies = componentPackageDeps >>> map (fst >>> installedPackageIdString ) 

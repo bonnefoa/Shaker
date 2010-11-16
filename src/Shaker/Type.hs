@@ -223,3 +223,5 @@ instance Eq ModuleData where
 moduleDataExtension :: String
 moduleDataExtension = ".mdata"
 
+defaultDistDir :: String
+defaultDistDir = "dist/shakerTarget"
