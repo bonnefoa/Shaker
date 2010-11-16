@@ -18,8 +18,6 @@ defaultPluginMap = M.fromList $ map (\(a,b) -> (a, runStartAction >> b >> runEnd
                 (InvalidAction,runInvalidAction),
                 (TestFramework , runTestFramework),
                 (ModuleTestFramework , runModuleTestFramework),
-                (IntelligentTestFramework , runIntelligentTestFramework),
-                (IntelligentModuleTestFramework, runModuleIntelligentTestFramework),
                 (Empty,runEmpty),
                 (Clean,runClean),
                 (Quit,runExit)
@@ -33,8 +31,6 @@ defaultCommandMap = M.fromList list
             ("help", Help),
             ("test", TestFramework ),
             ("test-module", ModuleTestFramework),
-            ("itest", IntelligentTestFramework ),
-            ("itest-module", IntelligentModuleTestFramework),
             ("clean",Clean),
             ("quit",Quit)
           ]
