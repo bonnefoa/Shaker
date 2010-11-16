@@ -114,40 +114,43 @@ Library
   ghc-options: -Wall -fno-warn-orphans 
   hs-source-dirs:  src
   exposed-modules:
-    Shaker.Parser
+    Shaker.Action.Compile
     Shaker.Action.Standard
     Shaker.Action.Test
-    Shaker.Action.Compile
+    Shaker.Cabal.CabalInfo
+    Shaker.CabalInterface
+    Shaker.Cli
     Shaker.Conductor
     Shaker.Config
-    Shaker.TestTH
+    Shaker.GhcInterface
+    Shaker.Io
+    Shaker.HsHelper
+    Shaker.Listener
+    Shaker.ModuleData
+    Shaker.Parser
     Shaker.PluginConfig
     Shaker.Reflexivite
     Shaker.Regex
-    Shaker.Cli
-    Shaker.Io
-    Shaker.ModuleData
-    Shaker.Cabal.CabalInfo
-    Shaker.Type
-    Shaker.Listener
     Shaker.TestHelper
+    Shaker.TestTH
+    Shaker.Type
   build-depends: base == 4.*
+                 ,bytestring == 0.9.*
                  ,Cabal == 1.8.*
                  ,containers == 0.3.*
-                 ,haskeline == 0.6.*
                  ,directory == 1.0.*
                  ,filepath == 1.1.*
-                 ,haskell-src
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*
+                 ,haskeline == 0.6.*
                  ,haskell98 == 1.0.*
-                 ,mtl == 2.*
-                 ,parsec == 3.*
-                 ,regex-posix == 0.94.*
-                 ,old-time >= 1.0.0
-                 ,bytestring == 0.9.*
+                 ,haskell-src == 1.0.*
                  ,HUnit == 1.2.*
+                 ,mtl == 2.*
+                 ,old-time >= 1.0.0
+                 ,parsec == 3.*
                  ,QuickCheck == 2.*
+                 ,regex-posix == 0.94.*
                  ,template-haskell >= 2.4.0.0
                  ,test-framework == 0.3.*
                  ,test-framework-hunit == 0.2.*
@@ -158,22 +161,22 @@ Executable shaker
   ghc-options: -Wall -fno-warn-orphans 
   hs-source-dirs: prog src
   build-depends: base == 4.*
+                 ,bytestring == 0.9.*
                  ,Cabal == 1.8.*
                  ,containers == 0.3.*
-                 ,haskeline == 0.6.*
                  ,directory == 1.0.*
-                 ,haskell-src
                  ,filepath == 1.1.*
                  ,ghc == 6.*
                  ,ghc-paths == 0.1.*
+                 ,haskeline == 0.6.*
                  ,haskell98 == 1.0.*
-                 ,mtl == 2.*
-                 ,parsec == 3.*
-                 ,regex-posix == 0.94.*
-                 ,old-time >= 1.0.0
-                 ,bytestring == 0.9.*
+                 ,haskell-src
                  ,HUnit == 1.2.*
+                 ,mtl == 2.*
+                 ,old-time >= 1.0.0
+                 ,parsec == 3.*
                  ,QuickCheck == 2.*
+                 ,regex-posix == 0.94.*
                  ,template-haskell >= 2.4.0.0
                  ,test-framework == 0.3.*
                  ,test-framework-hunit == 0.2.*
@@ -189,36 +192,35 @@ Executable test
   ghc-options: -Wall -fno-warn-orphans
   other-modules: 
     RunTestTH
-    Shaker.RegexTest
-    Shaker.Properties
     Shaker.Action.CompileTest
-    Shaker.IoTest
+    Shaker.Cabal.CabalInfoTest
     Shaker.CliTest
     Shaker.CommonTest
-    Shaker.ParserTest
-    Shaker.ModuleDataTest
-    Shaker.Cabal.CabalInfoTest
-    Shaker.ListenerTest
-    Shaker.ReflexiviteTest
     Shaker.ConductorTest
+    Shaker.IoTest
+    Shaker.ListenerTest
+    Shaker.ModuleDataTest
+    Shaker.ParserTest
+    Shaker.Properties
+    Shaker.ReflexiviteTest
+    Shaker.RegexTest
   build-depends: base == 4.*
+                 ,bytestring == 0.9.*
                  ,Cabal == 1.8.*
                  ,containers == 0.3.*
-                 ,haskeline == 0.6.*
                  ,directory == 1.0.*
                  ,filepath == 1.1.*
                  ,ghc == 6.*
-                 ,haskell-src
-                 ,haskell-src-exts == 1.9.*
                  ,ghc-paths == 0.1.*
+                 ,haskeline == 0.6.*
                  ,haskell98 == 1.0.*
-                 ,mtl == 2.*
-                 ,parsec == 3.*
-                 ,regex-posix == 0.94.*
-                 ,old-time >= 1.0.0
-                 ,bytestring == 0.9.*
+                 ,haskell-src == 1.0.*
                  ,HUnit == 1.2.*
+                 ,mtl == 2.*
+                 ,old-time >= 1.0.0
+                 ,parsec == 3.*
                  ,QuickCheck == 2.*
+                 ,regex-posix == 0.94.*
                  ,template-haskell >= 2.4.0.0
                  ,test-framework == 0.3.*
                  ,test-framework-hunit == 0.2.*
