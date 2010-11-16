@@ -10,25 +10,21 @@ module Shaker.GhcInterface (
  )
  where
 
-import Shaker.Io
-import Shaker.Type
-
-import Data.List
-import qualified Data.Map as M
-
-import Control.Monad.Reader(lift, asks )
 import Control.Arrow
-
+import Control.Monad.Reader(lift, asks )
+import Data.List
 import Distribution.Package (InstalledPackageId(..))
-import LazyUniqFM
-import MkIface 
-import HscTypes
-import Linker
+import DynFlags
 import GHC hiding (parseModule, HsModule)
 import GHC.Paths
+import HscTypes
+import LazyUniqFM
+import Linker
+import MkIface 
 import Packages (lookupModuleInAllPackages, exposed,  installedPackageId, PackageConfig)
-import DynFlags
-
+import qualified Data.Map as M
+import Shaker.Io
+import Shaker.Type
 import System.Directory
 
 type ImportToPackages = [ ( String, [PackageConfig] ) ]
