@@ -206,7 +206,7 @@ defaultHaskellPatterns = [".*\\.hs$", ".*\\.lhs"]
 
 -- | Default exclude pattern : Setup.hs
 defaultExclude :: [String]
-defaultExclude =  [".*Setup\\.lhs$",".*Setup\\.hs$", ".*/\\.", ".*/dist/.*"]
+defaultExclude =  [".*Setup\\.lhs$",".*Setup\\.hs$", ".*/\\."]
 
 exitCommand :: Command
 exitCommand = Command OneShot [Action Quit]
