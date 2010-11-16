@@ -9,6 +9,7 @@ import Language.Haskell.Syntax
 import Shaker.HsHelper
 import Shaker.Io
 import Shaker.Type
+import Shaker.Regex
 import System.Directory
 import System.FilePath
 
@@ -71,4 +72,25 @@ constructModuleData hsModule = ModuleData {
 
 hsModuleDataHasTest :: ModuleData -> Bool
 hsModuleDataHasTest hsModuleData = any (not . null) [moduleDataProperties hsModuleData, moduleDataAssertions hsModuleData] 
+
+-- | Include only module matching the given pattern
+filterModulesWithPattern :: [ModuleData]-> String -> [ModuleData]
+filterModulesWithPattern mod_map pattern = filter (\a -> moduleDataName a `elem` filtered_mod_list) mod_map
+  where mod_list = map moduleDataName mod_map
+        filtered_mod_list = processListWithRegexp mod_list [] [pattern]
+
+filterFunctionsWithPatterns :: [ModuleData] -> [String] -> [ModuleData]
+filterFunctionsWithPatterns mod_map patterns = map (`filterFunctionsWithPatterns'` patterns) mod_map
+
+filterFunctionsWithPatterns' :: ModuleData -> [String] -> ModuleData
+filterFunctionsWithPatterns' moduleData@(ModuleData _ _ _ properties hunitAssertions hunitTestCases) patterns = moduleData {
+    moduleDataAssertions = processListWithRegexp hunitAssertions [] patterns
+    ,moduleDataTestCase = processListWithRegexp hunitTestCases [] patterns
+    ,moduleDataProperties = processListWithRegexp properties [] patterns
+  }
+
+removeNonTestModules :: [ModuleData] -> [ModuleData]
+removeNonTestModules = filter ( \ moduleData -> any notEmpty [moduleDataProperties moduleData, moduleDataAssertions moduleData, moduleDataTestCase moduleData] )
+  where notEmpty = not . null
+
 

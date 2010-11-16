@@ -5,7 +5,6 @@ import Control.Monad
 import Test.QuickCheck 
 import Shaker.Type
 import System.Time
-import Shaker.Reflexivite
 
 instance Arbitrary TimeDiff where
    arbitrary =  TimeDiff `liftM` genSmallNumber
@@ -33,13 +32,14 @@ instance Arbitrary FileInfo where
                elements [".",".."] >>= \ele ->
                return $ FileInfo ele cl
 
-instance Arbitrary ModuleMapping where 
+instance Arbitrary ModuleData where 
   arbitrary = do 
               name <- createShortName
               listHunitName <- listOf createShortName 
               listPropName <- listOf createShortName 
               listTestCases <- listOf createShortName 
-              return $ ModuleMapping name listHunitName listTestCases listPropName
+              hasMain <- arbitrary
+              return $ ModuleData name name hasMain listHunitName listTestCases listPropName
 
 genSmallNumber :: Gen Int
 genSmallNumber = elements [0..10]
