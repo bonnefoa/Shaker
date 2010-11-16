@@ -5,31 +5,31 @@ module Shaker.Action.Compile(
   )
  where
 
-import Shaker.Type
-import Shaker.ModuleData
-import Shaker.GhcInterface
-
-import GHC
-import DynFlags 
-import GHC.Paths
 import Control.Monad.Reader
+import DynFlags 
+import GHC
+import GHC.Paths
+import Shaker.CabalInterface
+import Shaker.GhcInterface
+import Shaker.ModuleData
+import Shaker.Type
 
 -- | Run haskell compilation on given CompileInput list
 runCompile :: Plugin
-runCompile = asks shakerCompileInputs >>= lift . foldM runUntilFail Succeeded >> return ()
+runCompile = applyPreprocessSources >> asks shakerCompileInputs >>= foldM runUntilFail Succeeded >> return ()
 
-runUntilFail :: SuccessFlag -> CompileInput -> IO SuccessFlag
+runUntilFail :: SuccessFlag -> CompileInput -> Shaker IO SuccessFlag
 runUntilFail Succeeded cpIn = runSingleCompileInput cpIn
 runUntilFail Failed _ = return Failed
  
 -- | Run haskell compilation on all haskell files
 runFullCompile :: Plugin
-runFullCompile = convertModuleDataToFullCompileInput >>= lift . foldM runUntilFail Succeeded >> return()
+runFullCompile = applyPreprocessSources >> convertModuleDataToFullCompileInput >>= foldM runUntilFail Succeeded >> return()
 
-runSingleCompileInput :: CompileInput -> IO SuccessFlag
+runSingleCompileInput :: CompileInput -> Shaker IO SuccessFlag
 runSingleCompileInput cplInp = do
-        putStrLn ""
-        putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
-        defaultErrorHandler defaultDynFlags $ 
+        lift $ putStrLn ""
+        lift $ putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
+        lift $ defaultErrorHandler defaultDynFlags $ 
                     runGhc (Just libdir) $ ghcCompile cplInp 
 
