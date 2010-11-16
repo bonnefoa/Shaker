@@ -1,22 +1,17 @@
 module Shaker.ReflexiviteTest
  where
 
-import Test.HUnit
-import Test.QuickCheck 
-
+import Control.Monad.Reader(runReaderT)
 import Data.List
 import Data.Maybe
-
-import Control.Monad.Reader(runReaderT)
-import Shaker.Reflexivite
-import Shaker.Type
+import Language.Haskell.TH
 import Shaker.CommonTest
 import Shaker.Properties()
-
-import System.Time
+import Shaker.Reflexivite
+import Shaker.Type
 import System.Directory
-import System.FilePath 
-import Language.Haskell.TH
+import Test.HUnit
+import Test.QuickCheck 
 
 -- * Module mapping construction test
 
@@ -87,48 +82,6 @@ templateTestRunFunction modules=  do
   runReaderT (runFunction run) =<< testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
   
-testCollectChangedModules :: Assertion
-testCollectChangedModules =  do
-  cpIn <- compileProject
-  exp_no_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
-  length exp_no_modules == 0 @? "There should be no modules to recompile"
-  -- Remove a target file 
-  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "GhcInterfaceTest.hi"
-  removeFile target
-  exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
-  length exp_one_modules == 1 @? "One module (GhcInterfaceTest ) should need compilation"
-
-testCollectChangedModulesForTestHunit:: Assertion
-testCollectChangedModulesForTestHunit =  do
-  cpIn <- compileProject
-  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "GhcInterfaceTest.hi"
-  removeFile target
-  exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
-  length exp_one_modules == 1 @? "One module should need compilation"
-  let module_mapping = head exp_one_modules 
-  runnableFunctionModuleName module_mapping == "Shaker.GhcInterfaceTest" @? "module GhcInterfaceTest should need recompilation, got " ++ runnableFunctionModuleName module_mapping 
-  length (moduleMappingHunitAssertion module_mapping) >2  @? "module GhcInterfaceTest should have hunit test" 
-  
-testCollectChangedModulesForTestQuickCheck :: Assertion
-testCollectChangedModulesForTestQuickCheck =  do
-  cpIn <- compileProject
-  let target = compileInputBuildDirectory cpIn </> "Shaker" </> "RegexTest.hi"
-  removeFile target
-  exp_one_modules <- runReaderT collectChangedModulesForTest =<< testShakerInput 
-  let module_mapping = head exp_one_modules  
-  length exp_one_modules == 1 @? "One module should need compilation"
-  runnableFunctionModuleName module_mapping == "Shaker.RegexTest" @? "module RegexTest should need recompilation, got " ++ runnableFunctionModuleName module_mapping 
-  length (moduleMappingPropName module_mapping) >2  @? "module RegexTest should have properties" 
-
-testCollectChangedModulesWithModifiedFiles :: Assertion
-testCollectChangedModulesWithModifiedFiles =  do
-  cpIn <- compileProject
-  let sources = map (</> "Shaker" </> "GhcInterfaceTest.hs") (compileInputSourceDirs cpIn)
-  let modFileInfo = map (\a -> FileInfo a (TOD 0 0) ) sources
-  shIn <- testShakerInput 
-  exp_one_modules <- runReaderT collectChangedModulesForTest shIn {shakerModifiedInfoFiles = modFileInfo }
-  length exp_one_modules == 1 @? "One module should need compilation"
-
 testSearchInstalledPackageId :: Assertion
 testSearchInstalledPackageId = do 
   shIn <- testShakerInput

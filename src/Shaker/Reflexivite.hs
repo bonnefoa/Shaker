@@ -3,7 +3,6 @@ module Shaker.Reflexivite (
   ,RunnableFunction(..)
   -- * Collect module information functions
   ,collectAllModulesForTest
-  ,collectChangedModulesForTest 
   ,runFunction
   ,removeNonTestModule
   ,searchInstalledPackageId
@@ -63,33 +62,11 @@ collectAllModulesForTest = do
   where collectModules cpIn = 
           runGhc (Just libdir) $ ghcCompile cpIn >> collectAllModules' >>= mapM getModuleMapping  
 
--- | Analyze all haskell modules of the project and 
--- output all module needing recompilation
-collectChangedModulesForTest :: Shaker IO [ModuleMapping]
-collectChangedModulesForTest = do 
-  cpInList <- convertModuleDataToFullCompileInput
-  modInfoFiles <- asks shakerModifiedInfoFiles
-  let modFilePaths = map fileInfoFilePath modInfoFiles
-  changed_modules <- fmap concat (lift $ mapM (collectChangedModules modFilePaths) cpInList) 
-  return . removeNonTestModule $ changed_modules
-  where collectChangedModules modFilePaths cpIn = 
-          runGhc (Just libdir) $ initializeGhc cpIn >> collectChangedModulesForTest' modFilePaths cpIn
-
-
 collectAllModules' :: GhcMonad m => m [ModSummary] 
 collectAllModules' = do 
   mss <- depanal [] False
   let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
   return sort_mss
-         
-collectChangedModulesForTest' :: GhcMonad m => [FilePath] -> CompileInput -> m [ModuleMapping] 
-collectChangedModulesForTest' modFilePaths cpIn = do 
-    changedModules <- collectAllModules' >>= filterM (isModuleNeedCompilation modFilePaths) 
-    _ <- ghcCompile cpIn
-    allModules <- collectAllModules' 
-    let res = intersectBy ( \a b -> nameMod a == nameMod b ) allModules changedModules
-    mapM getModuleMapping res
-  where nameMod = moduleNameString . moduleName . ms_mod
 
 -- | Compile, load and run the given function
 runFunction :: RunnableFunction -> Shaker IO()

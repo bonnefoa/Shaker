@@ -9,14 +9,8 @@ import Language.Haskell.TH
 runTestFramework :: Plugin 
 runTestFramework = collectAllModulesForTest >>= getModulesWithFunctionFiltering  >>= runTestFramework'
 
-runIntelligentTestFramework :: Plugin
-runIntelligentTestFramework = collectChangedModulesForTest >>= getModulesWithFunctionFiltering >>= runTestFramework'
-
 runModuleTestFramework :: Plugin 
 runModuleTestFramework = collectAllModulesForTest >>= getModulesWithModuleFiltering >>= runTestFramework' 
-
-runModuleIntelligentTestFramework :: Plugin
-runModuleIntelligentTestFramework = collectChangedModulesForTest >>= getModulesWithModuleFiltering >>= runTestFramework'
 
 getModulesWithModuleFiltering :: [ModuleMapping] -> Shaker IO [ModuleMapping] 
 getModulesWithModuleFiltering module_list = fmap process (asks shakerArgument)
