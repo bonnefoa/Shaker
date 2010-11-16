@@ -2,6 +2,7 @@
 -- Source fileListenInfoDirectories and compilation options will be reused by Shaker.
 module Shaker.Cabal.CabalInfo(
     defaultCabalInput
+    ,applyPreprocessSources
   )
    where
 
@@ -14,7 +15,6 @@ import Distribution.ModuleName
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Parse
 import Distribution.Package (PackageName(PackageName), pkgName)
-import Distribution.Simple.Build
 import Distribution.Simple.Compiler (PackageDB(..))
 import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig, getInstalledPackages)
 import Distribution.Simple.GHC(ghcOptions)
@@ -24,6 +24,7 @@ import Distribution.Simple.Setup
 import Distribution.Simple.Utils
 import Distribution.Verbosity
 import DynFlags( DynFlags, verbosity, ghcLink, packageFlags, importPaths ,PackageFlag (ExposePackageId) ,GhcLink (NoLink))
+import Shaker.CabalInterface
 import Shaker.Config
 import Shaker.GhcInterface
 import Shaker.ModuleData
@@ -34,12 +35,8 @@ import System.FilePath          ( (</>))
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
 defaultCabalInput = readConf >>= \lbi -> 
-  generatePreprocessFile lbi >> 
+  generateAutogenFiles lbi >> 
   localBuildInfoToShakerInput lbi >>= exposeNeededPackages lbi >>= checkInvalidMain >>= fillModuleData >>= fillPackageIndex
-
-generatePreprocessFile :: LocalBuildInfo -> IO ()
-generatePreprocessFile lbi = writeAutogenFiles normal (localPkgDescr lbi) lbi
-
 readConf :: IO LocalBuildInfo
 readConf = maybeGetPersistBuildConfig "dist" >>= \my_lbi ->
   case my_lbi of
