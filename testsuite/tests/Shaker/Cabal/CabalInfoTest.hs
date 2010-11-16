@@ -10,8 +10,7 @@ import Shaker.CommonTest
 import Data.List
 import Test.HUnit
 import Shaker.Cabal.CabalInfo
-import DynFlags( DynFlags, packageFlags, importPaths ,PackageFlag (ExposePackage) , defaultDynFlags
-        )
+import DynFlags( DynFlags, packageFlags, importPaths ,PackageFlag (ExposePackage) , defaultDynFlags)
 
 testParseCabalConfig :: Assertion
 testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest" $ do  
@@ -19,7 +18,6 @@ testParseCabalConfig =  runTestOnDirectory "testsuite/tests/resources/cabalTest"
   let cplInps@(cplLib:cplExe:[]) = shakerCompileInputs  shIn
   length cplInps == 2 @? "Should have two compile input, one executable and one library, got "++ show ( length cplInps)
   all (`elem` compileInputSourceDirs cplLib) ["dist/build/autogen","src"] @? "source fileListenInfoDir should have src and dist/build/autogen, got " ++ show (compileInputSourceDirs cplLib)
-  compileInputCommandLineFlags cplLib == ["-hide-all-packages", "-Wall"] @? "command line flags should be -Wall, got " ++ show ( compileInputCommandLineFlags cplLib)
   compileInputTargetFiles cplLib == ["CabalTest"]  @? "targetFiles should be CabalTest, got "++ show ( compileInputTargetFiles cplLib)
   compileInputTargetFiles cplExe == ["src/Main.hs"]  @? "targetFiles should be src/Main.hs, got "++ show ( compileInputTargetFiles cplExe)
   let dFlags = compileInputDynFlags cplExe defaultDynFlags
