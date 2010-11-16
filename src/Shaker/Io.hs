@@ -22,24 +22,20 @@ module Shaker.Io(
 )
  where
  
-import Control.Monad.Reader
 import Control.Arrow
-
-import System.Directory
-import System.FilePath
-import qualified Data.Map as M
+import Control.Monad.Reader
 import Data.List
 import Data.Maybe
 import Data.Monoid
-
-import Shaker.Regex
-import Shaker.Type
-
 import Language.Haskell.Parser
 import Language.Haskell.Syntax
-
 import qualified Control.Exception as C
 import qualified Data.ByteString.Char8 as L 
+import qualified Data.Map as M
+import Shaker.Regex
+import Shaker.Type
+import System.Directory
+import System.FilePath
 
 -- |Get the build file (without extension) for the given file
 getCorrespondingBuildFile :: FilePath -> Shaker IO FilePath
