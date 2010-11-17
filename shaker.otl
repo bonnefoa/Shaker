@@ -1,0 +1,22 @@
+TODO 
+	[_] Update ModuleData in reader before action 
+----------------------------------------
+[_] test projets
+	[_] xmonad
+		[X] compile
+		[X] fullcompile
+		[_] test
+			[_] Manage test with multiple mains
+	[_] cabal
+		[X] compile
+		[_] fullcompile
+			[_] Probleme de System.IOExts (dans haskell98)
+		[_] test
+	[_] hunit 
+		[_] compile
+		[X] fullcompile
+		[_] test
+	[X] gitit
+		[X] compile
+		[X] fullcompile
+
