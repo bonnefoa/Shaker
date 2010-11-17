@@ -93,4 +93,3 @@ removeNonTestModules :: [ModuleData] -> [ModuleData]
 removeNonTestModules = filter ( \ moduleData -> any notEmpty [moduleDataProperties moduleData, moduleDataAssertions moduleData, moduleDataTestCase moduleData] )
   where notEmpty = not . null
 
-

@@ -22,7 +22,7 @@ parseHsFiles fliListenInfos = do
           return $ parseModuleWithMode defaultParseMode { parseFilename = fp } fileContent
 
 hsModuleCollectProperties :: HsModule -> [String]
-hsModuleCollectProperties = getTupleFunctionNameType >>> map fst >>> filter (isPrefixOf "prop_")
+hsModuleCollectProperties = getListFunction >>> filter (isPrefixOf "prop_")
 
 abstractCollectFunctionWithUnqualifiedType :: (HsQualType -> Bool) -> HsModule -> [String]
 abstractCollectFunctionWithUnqualifiedType fun = getTupleFunctionNameType 
@@ -45,12 +45,19 @@ filterSnd fun = filter (snd >>> fun)
 mapSnd :: ( t1 -> t2 ) -> [ ( t, t1 ) ] -> [ ( t , t2 ) ] 
 mapSnd fun = map ( second fun )
 
+getListFunction :: HsModule -> [String]
+getListFunction = getDecls >>> mapMaybe getPatBindName
+
 getTupleFunctionNameType :: HsModule -> [(String, HsQualType)]
 getTupleFunctionNameType = getDecls >>> mapMaybe getSignature
 
 getSignature :: HsDecl -> Maybe (String, HsQualType)
 getSignature (HsTypeSig _ hsNames hsQualType) = Just (head >>> getIdentFromHsName $ hsNames, hsQualType)
 getSignature _ = Nothing
+
+getPatBindName :: HsDecl -> Maybe String
+getPatBindName (HsPatBind _ (HsPVar (HsIdent funName))_ _) = Just funName
+getPatBindName _ = Nothing
 
 getIdentFromHsName :: HsName -> String
 getIdentFromHsName (HsIdent v) = v

@@ -11,7 +11,7 @@ testModuleCollectProperties :: Assertion
 testModuleCollectProperties = do
   parseMod <- getParsedModule
   let propertiesCollected = hsModuleCollectProperties parseMod
-  propertiesCollected == ["prop_trivial"] @? "Should have properties, got " ++ show propertiesCollected
+  propertiesCollected == ["prop_trivial"] @? "Should have properties, got " ++ show parseMod
 
 testModuleCollectAssertions :: Assertion
 testModuleCollectAssertions = do
@@ -28,7 +28,6 @@ testModuleCollectTestCases = do
 testModuleCollectTestCase :: Test
 testModuleCollectTestCase = TestCase $ True @? "Trivial"
 
-prop_trivial :: Bool
 prop_trivial = True
 
 getParsedModule :: IO HsModule 

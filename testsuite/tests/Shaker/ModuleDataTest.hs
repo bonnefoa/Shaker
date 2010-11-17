@@ -73,4 +73,3 @@ testModuleDataHasTests = do
 
 getTestModuleData :: String -> IO ModuleData 
 getTestModuleData str = fmap head ( parseModuleData [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*"++str]  } ] )
-
