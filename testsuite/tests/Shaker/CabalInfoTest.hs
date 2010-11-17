@@ -1,4 +1,4 @@
-module Shaker.Cabal.CabalInfoTest
+module Shaker.CabalInfoTest
  where 
 
 import Control.Monad.Reader
@@ -9,7 +9,7 @@ import Shaker.Type
 import Shaker.CommonTest
 import Data.List
 import Test.HUnit
-import Shaker.Cabal.CabalInfo
+import Shaker.CabalInfo
 import DynFlags( DynFlags, packageFlags, importPaths ,PackageFlag (ExposePackage) , defaultDynFlags)
 
 testParseCabalConfig :: Assertion

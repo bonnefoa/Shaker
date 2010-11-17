@@ -1,21 +1,18 @@
 module Shaker.CommonTest
  where 
 
-import Data.Monoid
-import System.Directory
-import Test.HUnit
 import Control.Exception
-
+import Control.Monad.Reader
+import Data.Monoid
+import DynFlags 
+import GHC.Paths
+import GHC (runGhc)
+import Shaker.CabalInfo
+import Shaker.GhcInterface
 import Shaker.ModuleData
 import Shaker.Type
-import Shaker.GhcInterface
-import Shaker.Cabal.CabalInfo
-
-import Control.Monad.Reader
-import DynFlags 
-
-import GHC (runGhc)
-import GHC.Paths
+import System.Directory
+import Test.HUnit
 
 runTestOnDirectory :: FilePath -> Assertion -> Assertion
 runTestOnDirectory fp fun = do

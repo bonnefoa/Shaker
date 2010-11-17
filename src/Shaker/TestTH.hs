@@ -5,7 +5,7 @@ module Shaker.TestTH
 
 import Shaker.Reflexivite
 import Language.Haskell.TH
-import Shaker.Cabal.CabalInfo
+import Shaker.CabalInfo
 
 -- | Template for the test group.
 -- Currently generate a list of type [Test] with a test group per module

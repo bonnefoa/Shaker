@@ -1,6 +1,6 @@
 -- | Allow to use cabal configuration (generated via the configure action of cabal).
 -- Source fileListenInfoDirectories and compilation options will be reused by Shaker.
-module Shaker.Cabal.CabalInfo(
+module Shaker.CabalInfo(
     defaultCabalInput
     ,applyPreprocessSources
   )
