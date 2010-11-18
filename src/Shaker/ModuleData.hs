@@ -4,6 +4,7 @@ module Shaker.ModuleData
 import Control.Arrow
 import Control.Monad.Reader
 import Data.List 
+import Data.Maybe
 import Data.Monoid
 import Language.Haskell.Syntax
 import Shaker.HsHelper
@@ -13,6 +14,9 @@ import Shaker.Regex
 import System.Directory
 import System.FilePath
 
+-- * Read and write module data
+
+-- | Write given moduleData in dist directory
 writeModuleData :: ModuleData -> Shaker IO ()
 writeModuleData moduleData = do
   let srcFile = moduleDataFileName moduleData
@@ -20,19 +24,32 @@ writeModuleData moduleData = do
   lift $ createDirectoryIfMissing True (dropFileName buildFile) 
   lift $ writeFile buildFile (show moduleData) 
 
-readModuleDataIfExist :: FilePath -> Shaker IO (Maybe ModuleData)
-readModuleDataIfExist srcFile = do
+-- | Parse module data from all haskell sources. 
+parseAllModuleData :: Shaker IO [ ModuleData ]
+parseAllModuleData = do
+  lstHsFiles <- fmap listenerInputFiles (asks shakerListenerInput) >>= lift . recurseMultipleListFiles
+  fmap catMaybes $ mapM parseModuleData lstHsFiles
+
+-- | Read Module data from the given haskell source. It tries to read serialized information beforehand.
+parseModuleData :: FilePath -> Shaker IO (Maybe ModuleData)
+parseModuleData srcFile = do 
+  may_moduleData <- parseModuleDataIfExist srcFile 
+  case may_moduleData of
+    Just _ -> return $ may_moduleData
+    Nothing -> do
+               may_hsModule <- lift $ parseFileToHsModule srcFile
+               return $ fmap constructModuleData may_hsModule 
+
+-- | Read Module data from the serialized data. It returns Nothing if the serialized data is absent or out-of-date.
+parseModuleDataIfExist :: FilePath -> Shaker IO (Maybe ModuleData)
+parseModuleDataIfExist srcFile = do
   buildFile <- fmap (`addExtension` moduleDataExtension) (getCorrespondingBuildFile srcFile)
   exist <- lift $ doesFileExist buildFile
   if exist 
-    then lift $ fmap Just (parseFileToModuleData buildFile)
+    then lift $ fmap Just $ fmap read (readFile buildFile)
     else return Nothing
 
-parseFileToModuleData :: FilePath -> IO ModuleData
-parseFileToModuleData src = fmap read (readFile src)
-
-parseModuleData :: [FileListenInfo] -> IO [ ModuleData ]
-parseModuleData mods = fmap (map constructModuleData) (parseHsFiles mods)
+-- * Module data util methods
 
 convertModuleDataToFullCompileInput :: Shaker IO [CompileInput]
 convertModuleDataToFullCompileInput = do 

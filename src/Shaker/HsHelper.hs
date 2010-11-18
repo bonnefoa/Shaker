@@ -13,13 +13,19 @@ parseHsFiles :: [FileListenInfo] -> IO [HsModule]
 parseHsFiles fliListenInfos = do
   files <- recurseMultipleListFiles fliListenInfos
   parseResults <- mapM parseFileToHsModule files
-  return $ mapMaybe parseHs parseResults
-  where parseHs parseResults = case parseResults of
+  return $ catMaybes parseResults
+
+parseFileToHsModule :: FilePath -> IO (Maybe HsModule)
+parseFileToHsModule fp = do
+  readFile fp 
+  >>= (parseModuleWithMode defaultParseMode { parseFilename = fp } 
+       >>> extractValue 
+       >>> return
+      )
+  where extractValue parseResults = case parseResults of
                                ParseOk val -> Just val
                                _ -> Nothing
-        parseFileToHsModule fp = do 
-          fileContent <- readFile fp
-          return $ parseModuleWithMode defaultParseMode { parseFilename = fp } fileContent
+
 
 hsModuleCollectProperties :: HsModule -> [String]
 hsModuleCollectProperties = getListFunction >>> filter (isPrefixOf "prop_")
