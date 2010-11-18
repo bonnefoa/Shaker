@@ -1,8 +1,5 @@
-module Shaker.Action.Compile(
-    runCompile
-    ,runFullCompile
-    ,ghcCompile
-  )
+module Shaker.Action.Compile
+  (runCompile ,runFullCompile ,ghcCompile)
  where
 
 import Control.Monad.Reader

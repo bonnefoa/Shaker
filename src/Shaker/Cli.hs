@@ -9,15 +9,14 @@ module Shaker.Cli(
 )
  where
 
+import Control.Concurrent
+import Control.Monad.Reader
 import Data.Char
 import Data.List
+import qualified Data.Map as M
 import Shaker.Parser
 import Shaker.Type
-import Control.Concurrent
-import Control.Monad.Trans
 import System.Console.Haskeline
-import qualified Data.Map as M
-import Control.Monad.Reader
 
 -- | Listen to keyboard input and parse command
 getInput :: Shaker IO( IO() )

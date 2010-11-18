@@ -1,5 +1,7 @@
-TODO 
+TODO :
 	[_] Update ModuleData in reader before action 
+		[_] Save on parse
+		[_] Read data file if exist and newer than corresponding source code
 ----------------------------------------
 [_] test projets
 	[_] xmonad

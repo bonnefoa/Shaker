@@ -2,12 +2,11 @@
 module Shaker.Action.Standard
  where
 
-import Shaker.Type
-import qualified Data.Map as M
-import Control.Monad.Trans
-import Control.Monad.Reader
-import System.Directory
 import Control.Concurrent
+import Control.Monad.Reader
+import qualified Data.Map as M
+import Shaker.Type
+import System.Directory
 
 -- | Print the list of available actions
 runHelp ::  Plugin

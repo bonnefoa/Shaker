@@ -23,10 +23,26 @@ type ShakerR  = Reader ShakerInput
 type ThreadIdList = MVar [ThreadId]
 type Token = MVar Int
 
+-- | MVar used to store currentFiles listed
+type CurrentFiles = MVar [FileInfo]
+-- | MVar used to store modifiedFiles since the last check
+type MvModifiedFiles = MVar [FileInfo]
+-- | MVar used to pass action to the fileListenInfoDirectory scanner
+type Job = MVar [FileListenInfo]
+
 -- | Environnement for the project compilation
 -- This environnement can change depending on the compile 
 -- action called
 type CompileM = Reader CompileInput
+
+data ConductorData = ConductorData ListenState ([FileInfo] -> IO () )
+
+-- | Agregate all information of listener
+data ListenState = ListenState {
+  currentFiles :: CurrentFiles  -- ^ Files found in the last check
+  ,mvModifiedFiles :: MvModifiedFiles -- ^ Differences between last and before last check
+  ,threadIds :: [ThreadId] -- ^ List of all forks id initialized
+}
 
 -- | Duration define the life span of an action
 data Duration = 

@@ -1,10 +1,10 @@
 #!/usr/bin/env runhaskell
 
 import Distribution.PackageDescription
-import System.FilePath
-import System
 import Distribution.Simple
 import Distribution.Simple.LocalBuildInfo
+import System
+import System.FilePath
 
 main = defaultMainWithHooks hooks
   where hooks = simpleUserHooks { runTests = runTests' }

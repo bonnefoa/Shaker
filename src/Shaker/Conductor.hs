@@ -1,22 +1,19 @@
 -- | Conductor is responsible to control the command-line listener, 
 -- the listener manager and the action to execute
-module Shaker.Conductor(
- initThread,
- executeCommand
-)
+module Shaker.Conductor
+  (initThread, executeCommand)
   where
 
+import Control.Concurrent
 import Control.Monad
 import Control.Monad.Reader
-import Control.Concurrent
-
-import Shaker.Type
-import Shaker.Io
-import Shaker.Listener
-import Shaker.Cli
-import qualified Data.Map as M
 import Data.Maybe
 import qualified Control.Exception as C
+import qualified Data.Map as M
+import Shaker.Cli
+import Shaker.Io
+import Shaker.Listener
+import Shaker.Type
  
 -- | Initialize the master thread 
 -- Once quit is called, all threads are killed
@@ -38,8 +35,6 @@ mainThread = do
   _ <- lift $ tryPutMVar tokenMv 42
   maybe_cmd <- lift $ takeMVar inputMv 
   executeCommand maybe_cmd
-
-data ConductorData = ConductorData ListenState ([FileInfo] -> IO () )
 
 initializeConductorData :: Shaker IO () -> Shaker IO ConductorData 
 initializeConductorData fun = do

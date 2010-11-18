@@ -9,27 +9,11 @@ module Shaker.Listener(
 )
 where
 
+import Control.Concurrent
 import Control.Monad
 import Control.Monad.Reader
-import Control.Concurrent.MVar
-import Control.Concurrent
-
-import Shaker.Type
 import Shaker.Io
-
--- | MVar used to store currentFiles listed
-type CurrentFiles = MVar [FileInfo]
--- | MVar used to store modifiedFiles since the last check
-type MvModifiedFiles = MVar [FileInfo]
--- | MVar used to pass action to the fileListenInfoDirectory scanner
-type Job = MVar [FileListenInfo]
-
--- | Agregate all information of listener
-data ListenState = ListenState {
-  currentFiles :: CurrentFiles  -- ^ Files found in the last check
-  ,mvModifiedFiles :: MvModifiedFiles -- ^ Differences between last and before last check
-  ,threadIds :: [ThreadId] -- ^ List of all forks id initialized
-}
+import Shaker.Type
 
 initializeListener :: Shaker IO ListenState
 initializeListener =do
