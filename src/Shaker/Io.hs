@@ -10,9 +10,6 @@ module Shaker.Io(
   ,recurseMultipleListFiles
   ,recurseListFiles
   ,mapImportToModules
-  -- * Test file property
-  ,isFileContainingMain
-  ,isFileContainingTH
   -- * Default patterns
   ,defaultHaskellPatterns
   ,defaultExclude
@@ -30,7 +27,6 @@ import Data.Monoid
 import Language.Haskell.Parser
 import Language.Haskell.Syntax
 import qualified Control.Exception as C
-import qualified Data.ByteString.Char8 as L 
 import qualified Data.Map as M
 import Shaker.Regex
 import Shaker.Type
@@ -85,17 +81,6 @@ recurseListFiles fli@(FileListenInfo inputDir _ _) = do
   sub <- mapM (\a -> recurseListFiles fli{fileListenInfoDir=a}) fileListenInfoDirectories
   curListFiles <-  listFiles fli
   return $ curListFiles ++ concat sub
-
-isFileContainingTH :: FilePath -> IO Bool
-isFileContainingTH fp = isFileContaining fp (L.pack "$(" `L.isInfixOf`)
-
-isFileContainingMain :: FilePath -> IO Bool
-isFileContainingMain fp = isFileContaining fp $ (\a -> L.pack "main " `L.isPrefixOf` a || L.pack "main:" `L.isPrefixOf` a) . L.dropWhile (== ' ')
-
-isFileContaining :: FilePath -> (L.ByteString -> Bool) -> IO Bool
-isFileContaining fp pat = do
-   byStr <- L.readFile fp
-   return $ any pat $ L.lines byStr
 
 convertToFullPath :: FilePath -> [FilePath] -> [FilePath]
 convertToFullPath absDir = map (\a-> concat [absDir, "/",a]) 

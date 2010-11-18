@@ -1,16 +1,13 @@
 module Shaker.IoTest
  where
 
+import Control.Monad.Reader
+import Data.List
+import qualified Data.Map as M
+import Shaker.CommonTest
 import Shaker.Io
 import Shaker.Type
 import System.Time
-import Data.List
-import qualified Data.Map as M
-
-import Shaker.CommonTest
-
-import Control.Monad.Reader
-
 import Test.HUnit hiding (assert)
 
 aTimeDiff :: TimeDiff
@@ -85,21 +82,6 @@ testListHsFiles =
   recurseListFiles (FileListenInfo "." [] [".*\\.hs$"]) >>= \res ->
   all (".hs" `isSuffixOf`) res @?  "Should only contains hs files " ++ show res
     
-testIsFileContainingMain :: Assertion
-testIsFileContainingMain =  do
-  res <- isFileContainingMain "prog/Shaker.hs" 
-  res @? "File Shaker.hs should contain main methods" 
-
-testIsFileNotContainingMain :: Assertion
-testIsFileNotContainingMain =  do
-  res <- isFileContainingMain "src/Shaker/Config.hs"
-  not res @? "File Config.hs should not contain main methods" 
-
-testIsFileConductorNotContainingMain :: Assertion
-testIsFileConductorNotContainingMain =  do
-  res <- isFileContainingMain "src/Shaker/Conductor.hs"
-  not res @?  "File Config.hs should not contain main methods" 
-
 testMapImportToModules :: Assertion
 testMapImportToModules = do
   map_import_modules <- fmap packageDataMapImportToModules mapImportToModules
