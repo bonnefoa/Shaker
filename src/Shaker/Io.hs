@@ -61,7 +61,7 @@ getCurrentFpCl :: FileListenInfo -> IO [FileInfo]
 getCurrentFpCl fileListen = do 
       lstFp <- recurseListFiles fileListen 
       lstCl <- mapM getModificationTime lstFp 
-      zipWithM (\a b->return (FileInfo a b)) lstFp lstCl
+      return $ zipWith (\a b-> FileInfo a b ) lstFp lstCl
                   
 -- |List files in the given fileListenInfoDirectory 
 -- Files matching one regexp in the fileListenInfoIgnore shakerArgument are excluded
