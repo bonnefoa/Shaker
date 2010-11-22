@@ -22,6 +22,12 @@ testReadWriteModuleData = do
   parsedModule <- runReaderT (parseModuleDataIfExist testFile) shIn
   Just moduleData == parsedModule @? "Module datas should be equals, got " ++ show moduleData ++ " and " ++ show parsedModule
 
+testParseModuleIfExist_NotPresent :: Assertion
+testParseModuleIfExist_NotPresent = do
+  shIn <- testShakerInput
+  may_modData <- runReaderT (parseModuleDataIfExist "inexistant.hs") shIn
+  isNothing may_modData @? "Should be nothing"
+
 testGroupModuleData :: Assertion
 testGroupModuleData = do 
   shIn <- testShakerInput
