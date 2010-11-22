@@ -52,7 +52,7 @@ mapSnd :: ( t1 -> t2 ) -> [ ( t, t1 ) ] -> [ ( t , t2 ) ]
 mapSnd fun = map ( second fun )
 
 getListFunction :: HsModule -> [String]
-getListFunction = getDecls >>> mapMaybe getPatBindName
+getListFunction = getDecls >>> mapMaybe getFunBindName
 
 getTupleFunctionNameType :: HsModule -> [(String, HsQualType)]
 getTupleFunctionNameType = getDecls >>> mapMaybe getSignature
@@ -61,9 +61,10 @@ getSignature :: HsDecl -> Maybe (String, HsQualType)
 getSignature (HsTypeSig _ hsNames hsQualType) = Just (head >>> getIdentFromHsName $ hsNames, hsQualType)
 getSignature _ = Nothing
 
-getPatBindName :: HsDecl -> Maybe String
-getPatBindName (HsPatBind _ (HsPVar (HsIdent funName))_ _) = Just funName
-getPatBindName _ = Nothing
+getFunBindName :: HsDecl -> Maybe String
+getFunBindName (HsPatBind _ (HsPVar (HsIdent funName))_ _) = Just funName
+getFunBindName (HsFunBind ((HsMatch _ (HsIdent funName) _ _ _ ) :_) ) = Just funName
+getFunBindName _ = Nothing
 
 getIdentFromHsName :: HsName -> String
 getIdentFromHsName (HsIdent v) = v

@@ -54,8 +54,12 @@ testModuleHasMain = do
 
 testModuleDataHasTests :: Assertion
 testModuleDataHasTests = do 
-  modData <- getTestModuleData "ModuleDataTest.hs"
+  modData <- getTestModuleData "HsHelperTest.hs"
+  regexModData <- getTestModuleData "RegexTest.hs"
   hsModuleDataHasTest modData @? show modData
+  (not.null) (moduleDataProperties modData) @? show modData
+  (not.null) (moduleDataAssertions modData) @? show modData
+  (not.null) (moduleDataProperties regexModData) @? show regexModData
 
 testDirectory :: FilePath
 testDirectory = "testsuite/tests/Shaker"
