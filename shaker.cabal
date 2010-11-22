@@ -53,10 +53,6 @@ description:
   .
   [@test-module@] Same as test but test-module takes one or several module patterns as arguments.
   .
-  [@itest@] Launch all quickcheck properties and hunit tests using test-framework on compiled modules. Same as test, you can give a regexp as argument. This action is only useful when used with continuous action. 
-  .
-  [@itest-module@] Same as itest but itest-module takes one or several module patterns as arguments.
-  .
   [@quit@] Exit the application. You can also use ^C or ^D to exit shaker.
   . 
   /Examples with interactive prompt/
@@ -71,15 +67,11 @@ description:
   .
   [@% test@] Execute all tests in the project
   .
-  [@% ~itest@] Switch to continuous mode and execute tests on compiled modules.
-  .
   [@% test prop_.*@] Execute all quickcheck properties of the project. 
   .
   [@% test testExecute.* testFilter.* @] Execute all tests matching testExecute.* or testFilter.*
   .
   [@% test-module Regex Refle@] Launch all tests in modules matching Regex.* or Refle.*
-  .
-  [@% ~itest-module Regex Refle@] Launch all tests in modules matching Regex.* or Refle.* only when they are build.
   . 
   /Examples with command-line/
   .
@@ -191,12 +183,12 @@ Executable test
   main-is:         RunTestTH.hs
   ghc-options: -Wall -fno-warn-orphans
   other-modules: 
-    RunTestTH
     Shaker.Action.CompileTest
     Shaker.CabalInfoTest
     Shaker.CliTest
     Shaker.CommonTest
-    Shaker.ConductorTest
+    Shaker.GhcInterfaceTest
+    Shaker.HsHelperTest
     Shaker.IoTest
     Shaker.ListenerTest
     Shaker.ModuleDataTest
