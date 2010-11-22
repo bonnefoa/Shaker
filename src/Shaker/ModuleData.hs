@@ -2,7 +2,6 @@ module Shaker.ModuleData
  where
 
 import Control.Arrow
-import Control.Monad
 import Control.Monad.Reader
 import Data.List 
 import Data.Maybe
@@ -17,11 +16,16 @@ import System.FilePath
 
 -- * Read and write module data
 
+-- | Get the corresponding mdata file from the given source file
+getCorrespondingModuleDataFile :: FilePath -> Shaker IO FilePath
+getCorrespondingModuleDataFile srcFile = 
+  fmap (`addExtension` moduleDataExtension) (getCorrespondingBuildFile srcFile)
+
 -- | Write given moduleData in dist directory
 writeModuleData :: ModuleData -> Shaker IO ()
 writeModuleData moduleData = do
   let srcFile = moduleDataFileName moduleData
-  buildFile <- fmap (`addExtension` moduleDataExtension) (getCorrespondingBuildFile srcFile)
+  buildFile <- getCorrespondingModuleDataFile srcFile 
   lift $ createDirectoryIfMissing True (dropFileName buildFile) 
   lift $ writeFile buildFile (show moduleData) 
 
