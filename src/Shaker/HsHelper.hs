@@ -16,7 +16,7 @@ parseHsFiles fliListenInfos = do
   return $ catMaybes parseResults
 
 parseFileToHsModule :: FilePath -> IO (Maybe HsModule)
-parseFileToHsModule fp = do
+parseFileToHsModule fp = 
   readFile fp 
   >>= (parseModuleWithMode defaultParseMode { parseFilename = fp } 
        >>> extractValue 

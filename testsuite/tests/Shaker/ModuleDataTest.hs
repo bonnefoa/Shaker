@@ -31,7 +31,7 @@ testGroupModuleData = do
   
 testNubModuleData :: Assertion
 testNubModuleData = do
-  parsedMod <- fmap nub (getAllModuleData)
+  parsedMod <- fmap nub getAllModuleData
   let res = filter ( \ md -> "/CabalTest.hs" `isSuffixOf` moduleDataFileName md) parsedMod
   length res == 1 @? show res
 
@@ -49,7 +49,7 @@ testModuleDataFileName = do
 
 testModuleHasMain :: Assertion
 testModuleHasMain = do
-  parsedMod <- testShakerInput >>= runReaderT (parseModuleData $ "prog/Shaker.hs") >>= return . fromJust
+  parsedMod <- testShakerInput >>= runReaderT (parseModuleData "prog/Shaker.hs") >>= return . fromJust
   moduleDataHasMain parsedMod @? "Should have main, got " ++ show parsedMod
 
 testModuleDataHasTests :: Assertion
@@ -61,6 +61,6 @@ testDirectory :: FilePath
 testDirectory = "testsuite/tests/Shaker"
 
 getTestModuleData :: String -> IO ModuleData
-getTestModuleData testFile = do
+getTestModuleData testFile = 
   testShakerInput >>= runReaderT (parseModuleData $ testDirectory </> testFile) >>= return . fromJust
 

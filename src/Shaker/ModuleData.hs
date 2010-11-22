@@ -40,7 +40,7 @@ parseModuleData :: FilePath -> Shaker IO (Maybe ModuleData)
 parseModuleData srcFile = do 
   may_moduleData <- parseModuleDataIfExist srcFile 
   case may_moduleData of
-    Just _ -> return $ may_moduleData
+    Just _ -> return may_moduleData
     Nothing -> do
       may_hsModule <- lift $ parseFileToHsModule srcFile
       return $ fmap constructModuleData may_hsModule 
@@ -50,15 +50,15 @@ parseModuleDataIfExist :: FilePath -> Shaker IO (Maybe ModuleData)
 parseModuleDataIfExist srcFile = do
   buildFile <- fmap (`addExtension` moduleDataExtension) (getCorrespondingBuildFile srcFile)
   isPresent <- lift $ doesFileExist buildFile 
-  case isPresent of
-    False -> return Nothing
-    True -> lift $ do
+  if isPresent 
+    then lift $ do
            srcTime <- getModificationTime srcFile
            srcMdata <- getModificationTime buildFile
            let isUptoDate = srcTime < srcMdata
-           case isUptoDate of
-              False -> return Nothing 
-              True -> fmap Just $ fmap read (readFile buildFile)
+           if isUptoDate 
+              then fmap (Just . read) (readFile buildFile)
+              else return Nothing 
+    else return Nothing
 
 -- * Module data util methods
 
