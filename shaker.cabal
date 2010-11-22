@@ -80,18 +80,7 @@ description:
   [@% shaker \"~fullcompile\" @] Launch shaker, continuously execute the fullcompile action until shaker is interrupted.
   . 
 
-
-extra-source-files: README TODO testsuite/tests/resources/invalidMain/dist/setup-config
-    testsuite/tests/resources/invalidMain/src/Main.hs
-    testsuite/tests/resources/invalidMain/tests/Dummy.hs
-    testsuite/tests/resources/invalidMain/invalidMain.cabal
-    testsuite/tests/resources/cabalTest/dist/setup-config
-    testsuite/tests/resources/cabalTest/cabalTest.cabal
-    testsuite/tests/resources/cabalTest/src/Main.hs
-    testsuite/tests/resources/cabalTest/src/CabalTest.hs
-    testsuite/tests/resources/noSourceConfig/noHsSource.hs
-    testsuite/tests/resources/noSourceConfig/noHsSource.cabal
-    testsuite/tests/resources/noSourceConfig/dist/setup-config
+extra-source-files: README TODO 
 
 source-repository head
   type:     git
@@ -174,48 +163,3 @@ Executable shaker
                  ,test-framework-hunit == 0.2.*
                  ,test-framework-quickcheck2 == 0.2.*
 
-flag test
-  description: Build test program.
-  default:     False
-
-Executable test
-  hs-source-dirs:  testsuite/tests src 
-  main-is:         RunTestTH.hs
-  ghc-options: -Wall -fno-warn-orphans
-  other-modules: 
-    Shaker.Action.CompileTest
-    Shaker.CabalInfoTest
-    Shaker.CliTest
-    Shaker.CommonTest
-    Shaker.GhcInterfaceTest
-    Shaker.HsHelperTest
-    Shaker.IoTest
-    Shaker.ListenerTest
-    Shaker.ModuleDataTest
-    Shaker.ParserTest
-    Shaker.Properties
-    Shaker.ReflexiviteTest
-    Shaker.RegexTest
-  build-depends: base == 4.*
-                 ,bytestring == 0.9.*
-                 ,Cabal == 1.8.*
-                 ,containers == 0.3.*
-                 ,directory == 1.0.*
-                 ,filepath == 1.1.*
-                 ,ghc == 6.*
-                 ,ghc-paths == 0.1.*
-                 ,haskeline == 0.6.*
-                 ,haskell98 == 1.0.*
-                 ,haskell-src == 1.0.*
-                 ,HUnit == 1.2.*
-                 ,mtl == 2.*
-                 ,old-time >= 1.0.0
-                 ,parsec == 3.*
-                 ,QuickCheck == 2.3.*
-                 ,regex-posix == 0.94.*
-                 ,template-haskell >= 2.4.0.0
-                 ,test-framework == 0.3.*
-                 ,test-framework-hunit == 0.2.*
-                 ,test-framework-quickcheck2 == 0.2.*
-  if !flag(test)
-    buildable:     False
