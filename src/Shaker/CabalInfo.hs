@@ -27,6 +27,7 @@ import DynFlags( DynFlags, verbosity, ghcLink, packageFlags, importPaths ,Packag
 import Shaker.CabalInterface
 import Shaker.Config
 import Shaker.GhcInterface
+import Shaker.Io
 import Shaker.ModuleData
 import Shaker.Type
 import System.Directory (doesFileExist)
@@ -54,16 +55,18 @@ callConfigure = do
 localBuildInfoToShakerInput :: LocalBuildInfo -> IO ShakerInput
 localBuildInfoToShakerInput lbi = do 
   defInput <- defaultInputInitialized 
+  let cplInputs = localBuildInfoToCompileInputs lbi 
+  let listenerInput = compileInputsToListenerInput cplInputs
+  --lstHsFiles <- fmap listenerInputFiles (asks shakerListenerInput) >>= recurseMultipleListFiles
   return defInput {
-    shakerCompileInputs = cplInputs
-    ,shakerListenerInput= compileInputsToListenerInput cplInputs
+    shakerCompileInputs   = cplInputs
+    ,shakerListenerInput  = listenerInput
     ,shakerLocalBuildInfo = lbi
   }
-  where cplInputs = localBuildInfoToCompileInputs  lbi
 
 compileInputsToListenerInput :: [CompileInput] -> ListenerInput
 compileInputsToListenerInput cplInputs = mempty {
-        listenerInputFiles = nub $ map (\a -> FileListenInfo a defaultExclude  defaultHaskellPatterns) concatSources
+        listenerInputFiles = nub $ map (\a -> FileListenInfo a defaultExclude defaultHaskellPatterns) concatSources
  } 
  where concatSources = concatMap compileInputSourceDirs cplInputs
        
