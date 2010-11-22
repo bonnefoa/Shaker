@@ -1,22 +1,23 @@
 -- | Manage all file operations like listing files with fileListenInfoIncludes and exclude patterns
 -- and file filtering
-module Shaker.Io(
-  -- * Utility functions
-  getCorrespondingBuildFile
-  -- * List files functions
-  ,listModifiedAndCreatedFiles
-  ,listFiles
-  ,getCurrentFpCl
-  ,recurseMultipleListFiles
-  ,recurseListFiles
-  ,mapImportToModules
-  -- * Default patterns
-  ,defaultHaskellPatterns
-  ,defaultExclude
-  -- * Exception handling
-  ,handleActionInterrupt
-  ,handleIOException
-)
+module Shaker.Io
+ (
+ -- * Utility functions
+ getCorrespondingBuildFile
+ -- * List files functions
+ ,listModifiedAndCreatedFiles
+ ,listFiles
+ ,getCurrentFpCl
+ ,recurseMultipleListFiles
+ ,recurseListFiles
+ ,mapImportToModules
+ -- * Default patterns
+ ,defaultHaskellPatterns
+ ,defaultExclude
+ -- * Exception handling
+ ,handleActionInterrupt
+ ,handleIOException
+ )
  where
  
 import Control.Arrow

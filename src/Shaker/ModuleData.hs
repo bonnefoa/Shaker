@@ -2,6 +2,7 @@ module Shaker.ModuleData
  where
 
 import Control.Arrow
+import Control.Monad
 import Control.Monad.Reader
 import Data.List 
 import Data.Maybe
@@ -37,17 +38,23 @@ parseModuleData srcFile = do
   case may_moduleData of
     Just _ -> return $ may_moduleData
     Nothing -> do
-               may_hsModule <- lift $ parseFileToHsModule srcFile
-               return $ fmap constructModuleData may_hsModule 
+      may_hsModule <- lift $ parseFileToHsModule srcFile
+      return $ fmap constructModuleData may_hsModule 
 
 -- | Read Module data from the serialized data. It returns Nothing if the serialized data is absent or out-of-date.
 parseModuleDataIfExist :: FilePath -> Shaker IO (Maybe ModuleData)
 parseModuleDataIfExist srcFile = do
   buildFile <- fmap (`addExtension` moduleDataExtension) (getCorrespondingBuildFile srcFile)
-  exist <- lift $ doesFileExist buildFile
-  if exist 
-    then lift $ fmap Just $ fmap read (readFile buildFile)
-    else return Nothing
+  isPresent <- lift $ doesFileExist buildFile 
+  case isPresent of
+    False -> return Nothing
+    True -> lift $ do
+           srcTime <- getModificationTime srcFile
+           srcMdata <- getModificationTime buildFile
+           let isUptoDate = srcTime < srcMdata
+           case isUptoDate of
+              False -> return Nothing 
+              True -> fmap Just $ fmap read (readFile buildFile)
 
 -- * Module data util methods
 
