@@ -1,8 +1,11 @@
 TODO :
-	[_] Update ModuleData in reader before action 
-		[_] Save on parse
-		[_] Read data file if exist and newer than corresponding source code
+	[X] Update ModuleData in reader before action 
+		[X] Save on parse
+		[X] Read data file if exist and newer than corresponding source code
+		[X] update reader monad on action	
 	[_] Completion on test-module and test 
+		[_] Completion on test-module
+		[_] Completion on test
 ----------------------------------------
 [_] test projets
 	[_] xmonad

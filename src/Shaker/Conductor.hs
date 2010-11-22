@@ -13,6 +13,7 @@ import qualified Data.Map as M
 import Shaker.Cli
 import Shaker.Io
 import Shaker.Listener
+import Shaker.ModuleData
 import Shaker.Type
  
 -- | Initialize the master thread 
@@ -85,7 +86,8 @@ executeAction' (ActionWithArg actKey args) =
 -- | Execute a single action without argument
 executeAction' (Action actKey) = do
   plMap <- asks shakerPluginMap 
-  fromJust $ actKey `M.lookup` plMap
+  mdatas <- parseAllModuleData
+  local (\shIn -> shIn {shakerModuleData = mdatas} ) (fromJust $ actKey `M.lookup` plMap)
 
 -- * Handlers 
 
