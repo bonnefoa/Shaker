@@ -111,6 +111,7 @@ filterFunctionsWithPatterns :: [ModuleData] -> [String] -> [ModuleData]
 filterFunctionsWithPatterns mod_map patterns = map (`filterFunctionsWithPatterns'` patterns) mod_map
 
 filterFunctionsWithPatterns' :: ModuleData -> [String] -> ModuleData
+filterFunctionsWithPatterns' moduleData@(GhcModuleData _ _ _ _) _ = moduleData
 filterFunctionsWithPatterns' moduleData@(ModuleData _ _ _ properties hunitAssertions hunitTestCases) patterns = moduleData {
     moduleDataAssertions = processListWithRegexp hunitAssertions [] patterns
     ,moduleDataTestCase = processListWithRegexp hunitTestCases [] patterns

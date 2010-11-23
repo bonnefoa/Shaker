@@ -226,6 +226,7 @@ getModuleDataTests :: ModuleData -> ([String], [String], [String])
 getModuleDataTests (ModuleData _ _ _ prps asserts tests)= (prps, asserts, tests)
 getModuleDataTests (GhcModuleData _ prps asserts tests)= (prps, asserts, tests)
 
+getModuleDataName :: ModuleData -> String
 getModuleDataName (ModuleData name _ _ _ _ _) = name
 getModuleDataName (GhcModuleData name _ _ _) = name
 
