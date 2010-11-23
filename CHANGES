@@ -1,3 +1,10 @@
+0.5.0 : 
+ * Call preprocessor before executing compilation
+ * Automatically expose package needed by projects
+ * Better main module management
+ * Temporary remove itest feature
+ * Use of haskell-src for source analysis prior to ghc compilation
+
 0.4.3 : 
  * Include autogen directory as source directory
  * Ignore files begining with . 
