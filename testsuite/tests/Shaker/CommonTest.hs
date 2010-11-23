@@ -4,6 +4,7 @@ module Shaker.CommonTest
 import Control.Exception
 import Control.Monad.Reader
 import Data.Monoid
+import Data.Maybe
 import DynFlags 
 import GHC.Paths
 import GHC (runGhc)
@@ -12,6 +13,7 @@ import Shaker.GhcInterface
 import Shaker.ModuleData
 import Shaker.Type
 import System.Directory
+import System.FilePath
 import Test.HUnit
 
 runTestOnDirectory :: FilePath -> Assertion -> Assertion
@@ -41,3 +43,9 @@ exposePackageId :: PackageFlag -> String
 exposePackageId (ExposePackageId v) = v
 exposePackageId _ = ""
 
+testDirectory :: FilePath
+testDirectory = "testsuite/tests/Shaker"
+
+getTestModuleData :: String -> IO ModuleData
+getTestModuleData testFile = 
+  testShakerInput >>= runReaderT (parseModuleData $ testDirectory </> testFile) >>= return . fromJust

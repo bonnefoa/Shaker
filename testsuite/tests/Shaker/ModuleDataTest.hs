@@ -61,10 +61,3 @@ testModuleDataHasTests = do
   (not.null) (moduleDataAssertions modData) @? show modData
   (not.null) (moduleDataProperties regexModData) @? show regexModData
 
-testDirectory :: FilePath
-testDirectory = "testsuite/tests/Shaker"
-
-getTestModuleData :: String -> IO ModuleData
-getTestModuleData testFile = 
-  testShakerInput >>= runReaderT (parseModuleData $ testDirectory </> testFile) >>= return . fromJust
-
