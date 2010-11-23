@@ -93,7 +93,7 @@ source-repository this
 
 Library 
   ghc-options: -Wall -fno-warn-orphans 
-  hs-source-dirs:  src
+  hs-source-dirs:  src testsuite
   exposed-modules:
     Shaker.Action.Compile
     Shaker.Action.Standard
@@ -140,7 +140,7 @@ Library
 Executable shaker
   Main-Is: Shaker.hs
   ghc-options: -Wall -fno-warn-orphans 
-  hs-source-dirs: prog src
+  hs-source-dirs: prog src 
   build-depends: base == 4.*
                  ,bytestring == 0.9.*
                  ,Cabal == 1.8.*
