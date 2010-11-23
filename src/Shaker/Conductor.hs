@@ -68,7 +68,7 @@ threadExecutor' (ConductorData listenState fun) = lift $ takeMVar (mvModifiedFil
 executeCommand :: Maybe Command -> Shaker IO ()
 executeCommand Nothing = executeAction [Action InvalidAction] 
 executeCommand (Just (Command OneShot act_list)) = executeAction act_list 
-executeCommand (Just (Command Continuous act)) = initializeConductorData ( executeAction act )  >>= threadExecutor 
+executeCommand (Just (Command Continuous act)) = initializeConductorData ( executeAction act ) >>= threadExecutor 
 
 -- | Execute given action
 executeAction :: [Action] -> Shaker IO()

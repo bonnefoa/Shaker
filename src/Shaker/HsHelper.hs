@@ -26,7 +26,6 @@ parseFileToHsModule fp =
                                ParseOk val -> Just val
                                _ -> Nothing
 
-
 hsModuleCollectProperties :: HsModule -> [String]
 hsModuleCollectProperties = getListFunction >>> filter (isPrefixOf "prop_")
 
@@ -63,7 +62,7 @@ getSignature _ = Nothing
 
 getFunBindName :: HsDecl -> Maybe String
 getFunBindName (HsPatBind _ (HsPVar (HsIdent funName))_ _) = Just funName
-getFunBindName (HsFunBind ((HsMatch _ (HsIdent funName) _ _ _ ) :_) ) = Just funName
+getFunBindName (HsFunBind (HsMatch _ (HsIdent funName) _ _ _ :_) ) = Just funName
 getFunBindName _ = Nothing
 
 getIdentFromHsName :: HsName -> String
