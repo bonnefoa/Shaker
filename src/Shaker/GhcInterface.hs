@@ -111,12 +111,10 @@ mergeMdatas lstMdatas = map (\mdata -> filter (==mdata) >>> mconcat $ lstMdatas)
 convertModSummaryToModuleData :: (GhcMonad m) => ModSummary -> m ModuleData
 convertModSummaryToModuleData modSum = do
   mayModuleInfo <- getModuleInfo $ ms_mod modSum
-  let props      = getQuickCheckFunction mayModuleInfo
   let assertions = getHunitAssertions mayModuleInfo
   let testCases  = getHunitTestCase mayModuleInfo
   return GhcModuleData {
     ghcModuleDataName        = modName
-    ,ghcModuleDataProperties = props
     ,ghcModuleDataAssertions = assertions
     ,ghcModuleDataTestCase   = testCases
     }

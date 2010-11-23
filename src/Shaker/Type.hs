@@ -196,7 +196,6 @@ data ModuleData = ModuleData {
   ,moduleDataTestCase   :: [String]
  } | GhcModuleData { 
    ghcModuleDataName        :: String
-   ,ghcModuleDataProperties :: [String]
    ,ghcModuleDataAssertions :: [String]
    ,ghcModuleDataTestCase   :: [String]
  }
@@ -204,7 +203,7 @@ data ModuleData = ModuleData {
 
 instance Monoid ModuleData where
   mempty = ModuleData "" "" False [] [] []
-  mappend fstModData@(GhcModuleData _ _ _ _) sndModData@(ModuleData _ _ _ _ _ _) = sndModData `mappend` fstModData
+  mappend fstModData@(GhcModuleData _ _ _) sndModData@(ModuleData _ _ _ _ _ _) = sndModData `mappend` fstModData
   mappend fstModData@(ModuleData _ _ _ fstProps fstAsserts fstTestCases) sndModData = 
     fstModData {
       moduleDataProperties  = nub $ fstProps ++ sndProps
@@ -212,9 +211,8 @@ instance Monoid ModuleData where
       ,moduleDataTestCase   = nub $ fstTestCases ++ sndTestCases
     }
     where (sndProps, sndAsserts, sndTestCases) = getModuleDataTests sndModData
-  mappend fstModData@(GhcModuleData _ fstTestCases fstProps fstAsserts) sndModData = fstModData {
+  mappend fstModData@(GhcModuleData _ fstTestCases fstAsserts) sndModData = fstModData {
       ghcModuleDataTestCase    = nub $ fstTestCases ++ sndTestCases
-      ,ghcModuleDataProperties = nub $ fstProps ++ sndProps
       ,ghcModuleDataAssertions = nub $ fstAsserts ++ sndAsserts
     }
     where (sndProps, sndAsserts, sndTestCases) = getModuleDataTests sndModData
@@ -224,11 +222,11 @@ instance Eq ModuleData where
 
 getModuleDataTests :: ModuleData -> ([String], [String], [String])
 getModuleDataTests (ModuleData _ _ _ prps asserts tests)= (prps, asserts, tests)
-getModuleDataTests (GhcModuleData _ prps asserts tests)= (prps, asserts, tests)
+getModuleDataTests (GhcModuleData _ asserts tests)= ([], asserts, tests)
 
 getModuleDataName :: ModuleData -> String
 getModuleDataName (ModuleData name _ _ _ _ _) = name
-getModuleDataName (GhcModuleData name _ _ _) = name
+getModuleDataName (GhcModuleData name _ _) = name
 
 type MapImportToModules = M.Map String [String]
 -- | Represents the mapping beetween an action and the function to execute
