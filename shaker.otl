@@ -6,6 +6,9 @@ TODO :
 	[_] Completion on test-module and test 
 		[_] Completion on test-module
 		[_] Completion on test
+	[X] Discovery of signature-less tests
+	[_] Correct command-line argument management
+	[_] Only load necessary loaded when executing tests
 ----------------------------------------
 [_] test projets
 	[_] xmonad
