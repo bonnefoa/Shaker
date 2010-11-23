@@ -13,8 +13,8 @@ testModuleCollectProperties = do
   let propertiesCollected = hsModuleCollectProperties parseMod
   propertiesCollected == ["prop_trivial"] @? "Should have properties, got " ++ show parseMod
 
-testModuleCollectProperties_bis :: Assertion
-testModuleCollectProperties_bis = do
+testModuleCollectPropertiesBis :: Assertion
+testModuleCollectPropertiesBis = do
   parseMod <- getTestModule "RegexTest.hs"
   let propertiesCollected = hsModuleCollectProperties parseMod
   "prop_filterListAll" `elem` propertiesCollected @? "Should have properties, got " ++ show parseMod
@@ -29,10 +29,11 @@ testModuleCollectTestCases :: Assertion
 testModuleCollectTestCases = do
   parseMod <- getParsedModule
   let testCollected = hsModuleCollectTest parseMod
-  testCollected == ["testModuleCollectTestCase"] @? show testCollected
+  testCollected == ["testModuleCollectTestCase"] @? show parseMod
 
-testModuleCollectTestCase :: Test
-testModuleCollectTestCase = TestCase $ True @? "Trivial"
+trivialTestCase = TestCase trivialAssertion
+
+trivialAssertion = True @? "Trivial"
 
 prop_trivial = True
 
@@ -41,5 +42,4 @@ getParsedModule = getTestModule "HsHelperTest.hs"
 
 getTestModule :: String -> IO HsModule 
 getTestModule file = fmap head ( parseHsFiles [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*" ++ file]  } ] )
-
 
