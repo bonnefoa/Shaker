@@ -3,15 +3,16 @@ module Shaker.Action.Test
 
 import Shaker.Type
 import Shaker.Reflexivite
+import Shaker.GhcInterface
 import Shaker.ModuleData
 import Control.Monad.Reader
 import Language.Haskell.TH
 
 runTestFramework :: Plugin 
-runTestFramework = getModulesWithFunctionFiltering >>= runTestFramework'
+runTestFramework = getModulesWithFunctionFiltering >>= fillModuleDataTest >>= runTestFramework'
 
 runModuleTestFramework :: Plugin 
-runModuleTestFramework = getModulesWithModuleFiltering >>= runTestFramework' 
+runModuleTestFramework = getModulesWithModuleFiltering >>= fillModuleDataTest >>= runTestFramework' 
 
 getModulesWithModuleFiltering :: Shaker IO [ModuleData] 
 getModulesWithModuleFiltering = do

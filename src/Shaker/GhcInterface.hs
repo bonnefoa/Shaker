@@ -4,22 +4,30 @@ module Shaker.GhcInterface (
   ,ghcCompile
   ,getListNeededPackages
   ,installedPackageIdString 
+  ,fillModuleDataTest 
  )
  where
 
 import Control.Arrow
 import Control.Monad.Reader(lift, asks )
 import Data.List
+import Data.Monoid
+import Data.Maybe
+import Digraph
 import Distribution.Package (InstalledPackageId(..))
 import DynFlags
 import GHC hiding (parseModule, HsModule)
 import GHC.Paths
-import Linker
 import HscTypes
+import Linker
+import Name (nameOccName)
+import OccName (occNameString)
+import Outputable
 import Packages (lookupModuleInAllPackages, exposed,  installedPackageId, PackageConfig)
 import qualified Data.Map as M
 import Shaker.Io
 import Shaker.Type
+import Var (varName)
 
 type ImportToPackages = [ ( String, [PackageConfig] ) ]
 
@@ -79,4 +87,72 @@ configureDynFlagsWithCompileInput cpIn dflags = dflags{
   }
   where compileTarget = compileInputBuildDirectory cpIn
         sourceDirs = compileInputSourceDirs cpIn
+
+-- * Test discovering
+
+fillModuleDataTest :: [ModuleData] -> Shaker IO [ModuleData]
+fillModuleDataTest modDatas = do
+  cpIn <- fmap mconcat (asks shakerCompileInputs)
+  let newCpIn = cpIn {
+   compileInputTargetFiles = map moduleDataFileName modDatas 
+  }
+  ghcModuleDatas <- lift $ runGhc (Just libdir) $ do 
+    _ <- ghcCompile newCpIn
+    mss <- depanal [] False
+    let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
+    mapM convertModSummaryToModuleData sort_mss
+  mergeMdatas >>> filter (\a -> moduleDataName a /= "") >>> return $ (modDatas ++ ghcModuleDatas) 
+
+mergeMdatas :: [ModuleData] -> [ModuleData]
+mergeMdatas lstMdatas = map (\mdata -> filter (==mdata) >>> mconcat $ lstMdatas) uniqueMdata 
+  where uniqueMdata = nub lstMdatas
+
+-- | Collect module name and tests name for the given module
+convertModSummaryToModuleData :: (GhcMonad m) => ModSummary -> m ModuleData
+convertModSummaryToModuleData modSum = do
+  mayModuleInfo <- getModuleInfo $ ms_mod modSum
+  let props      = getQuickCheckFunction mayModuleInfo
+  let assertions = getHunitAssertions mayModuleInfo
+  let testCases  = getHunitTestCase mayModuleInfo
+  return GhcModuleData {
+    ghcModuleDataName        = modName
+    ,ghcModuleDataProperties = props
+    ,ghcModuleDataAssertions = assertions
+    ,ghcModuleDataTestCase   = testCases
+    }
+  where modName = (moduleNameString . moduleName . ms_mod) modSum
+
+getQuickCheckFunction :: Maybe ModuleInfo -> [String]
+getQuickCheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`)
+
+getHunitAssertions :: Maybe ModuleInfo -> [String]
+getHunitAssertions = getFunctionTypeWithPredicate (== "Test.HUnit.Lang.Assertion")
+
+getHunitTestCase :: Maybe ModuleInfo -> [String]
+getHunitTestCase = getFunctionTypeWithPredicate (== "Test.HUnit.Base.Test")
+
+getFunctionTypeWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
+getFunctionTypeWithPredicate _ Nothing = []
+getFunctionTypeWithPredicate predicat (Just modInfo) = 
+  getIdList 
+  >>> map ((showPpr . idType) &&& getFunctionNameFromId ) 
+  >>> filter (predicat . fst) 
+  >>> map snd $ modInfo
+
+getFunctionNameWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
+getFunctionNameWithPredicate _ Nothing = []
+getFunctionNameWithPredicate predicat (Just modInfo) =
+  filter predicat nameList
+   where idList = getIdList modInfo
+         nameList = map getFunctionNameFromId idList
+
+getFunctionNameFromId :: Id -> String
+getFunctionNameFromId = occNameString . nameOccName . varName
+
+getIdList :: ModuleInfo -> [Id]
+getIdList modInfo = mapMaybe tyThingToId $ modInfoTyThings modInfo
+
+tyThingToId :: TyThing -> Maybe Id
+tyThingToId (AnId tyId) = Just tyId
+tyThingToId _ = Nothing
 

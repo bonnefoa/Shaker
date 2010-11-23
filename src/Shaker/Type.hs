@@ -194,7 +194,40 @@ data ModuleData = ModuleData {
   ,moduleDataProperties :: [String]
   ,moduleDataAssertions :: [String]
   ,moduleDataTestCase   :: [String]
- } deriving (Show, Read)
+ } | GhcModuleData { 
+   ghcModuleDataName        :: String
+   ,ghcModuleDataProperties :: [String]
+   ,ghcModuleDataAssertions :: [String]
+   ,ghcModuleDataTestCase   :: [String]
+ }
+ deriving (Show, Read)
+
+instance Monoid ModuleData where
+  mempty = ModuleData "" "" False [] [] []
+  mappend fstModData@(GhcModuleData _ _ _ _) sndModData@(ModuleData _ _ _ _ _ _) = sndModData `mappend` fstModData
+  mappend fstModData@(ModuleData _ _ _ fstProps fstAsserts fstTestCases) sndModData = 
+    fstModData {
+      moduleDataProperties  = nub $ fstProps ++ sndProps
+      ,moduleDataAssertions = nub $ fstAsserts ++ sndAsserts
+      ,moduleDataTestCase   = nub $ fstTestCases ++ sndTestCases
+    }
+    where (sndProps, sndAsserts, sndTestCases) = getModuleDataTests sndModData
+  mappend fstModData@(GhcModuleData _ fstTestCases fstProps fstAsserts) sndModData = fstModData {
+      ghcModuleDataTestCase    = nub $ fstTestCases ++ sndTestCases
+      ,ghcModuleDataProperties = nub $ fstProps ++ sndProps
+      ,ghcModuleDataAssertions = nub $ fstAsserts ++ sndAsserts
+    }
+    where (sndProps, sndAsserts, sndTestCases) = getModuleDataTests sndModData
+
+instance Eq ModuleData where
+  mod1 == mod2 = getModuleDataName mod1 == getModuleDataName mod2
+
+getModuleDataTests :: ModuleData -> ([String], [String], [String])
+getModuleDataTests (ModuleData _ _ _ prps asserts tests)= (prps, asserts, tests)
+getModuleDataTests (GhcModuleData _ prps asserts tests)= (prps, asserts, tests)
+
+getModuleDataName (ModuleData name _ _ _ _ _) = name
+getModuleDataName (GhcModuleData name _ _ _) = name
 
 type MapImportToModules = M.Map String [String]
 -- | Represents the mapping beetween an action and the function to execute
@@ -232,9 +265,6 @@ emptyCommand = Command OneShot [Action Empty]
 
 listTestLibs :: [String]
 listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] 
-
-instance Eq ModuleData where
- mod1 == mod2 = moduleDataName mod1 == moduleDataName mod2
 
 moduleDataExtension :: String
 moduleDataExtension = ".mdata"
