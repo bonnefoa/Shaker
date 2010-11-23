@@ -1,6 +1,7 @@
 module Shaker.Action.Test
  where
 
+import Data.Monoid
 import Shaker.Type
 import Shaker.Reflexivite
 import Shaker.GhcInterface
@@ -30,13 +31,17 @@ getModulesWithFunctionFiltering = do
   
 runTestFramework' :: [ModuleData] -> Plugin
 runTestFramework' [] = lift $ putStrLn "No test to run"
-runTestFramework' modules = do
+runTestFramework' moduleDatas = do
   let import_modules = base_modules ++ map moduleDataName filtered_modules
   resolvedExp <- lift $ runQ (listTestFrameworkGroupList filtered_modules)
   let function =  filter (/= '\n') $ pprint resolvedExp
   lift $ putStrLn function
-  runFunction $ RunnableFunction import_modules listTestLibs ("defaultMain $ " ++ function) 
+  baseCpIn <- fmap mconcat (asks shakerCompileInputs)
+  let cpIn = baseCpIn {
+    compileInputTargetFiles = "Shaker.TestHelper" : map moduleDataFileName filtered_modules
+  }
+  runFunction cpIn $ RunnableFunction import_modules listTestLibs ("defaultMain $ " ++ function) 
   return () 
   where base_modules =["Data.Maybe","Shaker.TestHelper","Test.Framework", "Test.Framework.Providers.HUnit", "Test.Framework.Providers.QuickCheck2", "Test.QuickCheck", "Test.HUnit", "Prelude" ] 
-        filtered_modules = removeNonTestModules modules
+        filtered_modules = removeNonTestModules moduleDatas
 

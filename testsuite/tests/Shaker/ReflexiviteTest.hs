@@ -8,6 +8,7 @@ import Language.Haskell.TH
 import Shaker.CommonTest
 import Shaker.Properties()
 import Shaker.Reflexivite
+import Shaker.ModuleData
 import Shaker.Type
 import System.Directory
 import Test.HUnit
@@ -36,7 +37,7 @@ templateTestRunFunction :: [String] -> Assertion
 templateTestRunFunction modules=  do 
   tempFp <- getTemporaryDirectory >>= \a -> return $ a++"/testSha"
   let run = RunnableFunction modules listTestLibs $ "aFun " ++ show tempFp
-  runReaderT (runFunction run) =<< testShakerInput 
+  runReaderT (getNonMainCompileInput >>= flip runFunction run) =<< testShakerInput 
   doesDirectoryExist tempFp @? "Directory /tmp/testSha should have been created"
   
 testSearchInstalledPackageId :: Assertion

@@ -36,9 +36,8 @@ data RunnableFunction = RunnableFunction {
  deriving Show
 
 -- | Compile, load and run the given function
-runFunction :: RunnableFunction -> Shaker IO()
-runFunction (RunnableFunction importModuleList listLibs fun) = do
-  cpIn <- getNonMainCompileInput
+runFunction :: CompileInput -> RunnableFunction -> Shaker IO()
+runFunction cpIn (RunnableFunction importModuleList listLibs fun) = do
   listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
