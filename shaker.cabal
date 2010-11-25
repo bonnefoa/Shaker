@@ -89,7 +89,7 @@ source-repository head
 source-repository this
   type:     git
   location: git://github.com/bonnefoa/Shaker.git 
-  tag:      0.4.3
+  tag:      0.5.1
 
 Library 
   ghc-options: -Wall -fno-warn-orphans 
@@ -101,6 +101,7 @@ Library
     Shaker.CabalInfo
     Shaker.CabalInterface
     Shaker.Cli
+    Shaker.CommonUtil
     Shaker.Conductor
     Shaker.Config
     Shaker.GhcInterface

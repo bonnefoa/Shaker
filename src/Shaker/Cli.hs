@@ -14,6 +14,7 @@ import Control.Monad.Reader
 import Data.Char
 import Data.List
 import qualified Data.Map as M
+import Shaker.CommonUtil
 import Shaker.Parser
 import Shaker.Type
 import System.Console.Haskeline
@@ -62,6 +63,4 @@ autocompleteFunction cmdMap cliInput = map simpleCompletion  compleListProp
         commonPref = unwords (init inpWords)
         compleListProp = trimList $ map  (\a -> commonPref ++ " " ++ a) listProp
 
-trimList :: [String] -> [String]
-trimList = map (dropWhile (== ' '))
 
