@@ -120,9 +120,6 @@ convertModSummaryToModuleData modSum = do
     }
   where modName = (moduleNameString . moduleName . ms_mod) modSum
 
-getQuickCheckFunction :: Maybe ModuleInfo -> [String]
-getQuickCheckFunction = getFunctionNameWithPredicate ("prop_" `isPrefixOf`)
-
 getHunitAssertions :: Maybe ModuleInfo -> [String]
 getHunitAssertions = getFunctionTypeWithPredicate (== "Test.HUnit.Lang.Assertion")
 
@@ -136,13 +133,6 @@ getFunctionTypeWithPredicate predicat (Just modInfo) =
   >>> map ((showPpr . idType) &&& getFunctionNameFromId ) 
   >>> filter (predicat . fst) 
   >>> map snd $ modInfo
-
-getFunctionNameWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
-getFunctionNameWithPredicate _ Nothing = []
-getFunctionNameWithPredicate predicat (Just modInfo) =
-  filter predicat nameList
-   where idList = getIdList modInfo
-         nameList = map getFunctionNameFromId idList
 
 getFunctionNameFromId :: Id -> String
 getFunctionNameFromId = occNameString . nameOccName . varName
