@@ -32,7 +32,7 @@ getModulesWithFunctionFiltering = do
   
 processModuleDataList :: [[ModuleData]] -> Plugin
 processModuleDataList [] = lift $ putStrLn "No test to run"
-processModuleDataList lst = mapM_ executeTest $ lst
+processModuleDataList lst = mapM_ executeTest lst
 
 executeTest :: [ModuleData] -> Plugin
 executeTest moduleDatas = do 
