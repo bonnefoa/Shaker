@@ -199,7 +199,10 @@ data ModuleData = ModuleData {
    ,ghcModuleDataAssertions :: [String]
    ,ghcModuleDataTestCase   :: [String]
  }
- deriving (Show, Read)
+ deriving (Read)
+
+instance Show ModuleData where
+  show = moduleDataName 
 
 instance Monoid ModuleData where
   mempty = ModuleData "" "" False [] [] []
@@ -215,7 +218,7 @@ instance Monoid ModuleData where
       ghcModuleDataTestCase    = nub $ fstTestCases ++ sndTestCases
       ,ghcModuleDataAssertions = nub $ fstAsserts ++ sndAsserts
     }
-    where (sndProps, sndAsserts, sndTestCases) = getModuleDataTests sndModData
+    where (_, sndAsserts, sndTestCases) = getModuleDataTests sndModData
 
 instance Eq ModuleData where
   mod1 == mod2 = getModuleDataName mod1 == getModuleDataName mod2
