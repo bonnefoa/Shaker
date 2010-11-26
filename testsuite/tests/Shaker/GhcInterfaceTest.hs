@@ -21,7 +21,7 @@ testListModuleData :: Assertion
 testListModuleData = do
   shIn <- testShakerInput 
   modData <- getTestModuleData "HsHelperTest.hs"
-  mDatas <- runReaderT (fillModuleDataTest [modData]) shIn
+  mDatas <- fmap head $ runReaderT (fillModuleDataTest [modData]) shIn
   length mDatas == 1 @? show mDatas
   let hsHelperMdata = head mDatas
   "trivialAssertion" `elem` moduleDataAssertions hsHelperMdata @? show mDatas

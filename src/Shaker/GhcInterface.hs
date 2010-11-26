@@ -27,6 +27,8 @@ import Packages (lookupModuleInAllPackages, exposed,  installedPackageId, Packag
 import qualified Data.Map as M
 import Shaker.Io
 import Shaker.Type
+import Shaker.ModuleData
+import Shaker.CommonUtil
 import Var (varName)
 
 type ImportToPackages = [ ( String, [PackageConfig] ) ]
@@ -90,8 +92,12 @@ configureDynFlagsWithCompileInput cpIn dflags = dflags{
 
 -- * Test discovering
 
-fillModuleDataTest :: [ModuleData] -> Shaker IO [ModuleData]
-fillModuleDataTest modDatas = do
+fillModuleDataTest :: [ModuleData] -> Shaker IO [[ModuleData]]
+fillModuleDataTest = separateEqual
+  >>> mapM fillModuleDataTest'
+
+fillModuleDataTest' :: [ModuleData] -> Shaker IO [ModuleData]
+fillModuleDataTest' modDatas = do
   cpIn <- fmap mconcat (asks shakerCompileInputs)
   let newCpIn = cpIn {
    compileInputTargetFiles = map moduleDataFileName modDatas 
