@@ -9,6 +9,7 @@ import Shaker.CommonTest
 import Shaker.Properties()
 import Shaker.Reflexivite
 import Shaker.ModuleData
+import Shaker.TestTH
 import Shaker.Type
 import System.Directory
 import Test.HUnit

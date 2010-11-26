@@ -3,11 +3,6 @@ module Shaker.Reflexivite (
   -- * Collect module information functions
   ,runFunction
   ,searchInstalledPackageId
-  -- * Template haskell generator
-  ,listAllTestFrameworkGroupList
-  ,filterModulesWithPattern
-  ,filterFunctionsWithPatterns
-  ,listTestFrameworkGroupList 
   )
  where
 
@@ -21,7 +16,6 @@ import Distribution.Simple.PackageIndex
 import DynFlags
 import GHC
 import GHC.Paths
-import Language.Haskell.TH
 import Shaker.Action.Compile
 import Shaker.GhcInterface
 import Shaker.ModuleData
@@ -39,6 +33,7 @@ data RunnableFunction = RunnableFunction {
 runFunction :: CompileInput -> RunnableFunction -> Shaker IO()
 runFunction cpIn (RunnableFunction importModuleList listLibs fun) = do
   listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
+  -- lift $ putStrLn $ "Pkg ids found : " ++ show listInstalledPkgId
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
          _ <- setSessionDynFlags (addShakerLibraryAsImport listInstalledPkgId (dopt_set dflags Opt_HideAllPackages))
@@ -65,48 +60,12 @@ searchInstalledPackageId pkgName = do
   let srchRes = searchByName pkgIndex pkgName 
   return $ processSearchResult srchRes
   where processSearchResult None = Nothing
-        processSearchResult (Unambiguous a) = Just $ installedPackageId >>> installedPackageIdString $ head a
-        processSearchResult (Ambiguous (a:_)) = Just $ installedPackageId >>> installedPackageIdString $ head a
+        processSearchResult (Unambiguous a) = Just $ installedPackageId >>> installedPackageIdString $ last a
+        processSearchResult (Ambiguous (a:_)) = Just $ installedPackageId >>> installedPackageIdString $ last a
         processSearchResult _ = Nothing
 
 handleActionInterrupt :: IO() -> IO()
 handleActionInterrupt =  C.handle catchAll
   where catchAll :: C.SomeException -> IO ()
         catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return () 
-
--- | List all test group of the project.
--- see "Shaker.TestTH" 
-listAllTestFrameworkGroupList :: ShakerInput -> ExpQ
-listAllTestFrameworkGroupList = shakerModuleData >>> removeNonTestModules >>> listTestFrameworkGroupList 
-
--- | List all test group for test-framework from the list of modules
-listTestFrameworkGroupList :: [ModuleData] -> ExpQ
-listTestFrameworkGroupList = return . ListE . map getSingleTestFrameworkGroup
-
--- * Test framework integration 
-
--- | Generate a test group for a given module
-getSingleTestFrameworkGroup :: ModuleData -> Exp
-getSingleTestFrameworkGroup moduleData = foldl1 AppE [process_to_group_exp, test_case_tuple_list, list_assertion, list_prop]
-  where process_to_group_exp = AppE (VarE .mkName $ "processToTestGroup") (LitE (StringL $ moduleDataName moduleData))
-        list_prop = ListE $ map getSingleFrameworkQuickCheck $ moduleDataProperties moduleData
-        list_assertion = ListE $ map getSingleFrameworkHunit $ moduleDataAssertions moduleData
-        test_case_tuple_list = convertHunitTestCaseToTuples (moduleDataTestCase moduleData)
-
-convertHunitTestCaseToTuples :: [String] -> Exp
-convertHunitTestCaseToTuples = ListE . map convertToTuple 
-  where convertToTuple name = TupE [LitE (StringL name), VarE $ mkName name ]
-
--- | Generate an expression for a single hunit test
-getSingleFrameworkHunit :: String -> Exp 
-getSingleFrameworkHunit hunitName = AppE testcase_with_name_exp assertion_exp
-  where testcase_with_name_exp = AppE ( VarE $ mkName "testCase") (LitE $ StringL hunitName)
-        assertion_exp = VarE . mkName $ hunitName
-
--- | Generate an expression for a single quickcheck property
-getSingleFrameworkQuickCheck :: String -> Exp
-getSingleFrameworkQuickCheck propName = AppE testproperty_with_name_exp property_exp 
-  where canonical_name = tail . dropWhile (/= '_') $ propName 
-        testproperty_with_name_exp = AppE ( VarE $ mkName "testProperty") (LitE $ StringL canonical_name)
-        property_exp = VarE . mkName $ propName
 
