@@ -12,7 +12,8 @@ TODO :
 	[X] With ghc discovery, only fetch exported functions
 	[X] bug with test 
 		[X] When using pattern filtering, dependencies (like CommonTest) are not loaded. Reason : bad hs-source dir in cabal
-	[_] Remove dependencies to TestHelper.
+	[_] performance
+		[_] serialize ShakerInput to accelerate tests
 ----------------------------------------
 [_] test projets
 	[_] xmonad
