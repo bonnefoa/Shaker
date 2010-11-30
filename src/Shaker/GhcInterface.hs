@@ -135,7 +135,7 @@ getHunitTestCase = getFunctionTypeWithPredicate (== "Test.HUnit.Base.Test")
 getFunctionTypeWithPredicate :: (String -> Bool) -> Maybe ModuleInfo -> [String]
 getFunctionTypeWithPredicate _ Nothing = []
 getFunctionTypeWithPredicate predicat (Just modInfo) = 
-  getIdList 
+  getIdExportedList 
   >>> map ((showPpr . idType) &&& getFunctionNameFromId ) 
   >>> filter (predicat . fst) 
   >>> map snd $ modInfo
@@ -143,8 +143,12 @@ getFunctionTypeWithPredicate predicat (Just modInfo) =
 getFunctionNameFromId :: Id -> String
 getFunctionNameFromId = occNameString . nameOccName . varName
 
-getIdList :: ModuleInfo -> [Id]
-getIdList modInfo = mapMaybe tyThingToId $ modInfoTyThings modInfo
+getIdExportedList :: ModuleInfo -> [Id]
+getIdExportedList modInfo = modInfoTyThings 
+  >>> mapMaybe tyThingToId 
+  >>> filter (\a -> varName a `elem` lstExportedNames) 
+  $ modInfo
+  where lstExportedNames = modInfoExports modInfo
 
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
