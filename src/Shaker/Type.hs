@@ -199,10 +199,7 @@ data ModuleData = ModuleData {
    ,ghcModuleDataAssertions :: [String]
    ,ghcModuleDataTestCase   :: [String]
  }
- deriving (Read)
-
-instance Show ModuleData where
-  show = moduleDataName 
+ deriving (Read, Show)
 
 instance Monoid ModuleData where
   mempty = ModuleData "" "" False [] [] []
