@@ -62,7 +62,6 @@ localBuildInfoToShakerInput lbi = do
   defInput <- defaultInputInitialized 
   let cplInputs = localBuildInfoToCompileInputs lbi 
   let listenerInput = compileInputsToListenerInput cplInputs
-  --lstHsFiles <- fmap listenerInputFiles (asks shakerListenerInput) >>= recurseMultipleListFiles
   return defInput {
     shakerCompileInputs   = cplInputs
     ,shakerListenerInput  = listenerInput
