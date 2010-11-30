@@ -7,7 +7,7 @@ TODO :
 		[_] Completion on test-module
 		[_] Completion on test
 	[X] Discovery of signature-less tests
-	[_] Correct command-line argument management
+	[X] Correct command-line argument management
 	[X] Only load necessary loaded when executing tests
 	[X] With ghc discovery, only fetch exported functions
 	[X] bug with test 
