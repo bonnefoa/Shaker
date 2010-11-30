@@ -93,7 +93,7 @@ source-repository this
 
 Library 
   ghc-options: -Wall -fno-warn-orphans 
-  hs-source-dirs:  src testsuite
+  hs-source-dirs:  src testsuite/tests
   exposed-modules:
     Shaker.Action.Compile
     Shaker.Action.Standard
