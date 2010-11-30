@@ -90,13 +90,11 @@ fillModuleData shIn = do
   return shIn { shakerModuleData = map constructModuleData lstHsModules }
 
 constructModuleData :: HsModule -> ModuleData
-constructModuleData hsModule = ModuleData {
+constructModuleData hsModule = mempty {
   moduleDataName = hsModuleName hsModule
   ,moduleDataFileName = hsModuleFileName hsModule
   ,moduleDataHasMain = getTupleFunctionNameType >>> map fst >>> any (=="main") $ hsModule
   ,moduleDataProperties = hsModuleCollectProperties hsModule
-  ,moduleDataAssertions = hsModuleCollectAssertions hsModule
-  ,moduleDataTestCase = hsModuleCollectTest hsModule
  }
 
 hsModuleDataHasTest :: ModuleData -> Bool
@@ -122,4 +120,5 @@ filterFunctionsWithPatterns' moduleData@(ModuleData _ _ _ properties hunitAssert
 removeNonTestModules :: [ModuleData] -> [ModuleData]
 removeNonTestModules = filter ( \ moduleData -> any notEmpty [moduleDataProperties moduleData, moduleDataAssertions moduleData, moduleDataTestCase moduleData] )
   where notEmpty = not . null
+
 

@@ -34,16 +34,6 @@ abstractCollectFunctionWithUnqualifiedType fun = getTupleFunctionNameType
   >>> filterSnd fun
   >>> map fst
 
-hsModuleCollectTest :: HsModule -> [String]
-hsModuleCollectTest = abstractCollectFunctionWithUnqualifiedType predicat
-  where predicat (HsQualType _ (HsTyCon (UnQual hsName) ) ) = hsName == HsIdent "Test"
-        predicat _ = False
-
-hsModuleCollectAssertions :: HsModule -> [String]
-hsModuleCollectAssertions = abstractCollectFunctionWithUnqualifiedType predicat
-  where predicat (HsQualType _ (HsTyCon (UnQual hsName) ) ) = hsName == HsIdent "Assertion"
-        predicat _ = False
-
 filterSnd :: (b -> Bool) -> [(a,b)] -> [(a,b)]
 filterSnd fun = filter (snd >>> fun)
 

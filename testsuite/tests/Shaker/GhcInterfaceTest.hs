@@ -1,6 +1,7 @@
 module Shaker.GhcInterfaceTest
  where
 
+import Control.Arrow
 import Control.Monad.Reader hiding (liftIO)
 import Data.List
 import Data.Monoid
@@ -20,10 +21,21 @@ testListNeededPackages = do
 testListModuleData :: Assertion 
 testListModuleData = do
   shIn <- testShakerInput 
-  modData <- getTestModuleData "HsHelperTest.hs"
+  modData <- getTestModuleData "GhcInterfaceTest.hs"
   mDatas <- fmap head $ runReaderT (fillModuleDataTest [modData]) shIn
   length mDatas == 1 @? show mDatas
   let hsHelperMdata = head mDatas
   "trivialAssertion" `elem` moduleDataAssertions hsHelperMdata @? show mDatas
   moduleDataTestCase hsHelperMdata == ["trivialTestCase"] @? show mDatas
+
+testFillModuleDataTest :: Assertion 
+testFillModuleDataTest = do 
+  shIn <- testShakerInput 
+  modData <- getTestModuleData "GhcInterfaceTest.hs"
+  res <- runReaderT (fillModuleDataTest [modData]) shIn
+  "testFillModuleDataTest" `elem` moduleDataAssertions (head >>> head $res) @? show res
+
+trivialTestCase = TestCase trivialAssertion
+
+trivialAssertion = True @? "Trivial"
 
