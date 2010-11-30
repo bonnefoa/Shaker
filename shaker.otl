@@ -8,7 +8,11 @@ TODO :
 		[_] Completion on test
 	[X] Discovery of signature-less tests
 	[_] Correct command-line argument management
-	[_] Only load necessary loaded when executing tests
+	[X] Only load necessary loaded when executing tests
+	[X] With ghc discovery, only fetch exported functions
+	[X] bug with test 
+		[X] When using pattern filtering, dependencies (like CommonTest) are not loaded. Reason : bad hs-source dir in cabal
+	[_] Remove dependencies to TestHelper.
 ----------------------------------------
 [_] test projets
 	[_] xmonad
