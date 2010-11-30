@@ -94,7 +94,7 @@ configureDynFlagsWithCompileInput cpIn dflags = dflags{
 
 fillModuleDataTest :: [ModuleData] -> Shaker IO [[ModuleData]]
 fillModuleDataTest = separateEqual
-  >>> mapM fillModuleDataTest'
+  >>> mapM fillModuleDataTest' 
 
 fillModuleDataTest' :: [ModuleData] -> Shaker IO [ModuleData]
 fillModuleDataTest' modDatas = do
@@ -107,7 +107,10 @@ fillModuleDataTest' modDatas = do
     mss <- depanal [] False
     let sort_mss = flattenSCCs $ topSortModuleGraph True mss Nothing
     mapM convertModSummaryToModuleData sort_mss
-  mergeMdatas >>> filter (\a -> moduleDataName a /= "") >>> return $ (modDatas ++ ghcModuleDatas) 
+  mergeMdatas 
+    >>> filter (\a -> moduleDataName a /= "") 
+    >>> removeNonTestModules 
+    >>> return $ (modDatas ++ ghcModuleDatas) 
 
 mergeMdatas :: [ModuleData] -> [ModuleData]
 mergeMdatas lstMdatas = map (\mdata -> filter (==mdata) >>> mconcat $ lstMdatas) uniqueMdata 
