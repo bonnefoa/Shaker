@@ -13,7 +13,10 @@ import Shaker.Type
 
 -- | Run haskell compilation on given CompileInput list
 runCompile :: Plugin
-runCompile = applyPreprocessSources >> asks shakerCompileInputs >>= foldM runUntilFail Succeeded >> return ()
+runCompile = applyPreprocessSources 
+  >> asks shakerCompileInputs 
+  >>= foldM runUntilFail Succeeded
+  >> return ()
 
 runUntilFail :: SuccessFlag -> CompileInput -> Shaker IO SuccessFlag
 runUntilFail Succeeded cpIn = runSingleCompileInput cpIn
@@ -21,7 +24,10 @@ runUntilFail Failed _ = return Failed
  
 -- | Run haskell compilation on all haskell files
 runFullCompile :: Plugin
-runFullCompile = applyPreprocessSources >> convertModuleDataToFullCompileInput >>= foldM runUntilFail Succeeded >> return()
+runFullCompile = applyPreprocessSources 
+  >> convertModuleDataToFullCompileInput 
+  >>= foldM runUntilFail Succeeded 
+  >> return()
 
 runSingleCompileInput :: CompileInput -> Shaker IO SuccessFlag
 runSingleCompileInput cplInp = do
