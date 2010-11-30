@@ -35,9 +35,14 @@ import System.FilePath          ( (</>))
 
 -- | Read the build information from cabal and output a shakerInput from it
 defaultCabalInput :: IO ShakerInput
-defaultCabalInput = readConf >>= \lbi -> 
-  generateAutogenFiles lbi >> 
-  localBuildInfoToShakerInput lbi >>= exposeNeededPackages lbi >>= checkInvalidMain >>= fillModuleData >>= fillPackageIndex
+defaultCabalInput = readConf 
+  >>= \lbi -> generateAutogenFiles lbi 
+  >> localBuildInfoToShakerInput lbi 
+  >>= exposeNeededPackages lbi 
+  >>= checkInvalidMain 
+  >>= fillModuleData 
+  >>= fillPackageIndex
+
 readConf :: IO LocalBuildInfo
 readConf = maybeGetPersistBuildConfig "dist" >>= \my_lbi ->
   case my_lbi of
