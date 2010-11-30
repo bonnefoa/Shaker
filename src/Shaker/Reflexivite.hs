@@ -33,7 +33,6 @@ data RunnableFunction = RunnableFunction {
 runFunction :: CompileInput -> RunnableFunction -> Shaker IO()
 runFunction cpIn (RunnableFunction importModuleList listLibs fun) = do
   listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
-  -- lift $ putStrLn $ "Pkg ids found : " ++ show listInstalledPkgId
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
          _ <- setSessionDynFlags (addShakerLibraryAsImport listInstalledPkgId (dopt_set dflags Opt_HideAllPackages))
