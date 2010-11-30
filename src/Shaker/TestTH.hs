@@ -7,6 +7,7 @@ import Control.Arrow
 import Language.Haskell.TH
 import Shaker.ModuleData
 import Shaker.Type
+import Shaker.TestHelper
 
 -- | List all test group of the project.
 -- see "Shaker.TestTH" 
