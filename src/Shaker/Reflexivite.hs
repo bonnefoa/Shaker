@@ -18,7 +18,6 @@ import GHC
 import GHC.Paths
 import Shaker.Action.Compile
 import Shaker.GhcInterface
-import Shaker.ModuleData
 import Shaker.Type 
 import Unsafe.Coerce
 
