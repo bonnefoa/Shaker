@@ -17,7 +17,6 @@ import Distribution.PackageDescription.Parse
 import Distribution.Package (PackageName(PackageName), pkgName)
 import Distribution.Simple.Compiler (PackageDB(..))
 import Distribution.Simple.Configure (maybeGetPersistBuildConfig, configure, writePersistBuildConfig, getInstalledPackages)
-import Distribution.Simple.GHC(ghcOptions)
 import Distribution.Simple.LocalBuildInfo 
 import Distribution.Simple.Program
 import Distribution.Simple.Setup
@@ -96,7 +95,7 @@ executableAndLibToCompileInput lbi (Just lib) exes = libraryToCompileInput lbi l
 executableToCompileInput :: LocalBuildInfo -> (Executable, ComponentLocalBuildInfo) -> CompileInput
 executableToCompileInput lbi (executable, componentLocalBuildInfo) = mempty { 
   compileInputSourceDirs = mySourceDir
-  ,compileInputCommandLineFlags = ghcOptions lbi bldInfo componentLocalBuildInfo defaultDistDir
+  ,compileInputCommandLineFlags = getCompileFlagsForExecutable lbi executable componentLocalBuildInfo
   ,compileInputTargetFiles = map (</> modulePath executable ) mySourceDir
   ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies componentLocalBuildInfo)
   }
@@ -108,7 +107,7 @@ executableToCompileInput lbi (executable, componentLocalBuildInfo) = mempty {
 libraryToCompileInput :: LocalBuildInfo -> (Library, ComponentLocalBuildInfo) -> CompileInput
 libraryToCompileInput lbi (lib, componentLocalBuildInfo) = mempty {
   compileInputSourceDirs = mySourceDir
-  ,compileInputCommandLineFlags = ghcOptions lbi bldInfo componentLocalBuildInfo defaultDistDir
+  ,compileInputCommandLineFlags = getCompileFlagsForLibrary lbi lib componentLocalBuildInfo
   ,compileInputTargetFiles = myModules
   ,compileInputDynFlags = toDynFlags mySourceDir (getLibDependencies componentLocalBuildInfo)
  }

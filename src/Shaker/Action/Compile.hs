@@ -33,6 +33,7 @@ runSingleCompileInput :: CompileInput -> Shaker IO SuccessFlag
 runSingleCompileInput cplInp = do
         lift $ putStrLn ""
         lift $ putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
+        lift $ putStrLn $ concat ["--", "Arguments :"++ show (compileInputCommandLineFlags cplInp) ,"--"]
         lift $ defaultErrorHandler defaultDynFlags $ 
                     runGhc (Just libdir) $ ghcCompile cplInp 
 

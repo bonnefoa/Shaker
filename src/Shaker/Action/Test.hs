@@ -2,6 +2,7 @@ module Shaker.Action.Test
  where
 
 import Data.Monoid
+import Shaker.CabalInterface
 import Shaker.Type
 import Shaker.Reflexivite
 import Shaker.ModuleData
@@ -11,10 +12,16 @@ import Control.Monad.Reader
 import Language.Haskell.TH
 
 runTestFramework :: Plugin 
-runTestFramework = getModulesWithFunctionFiltering >>= fillModuleDataTest >>= processModuleDataList
+runTestFramework = applyPreprocessSources
+  >> getModulesWithFunctionFiltering 
+  >>= fillModuleDataTest 
+  >>= processModuleDataList
 
 runModuleTestFramework :: Plugin 
-runModuleTestFramework = getModulesWithModuleFiltering >>= fillModuleDataTest >>= processModuleDataList 
+runModuleTestFramework = applyPreprocessSources
+  >> getModulesWithModuleFiltering 
+  >>= fillModuleDataTest 
+  >>= processModuleDataList 
 
 getModulesWithModuleFiltering :: Shaker IO [ModuleData] 
 getModulesWithModuleFiltering = do
