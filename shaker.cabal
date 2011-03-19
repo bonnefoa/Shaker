@@ -118,19 +118,19 @@ Library
     Shaker.Type
   build-depends: base == 4.*
                  ,bytestring == 0.9.*
-                 ,Cabal == 1.8.*
-                 ,containers == 0.3.*
-                 ,directory == 1.0.*
-                 ,filepath == 1.1.*
-                 ,ghc == 6.*
+                 ,Cabal == 1.10.*
+                 ,containers == 0.4.*
+                 ,directory == 1.*
+                 ,filepath == 1.*
+                 ,ghc == 7.*
                  ,ghc-paths == 0.1.*
                  ,haskeline == 0.6.*
-                 ,haskell98 == 1.0.*
+                 ,haskell98 == 1.1.*
                  ,haskell-src == 1.0.*
                  ,HUnit == 1.2.*
                  ,mtl == 2.*
                  ,old-time >= 1.0.0
-                 ,parsec == 3.*
+                 ,parsec3 == 1.*
                  ,QuickCheck == 2.4.*
                  ,regex-posix == 0.94.*
                  ,template-haskell >= 2.4.0.0
@@ -144,19 +144,19 @@ Executable shaker
   hs-source-dirs: prog src 
   build-depends: base == 4.*
                  ,bytestring == 0.9.*
-                 ,Cabal == 1.8.*
-                 ,containers == 0.3.*
-                 ,directory == 1.0.*
-                 ,filepath == 1.1.*
-                 ,ghc == 6.*
+                 ,Cabal == 1.10.*
+                 ,containers == 0.4.*
+                 ,directory == 1.*
+                 ,filepath == 1.*
+                 ,ghc == 7.*
                  ,ghc-paths == 0.1.*
                  ,haskeline == 0.6.*
-                 ,haskell98 == 1.0.*
+                 ,haskell98 == 1.1.*
                  ,haskell-src
                  ,HUnit == 1.2.*
                  ,mtl == 2.*
                  ,old-time >= 1.0.0
-                 ,parsec == 3.*
+                 ,parsec3 == 1.*
                  ,QuickCheck == 2.4.*
                  ,regex-posix == 0.94.*
                  ,template-haskell >= 2.4.0.0
