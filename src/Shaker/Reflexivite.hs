@@ -43,8 +43,14 @@ runFunction cpIn (RunnableFunction importModuleList listLibs fun) = do
   _ <- lift $ handleActionInterrupt dynFun
   return ()
   where 
-        configureContext [] = getModuleGraph >>= \mGraph ->  setContext [] $ map ms_mod mGraph
-        configureContext imports = mapM (\a -> findModule (mkModuleName a)  Nothing ) imports >>= \m -> setContext [] m
+        genTuple :: ModSummary -> (Module, Maybe (ImportDecl RdrName))
+        genTuple mod = (ms_mod mod, Nothing)
+        configureContext [] = do 
+          modGraph <- getModuleGraph 
+          setContext [] (map genTuple modGraph)
+        configureContext imports = do
+          mods <- mapM (\a -> findModule (mkModuleName a) Nothing) imports 
+          setContext [] $ map (\m -> (m, Nothing) ) mods
 
 addShakerLibraryAsImport :: [String] -> DynFlags -> DynFlags
 addShakerLibraryAsImport listInstalledPkgId dflags = dflags {

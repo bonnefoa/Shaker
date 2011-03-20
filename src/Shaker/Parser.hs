@@ -6,13 +6,16 @@ module Shaker.Parser(
 
 import Data.Char
 
-import Text.ParserCombinators.Parsec
+import Text.Parsec.Combinator
+import Text.Parsec
+import Text.Parsec.ByteString
 import Shaker.Type
 import qualified Data.Map as M
+import qualified Data.ByteString.Char8 as B
 
 -- | Parse the given string to a Command
 parseCommand :: String -> ShakerInput -> Either ParseError Command
-parseCommand str shIn = parse (typeCommand cmd_map) "parseCommand" str
+parseCommand str shIn = parse (typeCommand cmd_map) "parseCommand" (B.pack str)
   where cmd_map = shakerCommandMap shIn
 
 -- | Parse a Command

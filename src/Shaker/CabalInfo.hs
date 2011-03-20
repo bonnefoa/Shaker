@@ -172,7 +172,7 @@ exposeNeededPackages lbi shIn = do
 
 fillPackageIndex :: ShakerInput -> IO ShakerInput 
 fillPackageIndex shIn = do
-  (Just pkgIndex) <- getInstalledPackages normal lbi_compiler [GlobalPackageDB] lbi_programConfiguration 
+  pkgIndex <- getInstalledPackages normal lbi_compiler [GlobalPackageDB] lbi_programConfiguration 
   return shIn { shakerPackageIndex = pkgIndex }
   where lbi_compiler = shakerLocalBuildInfo >>> compiler $ shIn
         lbi_programConfiguration = shakerLocalBuildInfo >>> withPrograms $ shIn

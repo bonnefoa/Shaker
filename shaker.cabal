@@ -10,7 +10,7 @@ maintainer: anthonin.bonnefoy@gmail.com
 homepage: http://github.com/bonnefoa/Shaker
 bug-reports: http://github.com/bonnefoa/Shaker/issues 
 Stability:alpha
-Tested-With:GHC == 6.12.3
+Tested-With:GHC >= 7
 category: Development
 synopsis: simple and interactive command-line build tool
 description: 
