@@ -6,7 +6,8 @@ module Shaker.Parser(
 
 import Data.Char
 
-import Text.ParserCombinators.Parsec
+import Text.Parsec.String
+import Text.Parsec
 import Shaker.Type
 import qualified Data.Map as M
 
