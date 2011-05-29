@@ -18,6 +18,7 @@ import Distribution.Package (InstalledPackageId(..))
 import DynFlags
 import GHC hiding (parseModule, HsModule)
 import GHC.Paths
+import GhcMonad
 import HscTypes
 import Linker
 import Name (nameOccName)

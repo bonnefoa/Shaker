@@ -10,6 +10,7 @@ import Shaker.CabalInterface
 import Shaker.GhcInterface
 import Shaker.ModuleData
 import Shaker.Type
+import SysTools
 
 -- | Run haskell compilation on given CompileInput list
 runCompile :: Plugin
@@ -31,9 +32,10 @@ runFullCompile = applyPreprocessSources
 
 runSingleCompileInput :: CompileInput -> Shaker IO SuccessFlag
 runSingleCompileInput cplInp = do
-        lift $ putStrLn ""
-        lift $ putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
-        lift $ putStrLn $ concat ["--", "Arguments :"++ show (compileInputCommandLineFlags cplInp) ,"--"]
-        lift $ defaultErrorHandler defaultDynFlags $ 
-                    runGhc (Just libdir) $ ghcCompile cplInp 
+  mySettings <- liftIO $ initSysTools (Just libdir)
+  lift $ putStrLn ""
+  lift $ putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
+  lift $ putStrLn $ concat ["--", "Arguments :"++ show (compileInputCommandLineFlags cplInp) ,"--"]
+  lift $ defaultErrorHandler (defaultDynFlags mySettings) $ 
+              runGhc (Just libdir) $ ghcCompile cplInp 
 

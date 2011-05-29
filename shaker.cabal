@@ -119,16 +119,16 @@ Library
     Shaker.Type
   build-depends: base == 4.*
                  ,bytestring == 0.9.*
-                 ,Cabal == 1.10.*
+                 ,Cabal == 1.11.*
                  ,containers == 0.4.*
                  ,directory == 1.1.*
                  ,filepath == 1.2.*
                  ,ghc == 7.*
                  ,ghc-paths == 0.1.*
                  ,haskeline == 0.6.*
-                 ,haskell-src == 1.0.*
                  ,HUnit == 1.2.*
                  ,mtl == 2.*
+                 ,haskell-src >= 1.0.1.5
                  ,old-time >= 1.0.0
                  ,parsec3 == 1.0.*
                  ,QuickCheck == 2.4.*
@@ -145,14 +145,14 @@ Executable shaker
   default-language: Haskell2010
   build-depends: base == 4.*
                  ,bytestring == 0.9.*
-                 ,Cabal == 1.10.*
+                 ,Cabal == 1.11.*
                  ,containers == 0.4.*
                  ,directory == 1.1.*
                  ,filepath == 1.2.*
                  ,ghc == 7.*
                  ,ghc-paths == 0.1.*
                  ,haskeline == 0.6.*
-                 ,haskell-src
+                 ,haskell-src >= 1.0.1.5
                  ,HUnit == 1.2.*
                  ,mtl == 2.*
                  ,old-time >= 1.0.0
@@ -163,4 +163,3 @@ Executable shaker
                  ,test-framework == 0.4.*
                  ,test-framework-hunit == 0.2.*
                  ,test-framework-quickcheck2 == 0.2.*
-

@@ -19,7 +19,8 @@ applyPreprocessSources :: Shaker IO ()
 applyPreprocessSources = do
   lbi <- asks shakerLocalBuildInfo 
   let pkgDescription = localPkgDescr lbi
-  lift $ preprocessSources pkgDescription lbi False normal knownSuffixHandlers 
+  let components = compBuildOrder lbi
+  mapM_ (\comp -> lift $ preprocessComponent pkgDescription comp lbi False normal knownSuffixHandlers) components
 
 getPreprocessorDirectory :: LocalBuildInfo -> Executable -> FilePath
 getPreprocessorDirectory lbi Executable {exeName = exeName'}= 
