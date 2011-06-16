@@ -1,0 +1,10 @@
+* TODO Issues
+** DONE Update to ghc7
+** TODO Allow some configuration
+** TODO Lock of source files on windows
+
+* TODO Bugs
+** TODO Filtering by test
+** TODO ModuleData test has no assertions
+** TODO Package detection is slow...
+** TODO Ugly dependency to shaker
