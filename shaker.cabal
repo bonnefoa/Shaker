@@ -125,7 +125,6 @@ Library
                  ,ghc == 7.*
                  ,ghc-paths == 0.1.*
                  ,haskeline == 0.6.*
-                 ,haskell98 == 1.1.*
                  ,haskell-src == 1.0.*
                  ,HUnit == 1.2.*
                  ,mtl == 2.*
@@ -133,7 +132,7 @@ Library
                  ,parsec3 == 1.*
                  ,QuickCheck == 2.4.*
                  ,regex-posix == 0.94.*
-                 ,template-haskell >= 2.4.0.0
+                 ,template-haskell >= 2.5.0.0
                  ,test-framework == 0.3.*
                  ,test-framework-hunit == 0.2.*
                  ,test-framework-quickcheck2 == 0.2.*
@@ -151,7 +150,6 @@ Executable shaker
                  ,ghc == 7.*
                  ,ghc-paths == 0.1.*
                  ,haskeline == 0.6.*
-                 ,haskell98 == 1.1.*
                  ,haskell-src
                  ,HUnit == 1.2.*
                  ,mtl == 2.*
@@ -159,7 +157,7 @@ Executable shaker
                  ,parsec3 == 1.*
                  ,QuickCheck == 2.4.*
                  ,regex-posix == 0.94.*
-                 ,template-haskell >= 2.4.0.0
+                 ,template-haskell >= 2.5.0.0
                  ,test-framework == 0.3.*
                  ,test-framework-hunit == 0.2.*
                  ,test-framework-quickcheck2 == 0.2.*
