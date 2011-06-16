@@ -22,6 +22,7 @@ defaultInput = ShakerInput {
   ,shakerLocalBuildInfo = undefined
   ,shakerPackageIndex = mempty
   ,shakerModuleData = []
+  ,shakerVerbosity = Silent 
   }
 
 defaultInputInitialized :: IO ShakerInput 

@@ -84,6 +84,10 @@ data ShakerAction =
 data Command = Command Duration [Action] 
   deriving (Show,Eq)
 
+data Verbosity = 
+  Silent
+  | Debug
+
 -- | Represents the global configuration of the system
 data ShakerInput = ShakerInput {
   shakerCompileInputs      :: [CompileInput]
@@ -97,6 +101,7 @@ data ShakerInput = ShakerInput {
   ,shakerLocalBuildInfo    :: LocalBuildInfo
   ,shakerPackageIndex      :: PackageIndex
   ,shakerModuleData        :: [ModuleData]
+  ,shakerVerbosity         :: Verbosity
  }
  
 data ThreadData = ThreadData {

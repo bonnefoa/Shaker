@@ -29,11 +29,15 @@ runFullCompile = applyPreprocessSources
   >>= foldM runUntilFail Succeeded 
   >> return()
 
+printArguments :: CompileInput -> Verbosity -> IO ()
+printArguments _ Silent = return()
+printArguments cplInp Debug = putStrLn $ concat ["--", "Arguments :"++ show (compileInputCommandLineFlags cplInp) ,"--"]
+
 runSingleCompileInput :: CompileInput -> Shaker IO SuccessFlag
 runSingleCompileInput cplInp = do
         lift $ putStrLn ""
         lift $ putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
-        lift $ putStrLn $ concat ["--", "Arguments :"++ show (compileInputCommandLineFlags cplInp) ,"--"]
+        asks shakerVerbosity >>= lift . printArguments cplInp
         lift $ defaultErrorHandler defaultDynFlags $ 
                     runGhc (Just libdir) $ ghcCompile cplInp 
 
