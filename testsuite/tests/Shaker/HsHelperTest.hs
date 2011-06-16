@@ -1,7 +1,7 @@
 module Shaker.HsHelperTest
  where
 
-import Data.Monoid 
+import Data.Monoid
 import Language.Haskell.Syntax
 import Shaker.HsHelper
 import Shaker.Type
@@ -21,9 +21,9 @@ testModuleCollectPropertiesBis = do
 
 prop_trivial = True
 
-getParsedModule :: IO HsModule 
+getParsedModule :: IO HsModule
 getParsedModule = getTestModule "HsHelperTest.hs"
 
-getTestModule :: String -> IO HsModule 
+getTestModule :: String -> IO HsModule
 getTestModule file = fmap head ( parseHsFiles [ mempty { fileListenInfoDir = "testsuite/tests/Shaker", fileListenInfoInclude = [".*" ++ file]  } ] )
 

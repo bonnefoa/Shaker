@@ -10,13 +10,13 @@ import System.Directory
 
 -- | Print the list of available actions
 runHelp ::  Plugin
-runHelp = do 
-  commands <- asks shakerCommandMap 
-  lift $ do   
+runHelp = do
+  commands <- asks shakerCommandMap
+  lift $ do
   putStrLn "Following actions are available : "
   print $ M.keys commands
   putStrLn "use ~[actionName] for continuous launch"
- 
+
 -- | Print exit. The real exit management is made in conductor
 runExit :: Plugin
 runExit = do
@@ -26,7 +26,7 @@ runExit = do
 
 -- | Print a begin action notification
 runStartAction :: Plugin
-runStartAction = lift $ 
+runStartAction = lift $
   putStrLn "-- Begin action --"
 
 runEmpty :: Plugin
@@ -34,18 +34,18 @@ runEmpty = return ()
 
 -- | Print an end action notification
 runEndAction :: Plugin
-runEndAction = lift $ 
+runEndAction = lift $
   putStrLn "-- End action --"
 
--- | Clean action is responsible to delete fileListenInfoDirectory containing temporary .o and .hi files 
-runClean :: Plugin 
+-- | Clean action is responsible to delete fileListenInfoDirectory containing temporary .o and .hi files
+runClean :: Plugin
 runClean = do
-     toClean <- asks $ map compileInputBuildDirectory . shakerCompileInputs 
-     lift$  mapM_ action toClean 
+     toClean <- asks $ map compileInputBuildDirectory . shakerCompileInputs
+     lift$  mapM_ action toClean
   where action toClean = do
                  ex <- doesDirectoryExist toClean
-                 when ex $ removeDirectoryRecursive toClean  
+                 when ex $ removeDirectoryRecursive toClean
 
-runInvalidAction :: Plugin 
+runInvalidAction :: Plugin
 runInvalidAction = lift $ putStrLn "Invalid action,  use help to display available actions"
 

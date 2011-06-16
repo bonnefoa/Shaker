@@ -9,7 +9,7 @@ import Shaker.PluginConfig
 import Shaker.Cli(InputState(..))
 import Control.Concurrent
 
-defaultInput ::ShakerInput  
+defaultInput ::ShakerInput
 defaultInput = ShakerInput {
   shakerCompileInputs = [mempty]
   ,shakerListenerInput= mempty
@@ -22,35 +22,35 @@ defaultInput = ShakerInput {
   ,shakerLocalBuildInfo = undefined
   ,shakerPackageIndex = mempty
   ,shakerModuleData = []
-  ,shakerVerbosity = Silent 
+  ,shakerVerbosity = Silent
   }
 
-defaultInputInitialized :: IO ShakerInput 
-defaultInputInitialized = do 
+defaultInputInitialized :: IO ShakerInput
+defaultInputInitialized = do
   defThrdData <- defaultThreadData
-  input_state <- defaultInputState 
-  return defaultInput { 
-    shakerThreadData = defThrdData 
-    ,shakerInputState = input_state 
+  input_state <- defaultInputState
+  return defaultInput {
+    shakerThreadData = defThrdData
+    ,shakerInputState = input_state
  }
 
-defaultThreadData :: IO ThreadData 
-defaultThreadData = do 
-  thread_listen <- newMVar [] :: IO  ThreadIdList 
-  thread_quit <- newMVar [] :: IO ThreadIdList 
-  listen_token <- newEmptyMVar 
-  quit_token <- newEmptyMVar  
+defaultThreadData :: IO ThreadData
+defaultThreadData = do
+  thread_listen <- newMVar [] :: IO  ThreadIdList
+  thread_quit <- newMVar [] :: IO ThreadIdList
+  listen_token <- newEmptyMVar
+  quit_token <- newEmptyMVar
   return ThreadData {
       threadDataListenToken = listen_token
       ,threadDataQuitToken = quit_token
       ,threadDataListenList = thread_listen
       ,threadDataQuitList = thread_quit
-    } 
+    }
 
 defaultInputState :: IO InputState
 defaultInputState = do
-  inputMv <- newEmptyMVar 
-  tokenMv <- newEmptyMVar  
-  return InputState { shakerInputStateCommand = inputMv, shakerInputStateToken =  tokenMv } 
+  inputMv <- newEmptyMVar
+  tokenMv <- newEmptyMVar
+  return InputState { shakerInputStateCommand = inputMv, shakerInputStateToken =  tokenMv }
 
 

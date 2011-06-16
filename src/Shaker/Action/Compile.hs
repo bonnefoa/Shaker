@@ -3,7 +3,7 @@ module Shaker.Action.Compile
  where
 
 import Control.Monad.Reader
-import DynFlags 
+import DynFlags
 import GHC
 import GHC.Paths
 import Shaker.CabalInterface
@@ -13,20 +13,20 @@ import Shaker.Type
 
 -- | Run haskell compilation on given CompileInput list
 runCompile :: Plugin
-runCompile = applyPreprocessSources 
-  >> asks shakerCompileInputs 
+runCompile = applyPreprocessSources
+  >> asks shakerCompileInputs
   >>= foldM runUntilFail Succeeded
   >> return ()
 
 runUntilFail :: SuccessFlag -> CompileInput -> Shaker IO SuccessFlag
 runUntilFail Succeeded cpIn = runSingleCompileInput cpIn
 runUntilFail Failed _ = return Failed
- 
+
 -- | Run haskell compilation on all haskell files
 runFullCompile :: Plugin
-runFullCompile = applyPreprocessSources 
-  >> convertModuleDataToFullCompileInput 
-  >>= foldM runUntilFail Succeeded 
+runFullCompile = applyPreprocessSources
+  >> convertModuleDataToFullCompileInput
+  >>= foldM runUntilFail Succeeded
   >> return()
 
 printArguments :: CompileInput -> Verbosity -> IO ()
@@ -38,6 +38,6 @@ runSingleCompileInput cplInp = do
         lift $ putStrLn ""
         lift $ putStrLn $ concat ["--", "Compiling target : "++ show (compileInputTargetFiles cplInp) ,"--"]
         asks shakerVerbosity >>= lift . printArguments cplInp
-        lift $ defaultErrorHandler defaultDynFlags $ 
-                    runGhc (Just libdir) $ ghcCompile cplInp 
+        lift $ defaultErrorHandler defaultDynFlags $
+                    runGhc (Just libdir) $ ghcCompile cplInp
 

@@ -18,9 +18,9 @@ testListNeededPackages = do
   list_needed_imports <- runReaderT getListNeededPackages shIn
   any (isPrefixOf "haskeline") list_needed_imports @? show list_needed_imports
 
-testListModuleData :: Assertion 
+testListModuleData :: Assertion
 testListModuleData = do
-  shIn <- testShakerInput 
+  shIn <- testShakerInput
   modData <- getTestModuleData "GhcInterfaceTest.hs"
   mDatas <- fmap head $ runReaderT (fillModuleDataTest [modData]) shIn
   length mDatas == 1 @? show mDatas
@@ -28,9 +28,9 @@ testListModuleData = do
   "trivialAssertion" `elem` moduleDataAssertions hsHelperMdata @? show mDatas
   moduleDataTestCase hsHelperMdata == ["trivialTestCase"] @? show mDatas
 
-testFillModuleDataTest :: Assertion 
-testFillModuleDataTest = do 
-  shIn <- testShakerInput 
+testFillModuleDataTest :: Assertion
+testFillModuleDataTest = do
+  shIn <- testShakerInput
   modData <- getTestModuleData "GhcInterfaceTest.hs"
   res <- runReaderT (fillModuleDataTest [modData]) shIn
   "testFillModuleDataTest" `elem` moduleDataAssertions (head >>> head $res) @? show res

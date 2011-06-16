@@ -1,3 +1,3 @@
-module Dummy 
- where 
+module Dummy
+ where
 
