@@ -44,7 +44,7 @@ runFunction cpIn (RunnableFunction importModuleList listLibs fun) = do
   return ()
   where 
         genTuple :: ModSummary -> (Module, Maybe (ImportDecl RdrName))
-        genTuple mod = (ms_mod mod, Nothing)
+        genTuple modSummary = (ms_mod modSummary, Nothing)
         configureContext [] = do 
           modGraph <- getModuleGraph 
           setContext [] (map genTuple modGraph)
