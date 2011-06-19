@@ -264,14 +264,15 @@ defaultExclude =  [".*Setup\\.lhs$",".*Setup\\.hs$", ".*/\\."]
 exitCommand :: Command
 exitCommand = Command OneShot [Action Quit]
 
-emptyCommand :: Command 
-emptyCommand = Command OneShot [Action Empty] 
+emptyCommand :: Command
+emptyCommand = Command OneShot [Action Empty]
 
 listTestLibs :: [String]
-listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker"] 
+listTestLibs = ["QuickCheck","HUnit","test-framework-hunit","test-framework","test-framework-quickcheck2","shaker-test-provider"]
 
 moduleDataExtension :: String
 moduleDataExtension = ".mdata"
 
 defaultDistDir :: String
 defaultDistDir = "dist/shakerTarget"
+
