@@ -130,7 +130,9 @@ toDynFlags sourceDirs packagesToExpose dnFlags = dnFlags {
 -- * Helper methods
 
 getLibDependencies :: ComponentLocalBuildInfo -> [String]
-getLibDependencies = componentPackageDeps >>> map (fst >>> installedPackageIdString )
+getLibDependencies =
+  componentPackageDeps
+  >>> map (fst >>> installedPackageIdString )
 
 convertModuleNameToString :: ModuleName -> String
 convertModuleNameToString modName

@@ -1,0 +1,37 @@
+name: shaker-test-provider
+version: 0.1
+cabal-version: >= 1.8
+build-type: Custom
+license: BSD3
+license-file: LICENSE
+copyright: Copyright (c) 2011 Anthonin Bonnefoy
+author: Anthonin Bonnefoy
+maintainer: anthonin.bonnefoy@gmail.com
+homepage: http://github.com/bonnefoa/Shaker-test-provider
+bug-reports: http://github.com/bonnefoa/Shaker-test-provider/issues 
+Stability:alpha
+Tested-With:GHC >= 7
+category: Development
+synopsis: Helper function for test execution in shaker
+description: Provide functions necessary for the test goal in Shaker
+extra-source-files: README 
+
+source-repository head
+  type:     git
+  location: git://github.com/bonnefoa/Shaker-test-provider.git 
+
+source-repository this
+  type:     git
+  location: git://github.com/bonnefoa/Shaker-test-provider.git 
+  tag:      0.1
+
+Library 
+  ghc-options: -Wall -fno-warn-orphans 
+  hs-source-dirs:  src 
+  exposed-modules:
+    Shaker.TestHelper
+  build-depends: base == 4.*
+                 ,HUnit == 1.2.*
+                 ,test-framework == 0.4.*
+                 ,test-framework-hunit == 0.2.*
+
