@@ -4,6 +4,7 @@ module Shaker.GhcInterfaceTest
 import Control.Arrow
 import Control.Monad.Reader hiding (liftIO)
 import Data.List
+import Data.Maybe
 import Data.Monoid
 import Shaker.Config
 import Shaker.GhcInterface
@@ -34,6 +35,12 @@ testFillModuleDataTest = do
   modData <- getTestModuleData "GhcInterfaceTest.hs"
   res <- runReaderT (fillModuleDataTest [modData]) shIn
   "testFillModuleDataTest" `elem` moduleDataAssertions (head >>> head $res) @? show res
+
+testSearchInstalledPackageId :: Assertion
+testSearchInstalledPackageId = do
+  shIn <- testShakerInput
+  may_pkgId <- runReaderT (searchInstalledPackageId "shaker") shIn
+  isJust may_pkgId @? show may_pkgId
 
 trivialTestCase = TestCase trivialAssertion
 

@@ -2,23 +2,18 @@ module Shaker.Reflexivite (
   RunnableFunction(..)
   -- * Collect module information functions
   ,runFunction
-  ,searchInstalledPackageId
   )
  where
 
-import Control.Arrow
 import Control.Exception as C
 import Control.Monad.Reader
-import Data.List
 import Data.Maybe
-import Distribution.InstalledPackageInfo
-import Distribution.Simple.PackageIndex
 import DynFlags
 import GHC
 import GHC.Paths
 import Shaker.Action.Compile
 import Shaker.GhcInterface
-import Shaker.Type 
+import Shaker.Type
 import Unsafe.Coerce
 
 data RunnableFunction = RunnableFunction {
@@ -34,42 +29,26 @@ runFunction cpIn (RunnableFunction importModuleList listLibs fun) = do
   listInstalledPkgId <- fmap catMaybes (mapM searchInstalledPackageId listLibs)
   dynFun <- lift $ runGhc (Just libdir) $ do
          dflags <- getSessionDynFlags
-         _ <- setSessionDynFlags (addShakerLibraryAsImport listInstalledPkgId (dopt_set dflags Opt_HideAllPackages))
-         _ <- ghcCompile cpIn 
+         _ <- setSessionDynFlags (addLibraryToDynFlags listInstalledPkgId (dopt_set dflags Opt_HideAllPackages))
+         _ <- ghcCompile cpIn
          configureContext importModuleList
          value <- compileExpr fun
          do let value' = unsafeCoerce value :: a
             return value'
   _ <- lift $ handleActionInterrupt dynFun
   return ()
-  where 
+  where
         genTuple :: ModSummary -> (Module, Maybe (ImportDecl RdrName))
         genTuple modSummary = (ms_mod modSummary, Nothing)
-        configureContext [] = do 
-          modGraph <- getModuleGraph 
+        configureContext [] = do
+          modGraph <- getModuleGraph
           setContext [] (map genTuple modGraph)
         configureContext imports = do
-          mods <- mapM (\a -> findModule (mkModuleName a) Nothing) imports 
+          mods <- mapM (\a -> findModule (mkModuleName a) Nothing) imports
           setContext [] $ map (\m -> (m, Nothing) ) mods
-
-addShakerLibraryAsImport :: [String] -> DynFlags -> DynFlags
-addShakerLibraryAsImport listInstalledPkgId dflags = dflags {
-    packageFlags = nub $ map ExposePackageId listInstalledPkgId ++ oldPackageFlags
-  }
-  where oldPackageFlags = packageFlags dflags
-
-searchInstalledPackageId :: String -> Shaker IO (Maybe String)
-searchInstalledPackageId pkgName = do 
-  pkgIndex <- asks shakerPackageIndex
-  let srchRes = searchByName pkgIndex pkgName 
-  return $ processSearchResult srchRes
-  where processSearchResult None = Nothing
-        processSearchResult (Unambiguous a) = Just $ installedPackageId >>> installedPackageIdString $ last a
-        processSearchResult (Ambiguous (a:_)) = Just $ installedPackageId >>> installedPackageIdString $ last a
-        processSearchResult _ = Nothing
 
 handleActionInterrupt :: IO() -> IO()
 handleActionInterrupt =  C.handle catchAll
   where catchAll :: C.SomeException -> IO ()
-        catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return () 
+        catchAll e = putStrLn ("Shaker caught " ++ show e ) >>  return ()
 

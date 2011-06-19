@@ -5,9 +5,13 @@ module Shaker.GhcInterface (
   ,getListNeededPackages
   ,installedPackageIdString
   ,fillModuleDataTest
+  ,addLibraryToDynFlags
+  ,searchInstalledPackageId
  )
  where
 
+import Distribution.InstalledPackageInfo
+import Distribution.Simple.PackageIndex
 import Control.Arrow
 import Control.Monad.Reader(lift, asks )
 import Data.List
@@ -23,7 +27,7 @@ import Linker
 import Name (nameOccName)
 import OccName (occNameString)
 import Outputable
-import Packages (lookupModuleInAllPackages, exposed,  installedPackageId, PackageConfig)
+import Packages (lookupModuleInAllPackages, PackageConfig)
 import qualified Data.Map as M
 import Shaker.Io
 import Shaker.Type
@@ -156,4 +160,20 @@ getIdExportedList modInfo = modInfoTyThings
 tyThingToId :: TyThing -> Maybe Id
 tyThingToId (AnId tyId) = Just tyId
 tyThingToId _ = Nothing
+
+addLibraryToDynFlags :: [String] -> DynFlags -> DynFlags
+addLibraryToDynFlags listInstalledPkgId dflags = dflags {
+    packageFlags = nub $ map ExposePackageId listInstalledPkgId ++ oldPackageFlags
+  }
+  where oldPackageFlags = packageFlags dflags
+
+searchInstalledPackageId :: String -> Shaker IO (Maybe String)
+searchInstalledPackageId pkgName = do
+  pkgIndex <- asks shakerPackageIndex
+  let srchRes = searchByName pkgIndex pkgName
+  return $ processSearchResult srchRes
+  where processSearchResult None = Nothing
+        processSearchResult (Unambiguous a) = Just $ installedPackageId >>> installedPackageIdString $ last a
+        processSearchResult (Ambiguous (a:_)) = Just $ installedPackageId >>> installedPackageIdString $ last a
+        processSearchResult _ = Nothing
 
