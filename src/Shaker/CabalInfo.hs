@@ -37,7 +37,7 @@ defaultCabalInput :: IO ShakerInput
 defaultCabalInput = readConf
   >>= \lbi -> generateAutogenFiles lbi
   >> localBuildInfoToShakerInput lbi
-  >>= exposeNeededPackages lbi
+  {->>= exposeNeededPackages lbi-}
   >>= checkInvalidMain
   >>= fillModuleData
   >>= fillPackageIndex
