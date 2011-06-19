@@ -130,7 +130,7 @@ Library
                  ,old-time >= 1.0.0
                  ,parsec3 == 1.*
                  ,QuickCheck == 2.4.*
-                 ,regex-posix == 0.94.*
+                 ,regex-posix == 0.95.*
                  ,template-haskell >= 2.5.0.0
                  ,test-framework == 0.4.*
                  ,test-framework-hunit == 0.2.*
@@ -155,7 +155,7 @@ Executable shaker
                  ,old-time >= 1.0.0
                  ,parsec3 == 1.*
                  ,QuickCheck == 2.4.*
-                 ,regex-posix == 0.94.*
+                 ,regex-posix == 0.95.*
                  ,template-haskell >= 2.5.0.0
                  ,test-framework == 0.4.*
                  ,test-framework-hunit == 0.2.*
