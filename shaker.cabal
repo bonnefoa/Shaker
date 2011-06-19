@@ -113,7 +113,6 @@ Library
     Shaker.PluginConfig
     Shaker.Reflexivite
     Shaker.Regex
-    Shaker.TestHelper
     Shaker.TestTH
     Shaker.Type
   build-depends: base == 4.*
@@ -133,7 +132,7 @@ Library
                  ,QuickCheck == 2.4.*
                  ,regex-posix == 0.94.*
                  ,template-haskell >= 2.5.0.0
-                 ,test-framework == 0.3.*
+                 ,test-framework == 0.4.*
                  ,test-framework-hunit == 0.2.*
                  ,test-framework-quickcheck2 == 0.2.*
 
@@ -158,7 +157,7 @@ Executable shaker
                  ,QuickCheck == 2.4.*
                  ,regex-posix == 0.94.*
                  ,template-haskell >= 2.5.0.0
-                 ,test-framework == 0.3.*
+                 ,test-framework == 0.4.*
                  ,test-framework-hunit == 0.2.*
                  ,test-framework-quickcheck2 == 0.2.*
 
